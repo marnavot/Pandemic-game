@@ -1,0 +1,6 @@
+{
+  "name": "Pandemic: The Game",
+  "description": "A web-based implementation of the cooperative board game 'Pandemic'. Players work together as a team of specialists to stop the spread of four deadly diseases and discover their cures before it's too late. This version is enhanced with AI-generated narratives for key game events.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
