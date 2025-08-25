@@ -3156,6 +3156,7 @@ export const useGameLogic = () => {
                     newState.oneQuietNightActive = true;
                     logEvent("The next infection phase will be skipped.");
                     break;
+                case EventCardName.OneMoreDay:
                 case EventCardName.BorrowedTime:
                     const currentPlayer = newState.players[newState.currentPlayerIndex];
                     if (newOwner.id === currentPlayer.id) {
@@ -3377,6 +3378,7 @@ export const useGameLogic = () => {
                     newState.oneQuietNightActive = true;
                     logEvent("The next infection phase will be skipped.");
                     break;
+                case EventCardName.OneMoreDay:
                 case EventCardName.BorrowedTime:
                     const currentPlayer = newState.players[newState.currentPlayerIndex];
                     if (newOwner.id === currentPlayer.id) {
