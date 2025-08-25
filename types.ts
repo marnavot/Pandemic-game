@@ -728,7 +728,6 @@ export const IBERIA_ROLES: PlayerRole[] = [
     PlayerRole.RoyalAcademyScientist,
     PlayerRole.RuralDoctor,
     PlayerRole.Sailor,
-    PlayerRole.Vestalis,
 ];
 
 export const BASE_GAME_EVENTS: EventCardName[] = [
