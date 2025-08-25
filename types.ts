@@ -596,6 +596,7 @@ GovernmentMobilization = "Government Mobilization",
 HospitalFounding = "Hospital Founding",
 MailCorrespondence = "Mail Correspondence",
 NewRails = "New Rails",
+OneMoreDay = "One More Day", 
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -634,6 +635,7 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.HospitalFounding]: "Place or move a hospital of your choice into a city matching its color. (Play at anytime).",
 [EventCardName.MailCorrespondence]: "Two players (anywhere on the board) can swap 1 card from their hands. (Play at any time).",
 [EventCardName.NewRails]: "Add 2 railroad tokens anywhere on the board. (Not possible on dashed lines.) (Play at any time).",
+[EventCardName.OneMoreDay]: "The current player may take 2 more actions this turn. (Play at any time)",
 };
 
 export enum VirulentStrainEpidemicCardName {
@@ -782,6 +784,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.HospitalFounding,
     EventCardName.MailCorrespondence,
     EventCardName.NewRails,
+    EventCardName.OneMoreDay,
 ];
 
 export interface Player {
