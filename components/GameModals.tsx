@@ -4577,7 +4577,9 @@ const RemoteTreatmentModal: React.FC<{
     onClose: () => void;
     onConfirm: (selections: RemoteTreatmentSelection[]) => void;
     gameState: GameState;
-}> = ({ show, onClose, onConfirm, gameState }) => {
+    cardName: EventCardName | null; 
+}> = ({ show, onClose, onConfirm, gameState, cardName }) => {
+    if (!cardName) return null;
     const allCubesOnBoard = useMemo(() => {
         const cubes: RemoteTreatmentSelection[] = [];
         Object.entries(gameState.diseaseCubes).forEach(([cityName, cityCubes]) => {
@@ -4629,8 +4631,8 @@ const RemoteTreatmentModal: React.FC<{
     };
 
     return (
-        <Modal title="Remote Treatment" show={show} onClose={onClose} titleColor="text-teal-400">
-            <EventCardImage cardName={EventCardName.RemoteTreatment} />
+        <Modal title={cardName} show={show} onClose={onClose} titleColor="text-teal-400">
+            <EventCardImage cardName={cardName} />
             <p className="mb-4">Select any 2 disease cubes to remove from the board. {2 - selectedIndices.length} remaining.</p>
             <div className="space-y-1 max-h-80 overflow-y-auto pr-2 bg-gray-900 p-2 rounded-md">
                 {allCubesOnBoard.length > 0 ? allCubesOnBoard.map(({ city, color }, index) => {
@@ -5658,6 +5660,7 @@ interface GameModalsProps {
     handleFortRelocation: (cityToRemove: CityName) => void;
     handleCancelFortRelocation: () => void;
     handleChooseStartingCity: (city: CityName) => void;
+    pendingEventCardForModal: EventCardName | null;
     onInitiateVestalisDrawEvent: () => void;
     handleConfirmVestalisDrawEvent: (cardToDiscard: PlayerCard & { type: 'city' }) => void;
     handleConfirmVestalisDrawAction: () => void;
@@ -6854,6 +6857,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={props.onCancelEventResolution}
                 onConfirm={props.handleRemoteTreatment}
                 gameState={gameState}
+                cardName={props.pendingEventCardForModal} 
             />
             <RapidVaccineDeploymentModal
                 show={gameState.gamePhase === GamePhase.ResolvingRapidVaccineDeployment}
