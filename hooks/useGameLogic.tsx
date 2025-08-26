@@ -616,7 +616,7 @@ export const useGameLogic = () => {
             curedDiseases,
             eradicatedDiseases,
             playerDeck: [], playerDiscard: [], eventDeck: [], infectionDeck: [], infectionDiscard: [], oneQuietNightActive: false, goodSeasonsActive: false, pendingGovernmentMobilization: null, log: ["- Game lobby created. Waiting for players..."], lastEventMessage: null, playerToDiscardId: null, pendingEpidemicCard: null,
-            phaseBeforeEvent: null, pendingPurifyWaterEvent: null,
+            phaseBeforeEvent: null, pendingPurifyWaterEvent: null, pendingRingRailroadsEvent: null, 
             hasUsedOperationsExpertFlight: false, hasUsedArchivistRetrieve: false, hasUsedEpidemiologistAbility: false, hasUsedFieldOperativeCollect: false, hasUsedTroubleshooterPreview: false, hasUsedFieldDirectorMove: false, hasUsedLocalLiaisonShare: false, hasUsedMercatorShare: false, hasUsedReginaFoederataFreeEnlist: false,
             unusedRoles: [], extraActionsForNextTurn: 0, mobileHospitalActiveThisTurn: false, cityForMobileHospital: null, postCureColor: null, specialOrdersControlledPawnId: null,
             epidemicCardToAnnounce: null,
@@ -3137,6 +3137,7 @@ export const useGameLogic = () => {
                 [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
                 [EventCardName.AudentesFortunaIuvat]: GamePhase.ResolvingAudentesFortunaIuvat,
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent, 
+                [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3162,6 +3163,13 @@ export const useGameLogic = () => {
                         return prevState; // Revert state change
                     }
                     newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
+                }
+                if (cardName === EventCardName.RingRailroads) {
+                    if ((newState.railroads?.length || 0) > 17) { // 20 total, need 3
+                        logEvent("Cannot play Ring Railroads: Fewer than 3 railroad tokens remain.");
+                        return prevState;
+                    }
+                    newState.pendingRingRailroadsEvent = { tokensRemaining: 3 };
                 }
             
                 return newState;
@@ -3386,6 +3394,7 @@ export const useGameLogic = () => {
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
                 [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
+                [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3407,6 +3416,13 @@ export const useGameLogic = () => {
                         return prevState; // Revert state change
                     }
                     newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
+                }
+                if (cardName === EventCardName.RingRailroads) {
+                    if ((newState.railroads?.length || 0) > 17) {
+                        logEvent("Cannot play Ring Railroads: Fewer than 3 railroad tokens remain.");
+                        return prevState;
+                    }
+                    newState.pendingRingRailroadsEvent = { tokensRemaining: 3 };
                 }
             
                 return newState;
@@ -3936,6 +3952,7 @@ export const useGameLogic = () => {
             newState.phaseBeforeEvent = null;
             newState.pendingEventCardForModal = null; 
             newState.pendingPurifyWaterEvent = null;
+            newState.pendingRingRailroadsEvent = null;
             logEvent("Event resolution cancelled.");
             return newState;
         });
@@ -5604,6 +5621,50 @@ export const useGameLogic = () => {
             return newState;
         });
     };
+    
+    const handleResolveRingRailroads = (connection: { from: CityName, to: CityName }) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingRingRailroads || !prevState.pendingRingRailroadsEvent) {
+                return prevState;
+            }
+    
+            const { from, to } = connection;
+    
+            // --- Validation ---
+            if (!IBERIA_PORT_CITIES.has(from) || !IBERIA_PORT_CITIES.has(to)) {
+                logEvent("Invalid placement: Railroad must be between two port cities.");
+                return prevState;
+            }
+            const railroadExists = prevState.railroads.some(r => (r.from === from && r.to === to) || (r.from === to && r.to === from));
+            if (railroadExists) {
+                logEvent("A railroad already exists on this route.");
+                return prevState;
+            }
+            const isSeaRoute = IBERIA_SEA_CONNECTIONS.some(c => (c[0] === from && c[1] === to) || (c[0] === to && c[1] === from));
+            if (isSeaRoute) {
+                logEvent("Railroads cannot be built on sea routes.");
+                return prevState;
+            }
+            // --- End Validation ---
+    
+            const newState = safeCloneGameState(prevState);
+            newState.railroads.push(connection);
+            newState.log.unshift(`- Ring Railroads adds a railroad between ${CITIES_DATA[from].name} and ${CITIES_DATA[to].name}.`);
+            
+            const tokensRemaining = newState.pendingRingRailroadsEvent!.tokensRemaining - 1;
+    
+            if (tokensRemaining <= 0) {
+                newState.pendingRingRailroadsEvent = null;
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+                logEvent("Ring Railroads event resolution complete.");
+            } else {
+                newState.pendingRingRailroadsEvent!.tokensRemaining = tokensRemaining;
+            }
+    
+            return newState;
+        });
+    };
 
     const handleResolveFreeBattle = useCallback((payload: {
         legionsLost: number;
@@ -5881,5 +5942,6 @@ export const useGameLogic = () => {
         handleResolveMailCorrespondence,
         handleResolveNewRails,
         handleResolvePurifyWaterEvent,
+        handleResolveRingRailroads,
     };
 };
