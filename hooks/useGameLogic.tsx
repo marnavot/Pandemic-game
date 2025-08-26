@@ -616,7 +616,7 @@ export const useGameLogic = () => {
             curedDiseases,
             eradicatedDiseases,
             playerDeck: [], playerDiscard: [], eventDeck: [], infectionDeck: [], infectionDiscard: [], oneQuietNightActive: false, goodSeasonsActive: false, pendingGovernmentMobilization: null, log: ["- Game lobby created. Waiting for players..."], lastEventMessage: null, playerToDiscardId: null, pendingEpidemicCard: null,
-            phaseBeforeEvent: null,
+            phaseBeforeEvent: null, pendingPurifyWaterEvent: null,
             hasUsedOperationsExpertFlight: false, hasUsedArchivistRetrieve: false, hasUsedEpidemiologistAbility: false, hasUsedFieldOperativeCollect: false, hasUsedTroubleshooterPreview: false, hasUsedFieldDirectorMove: false, hasUsedLocalLiaisonShare: false, hasUsedMercatorShare: false, hasUsedReginaFoederataFreeEnlist: false,
             unusedRoles: [], extraActionsForNextTurn: 0, mobileHospitalActiveThisTurn: false, cityForMobileHospital: null, postCureColor: null, specialOrdersControlledPawnId: null,
             epidemicCardToAnnounce: null,
@@ -3136,6 +3136,7 @@ export const useGameLogic = () => {
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
                 [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
                 [EventCardName.AudentesFortunaIuvat]: GamePhase.ResolvingAudentesFortunaIuvat,
+                [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent, 
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3154,6 +3155,13 @@ export const useGameLogic = () => {
                 // Set the card for the modal if it's one of our target events
                 if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
                     newState.pendingEventCardForModal = cardName;
+                }
+                if (cardName === EventCardName.PurifyWater) {
+                    if (newState.purificationTokenSupply < 1) {
+                        logEvent("Cannot play Purify Water: No purification tokens are left in the supply.");
+                        return prevState; // Revert state change
+                    }
+                    newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
                 }
             
                 return newState;
@@ -3377,6 +3385,7 @@ export const useGameLogic = () => {
                 [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
                 [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
+                [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3391,6 +3400,13 @@ export const useGameLogic = () => {
                 // Set the card for the modal if it's one of our target events
                 if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
                     newState.pendingEventCardForModal = cardName;
+                }
+                if (cardName === EventCardName.PurifyWater) {
+                    if (newState.purificationTokenSupply < 1) {
+                        logEvent("Cannot play Purify Water: No purification tokens are left in the supply.");
+                        return prevState; // Revert state change
+                    }
+                    newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
                 }
             
                 return newState;
@@ -3919,6 +3935,7 @@ export const useGameLogic = () => {
             newState.gamePhase = prevState.phaseBeforeEvent;
             newState.phaseBeforeEvent = null;
             newState.pendingEventCardForModal = null; 
+            newState.pendingPurifyWaterEvent = null;
             logEvent("Event resolution cancelled.");
             return newState;
         });
@@ -5555,6 +5572,39 @@ export const useGameLogic = () => {
         });
     };
 
+    const handleResolvePurifyWaterEvent = (regionName: string) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingPurifyWaterEvent || !prevState.pendingPurifyWaterEvent) {
+                return prevState;
+            }
+            if (prevState.purificationTokenSupply < 1) {
+                logEvent("Cannot place token: Supply is empty.");
+                return prevState;
+            }
+    
+            const newState = safeCloneGameState(prevState);
+            
+            newState.purificationTokens[regionName] = (newState.purificationTokens[regionName] || 0) + 1;
+            newState.purificationTokenSupply--;
+            newState.log.unshift(`- Purify Water event adds 1 purification token to Region ${regionName}.`);
+    
+            const tokensRemaining = newState.pendingPurifyWaterEvent!.tokensRemaining - 1;
+    
+            if (tokensRemaining <= 0 || newState.purificationTokenSupply <= 0) {
+                // Event is finished
+                newState.pendingPurifyWaterEvent = null;
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+                logEvent("Purify Water event resolution complete.");
+            } else {
+                // More tokens to place
+                newState.pendingPurifyWaterEvent!.tokensRemaining = tokensRemaining;
+            }
+    
+            return newState;
+        });
+    };
+
     const handleResolveFreeBattle = useCallback((payload: {
         legionsLost: number;
         barbariansToRemove: { [key in DiseaseColor]?: number };
@@ -5830,5 +5880,7 @@ export const useGameLogic = () => {
         handleHospitalFounding,
         handleResolveMailCorrespondence,
         handleResolveNewRails,
+        handleResolveNewRails,
+        handleResolvePurifyWaterEvent,
     };
 };
