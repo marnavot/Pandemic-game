@@ -3200,6 +3200,24 @@ export const useGameLogic = () => {
                     }
                     break;
                 }
+                case EventCardName.SecondChance: {
+                    const owner = newState.players.find(p => p.id === ownerId)!;
+                    const cardIndex = newState.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
+                    if (cardIndex > -1) {
+                        const [retrievedCard] = newState.playerDiscard.splice(cardIndex, 1);
+                        owner.hand.push(retrievedCard);
+                        logEvent(`${owner.name} plays Second Chance to retrieve the ${getCardDisplayName(retrievedCard)} card.`);
+                        if (owner.hand.length > getHandLimit(owner)) {
+                            newState.playerToDiscardId = owner.id;
+                            newState.gamePhase = GamePhase.Discarding;
+                            discardTriggerRef.current = 'action'; // Treat it as an action for discard purposes
+                            newState.log.unshift(`- ${owner.name} is over the hand limit and must discard.`);
+                        }
+                    } else {
+                        logEvent(`Error: Second Chance played by ${owner.name}, but no ${CITIES_DATA[owner.location].name} card found in discard.`);
+                    }
+                    break;
+                }
                 case EventCardName.MobileHospital:
                     newState.mobileHospitalActiveThisTurn = true;
                     logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
@@ -3451,6 +3469,24 @@ export const useGameLogic = () => {
                         const nextPlayerIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
                         const nextPlayer = newState.players[nextPlayerIndex];
                         logEvent(`${owner.name} played ${cardName}. ${nextPlayer.name} will get 2 extra actions on their NEXT turn.`);
+                    }
+                    break;
+                }
+                case EventCardName.SecondChance: {
+                    const owner = newState.players.find(p => p.id === ownerId)!;
+                    const cardIndex = newState.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
+                    if (cardIndex > -1) {
+                        const [retrievedCard] = newState.playerDiscard.splice(cardIndex, 1);
+                        owner.hand.push(retrievedCard);
+                        logEvent(`${owner.name} plays Second Chance to retrieve the ${getCardDisplayName(retrievedCard)} card.`);
+                        if (owner.hand.length > getHandLimit(owner)) {
+                            newState.playerToDiscardId = owner.id;
+                            newState.gamePhase = GamePhase.Discarding;
+                            discardTriggerRef.current = 'action';
+                            newState.log.unshift(`- ${owner.name} is over the hand limit and must discard.`);
+                        }
+                    } else {
+                        logEvent(`Error: Second Chance played by ${owner.name}, but no ${CITIES_DATA[owner.location].name} card found in discard.`);
                     }
                     break;
                 }
