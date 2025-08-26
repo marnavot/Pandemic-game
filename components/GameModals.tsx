@@ -6485,6 +6485,7 @@ const GovernmentMobilizationModal: React.FC<{
                         );
                     })}
                 </div>
+                {/* THIS IS THE CRITICAL CHANGE. This button now calls onConfirm directly. */}
                 <button
                     disabled={!isReadyToConfirm}
                     onClick={() => onConfirm(plannedMoves)}
@@ -6496,6 +6497,8 @@ const GovernmentMobilizationModal: React.FC<{
         );
     };
     
+    // THIS IS THE OTHER CRITICAL CHANGE. This function's logic is simplified to remove
+    // the possibility of rendering a second, broken confirmation screen.
     const renderContent = () => {
         if (viewingPlayerId !== null) {
             switch (subStep) {
@@ -6505,8 +6508,6 @@ const GovernmentMobilizationModal: React.FC<{
                 default: return renderMoveSelection();
             }
         }
-        // Always return the main list if not editing a specific player.
-        // This removes the buggy "final confirmation" screen.
         return renderMainList();
     };
 
