@@ -288,12 +288,14 @@ export const PlayableEvents: React.FC<{
                                 }
                                 break;
                             
-                            case EventCardName.SecondChance:
+                            case EventCardName.SecondChance: {
+                                const player = gameState.players.find(p => p.id === event.ownerId)!;
                                 isDisabled = !gameState.playerDiscard.some(c => c.type === 'city' && c.name === player.location);
                                 if (isEpidemic || gameState.gamePhase === GamePhase.DrawingPlayerCards) {
                                     isDisabled = true;
                                 }
                                 break;
+                            }
 
                             default: // Most other cards
                                 if (isEpidemic || gameState.gamePhase === GamePhase.DrawingPlayerCards) {
