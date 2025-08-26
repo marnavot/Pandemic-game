@@ -627,6 +627,7 @@ export const useGameLogic = () => {
             sequencingBreakthroughPlayerId: null,
             stationRelocationTargetCity: null,
             stationRelocationTrigger: null,
+            pendingEventCardForModal: null,
             pendingEvent: null,
             pendingVestalisDraw: null,
             pendingVestalisPlayerCardDraw: null,
@@ -3129,6 +3130,7 @@ export const useGameLogic = () => {
                 [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
                 [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
                 [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
+                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment
                 [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
                 [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
@@ -3148,6 +3150,12 @@ export const useGameLogic = () => {
                 }
                 newState.phaseBeforeEvent = newState.gamePhase;
                 newState.gamePhase = targetPhase;
+            
+                // Set the card for the modal if it's one of our target events
+                if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
+                    newState.pendingEventCardForModal = cardName;
+                }
+            
                 return newState;
             }
 
@@ -3364,6 +3372,7 @@ export const useGameLogic = () => {
                 [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
                 [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
                 [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
+                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment,
                 [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
                 [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
@@ -3374,11 +3383,17 @@ export const useGameLogic = () => {
             if (targetPhase) {
                 if (cardName === EventCardName.RapidVaccineDeployment && prevState.gamePhase !== GamePhase.PostCureAction) {
                     logEvent("Rapid Vaccine Deployment can only be played immediately after discovering a cure.");
-                    return prevState; // Revert state change
+                    break; // Revert state change
                 }
                 newState.phaseBeforeEvent = newState.gamePhase;
                 newState.gamePhase = targetPhase;
-                return newState;
+            
+                // Set the card for the modal if it's one of our target events
+                if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
+                    newState.pendingEventCardForModal = cardName;
+                }
+            
+                break;
             }
 
              switch(cardName) {
@@ -3601,6 +3616,7 @@ export const useGameLogic = () => {
                  newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
             }
             newState.phaseBeforeEvent = null;
+            newState.pendingEventCardForModal = null;
 
             return newState;
         });
@@ -3902,6 +3918,7 @@ export const useGameLogic = () => {
             const newState = safeCloneGameState(prevState);
             newState.gamePhase = prevState.phaseBeforeEvent;
             newState.phaseBeforeEvent = null;
+            newState.pendingEventCardForModal = null; 
             logEvent("Event resolution cancelled.");
             return newState;
         });
