@@ -602,6 +602,7 @@ PurifyWater = "Purify Water",
 RingRailroads = "Ring Railroads",
 ScienceTriumph = "Science Triumph",
 SecondChance = "Second Chance",
+ShipsArrive = "Ships Arrive", 
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -645,7 +646,9 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.PurifyWater]: "Put up to 2 purification tokens onto the board, placed into one or two different regions. (Play at any time)",
 [EventCardName.RingRailroads]: "Add 3 railroad tokens between port cities. (Not possible on dashed lines.) (Play at any time)",
 [EventCardName.ScienceTriumph]: "Remove up to 1 cube from each city in one region. (Play at any time).",
-[EventCardName.SecondChance]: "Take the City card matching your current city from the Player Discard pile. (Play at any time).", 
+[EventCardName.SecondChance]: "Take the City card matching your current city from the Player Discard pile. (Play at any time).",
+[EventCardName.ShipsArrive]: "Select a port city. Move 1 or more player pawns there from anywhere on the board (with permission). (Play at any time).",
+
 
 };
 
@@ -801,6 +804,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.RingRailroads,
     EventCardName.ScienceTriumph,
     EventCardName.SecondChance,
+    EventCardName.ShipsArrive,
 ];
 
 export interface Player {
@@ -885,6 +889,7 @@ ResolvingRingRailroads,
 ResolvingPurifyWaterEvent,
 ResolvingScienceTriumph,
 ResolvingScienceTriumphChoice,
+ResolvingShipsArrive,
 ResolvingPurifyWater,
 ResolvingPurificationChoice,
 ResolvingAgronomistPurifyChoice,
