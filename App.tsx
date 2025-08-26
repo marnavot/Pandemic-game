@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameState, GamePhase, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, PlayerRole, CITIES_DATA, CONNECTIONS, GameSetupConfig, EventCardName, ALL_EVENT_CARDS, PLAYER_ROLE_INFO, EVENT_CARD_INFO, ShareOption, CureOptionForModal, CureActionPayload, RemoteTreatmentSelection, VirulentStrainEpidemicCardName, MutationEventCardName, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, BattleModalState, BattleDieResult, FALLOFROME_INITIAL_CUBE_COUNTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, IBERIA_CITIES_DATA, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, IBERIA_SEA_CONNECTIONS } from './types';
+import { GameState, GamePhase, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, PlayerRole, CITIES_DATA, CONNECTIONS, GameSetupConfig, EventCardName, ALL_EVENT_CARDS, PLAYER_ROLE_INFO, EVENT_CARD_INFO, ShareOption, CureOptionForModal, CureActionPayload, RemoteTreatmentSelection, VirulentStrainEpidemicCardName, MutationEventCardName, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, BattleModalState, BattleDieResult, FALLOFROME_INITIAL_CUBE_COUNTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, IBERIA_CITIES_DATA, IBERIA_REGIONS, IBERIA_PORT_CITIES, IBERIA_CITY_TO_REGIONS_MAP, IBERIA_SEA_CONNECTIONS } from './types';
 import Board from './components/Board';
 import Dashboard from './components/Dashboard';
 import Modal from './components/Modal';
@@ -80,7 +80,7 @@ export const App: React.FC = () => {
         handleResolveMorsTuaVitaMea, handleResolveHomoFaberFortunaeSuae, handleResolveAleaIactaEst, handleResolveAbundansCautelaNonNocet, handleResolveMeliusCavereQuamPavere,
         handleResolveMortuiNonMordent, handleResolveFestinaLente, handleResolveVeniVidiVici, handleResolveFreeBattle, handleResolveCarpeDiem, handlePurificationChoice,
         handleAgronomistPurifyChoice, handleNurseTokenPlacement, handleConfirmGovernmentMoves, handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails,
-        handleResolvePurifyWaterEvent,
+        handleResolvePurifyWaterEvent, handleResolveRingRailroads,
     } = useGameLogic();
 
 
@@ -256,7 +256,8 @@ export const App: React.FC = () => {
             generateGameOverReport(hasWon(gameState), gameState.gameOverReason, gameState.useAiNarratives).then(setGameOverReport);
         }
     }, [gameState, gameOverReport]);
-
+    
+    // useEffect to highlight connections and regions
     useEffect(() => {
         if (gameState?.gamePhase === GamePhase.ResolvingPurificationChoice) {
             setPurificationChoiceModalOpen(true);
@@ -265,6 +266,23 @@ export const App: React.FC = () => {
         } else if (gameState?.gamePhase === GamePhase.ResolvingPurifyWaterEvent) {
             setHighlightedRegions(IBERIA_REGIONS.map(r => r.name));
             setHighlightedConnections([]);
+        } else if (gameState?.gamePhase === GamePhase.ResolvingRingRailroads) {
+            const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
+            const existingRailroads = new Set((gameState.railroads || []).map(r => [r.from, r.to].sort().join('_||_')));
+        
+            const validConnections: { from: CityName, to: CityName }[] = [];
+            for (const from of Array.from(IBERIA_PORT_CITIES) as CityName[]) {
+                for (const to of CONNECTIONS[from]) {
+                    if (!IBERIA_PORT_CITIES.has(to)) continue;
+        
+                    const key = [from, to].sort().join('_||_');
+                    if (!seaRoutes.has(key) && !existingRailroads.has(key)) {
+                        validConnections.push({ from, to });
+                    }
+                }
+            }
+            setHighlightedConnections(validConnections);
+            setHighlightedRegions([]);
         } else if (gameState?.gamePhase === GamePhase.NursePlacingPreventionToken) {
             const nurse = gameState.players.find(p => p.role === PlayerRole.Nurse);
             if (nurse && nurse.role === PlayerRole.Nurse) {
@@ -446,7 +464,7 @@ export const App: React.FC = () => {
     }, [gameState, handleAction, dispatcherTargetId]);
 
     const handleConnectionClick = useCallback((from: CityName, to: CityName) => {
-        if (gameState?.gamePhase === GamePhase.ResolvingNewRails) { // <<< ADD THIS IF BLOCK
+        if (gameState?.gamePhase === GamePhase.ResolvingNewRails) {
             setNewRailsSelections(prev => {
                 const key = [from, to].sort().join('_||_');
                 const isAlreadySelected = prev.some(c => [c.from, c.to].sort().join('_||_') === key);
@@ -458,6 +476,10 @@ export const App: React.FC = () => {
                 }
                 return prev;
             });
+            return;
+        }
+        if (gameState?.gamePhase === GamePhase.ResolvingRingRailroads) {
+            handleResolveRingRailroads({ from, to });
             return;
         }
         if (railwaymanModalOpen) {
