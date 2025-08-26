@@ -3218,6 +3218,10 @@ export const useGameLogic = () => {
                     }
                     break;
                 }
+                case EventCardName.ShipsArrive:
+                    newState.phaseBeforeEvent = newState.gamePhase;
+                    newState.gamePhase = GamePhase.ResolvingShipsArrive;
+                    break;
                 case EventCardName.MobileHospital:
                     newState.mobileHospitalActiveThisTurn = true;
                     logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
@@ -3490,6 +3494,10 @@ export const useGameLogic = () => {
                     }
                     break;
                 }
+                case EventCardName.ShipsArrive:
+                    newState.phaseBeforeEvent = newState.gamePhase;
+                    newState.gamePhase = GamePhase.ResolvingShipsArrive;
+                    break;
                 case EventCardName.MobileHospital:
                     newState.mobileHospitalActiveThisTurn = true;
                     logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
@@ -5998,6 +6006,34 @@ export const useGameLogic = () => {
         });
     };
 
+    const handleResolveShipsArrive = (destination: CityName, pawnsToMoveIds: number[]) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingShipsArrive) return prevState;
+    
+            const newState = safeCloneGameState(prevState);
+            const movedPawnNames: string[] = [];
+    
+            pawnsToMoveIds.forEach(pawnId => {
+                const pawn = newState.players.find(p => p.id === pawnId);
+                if (pawn) {
+                    pawn.location = destination;
+                    movedPawnNames.push(pawn.name);
+                    _handlePostMoveEffects(newState, pawn, 'Other');
+                    _handleNursePostMove(newState, pawn);
+                }
+            });
+    
+            if (movedPawnNames.length > 0) {
+                logEvent(`Ships Arrive: ${movedPawnNames.join(', ')} moved to the port of ${CITIES_DATA[destination].name}.`);
+                playSound('sail');
+            }
+    
+            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+            newState.phaseBeforeEvent = null;
+            return newState;
+        });
+    };
+
     return {
         gameState,
         setGameState,
@@ -6091,5 +6127,6 @@ export const useGameLogic = () => {
         handleResolveRingRailroads,
         handleResolveScienceTriumph,
         handleResolveScienceTriumphChoice,
+        handleResolveShipsArrive,
     };
 };
