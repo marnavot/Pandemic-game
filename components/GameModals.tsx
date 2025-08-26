@@ -6273,20 +6273,15 @@ const GovernmentMobilizationModal: React.FC<{
     gameState: GameState;
 }> = ({ show, onClose, onConfirm, gameState }) => {
     // === State Management ===
-    // Main state for the planned moves
     const [plannedMoves, setPlannedMoves] = useState<Record<number, any>>({});
-    // Which player's move are we currently editing? (null means show the main list)
     const [viewingPlayerId, setViewingPlayerId] = useState<number | null>(null);
-    // What is the specific sub-step for the player being viewed?
     const [subStep, setSubStep] = useState<'selecting_destination' | 'selecting_passenger' | 'selecting_card' | null>(null);
-    // Temporary storage for the move being built
     const [tempMoveData, setTempMoveData] = useState<{
         destination: CityName;
         moveType: 'Carriage' | 'Train' | 'Ship';
     } | null>(null);
     const [destination, setDestination] = useState<CityName | null>(null);
 
-    // Effect to reset the modal's internal state whenever it is opened
     useEffect(() => {
         if (show) {
             setPlannedMoves({});
@@ -6297,18 +6292,15 @@ const GovernmentMobilizationModal: React.FC<{
     }, [show]);
 
     useEffect(() => {
-        // Reset destination when switching players to avoid stale selections
         if (viewingPlayerId !== null) {
             setDestination(null);
         }
     }, [viewingPlayerId]);
 
-    // === Derived Data ===
     const playersToMove = gameState.pendingGovernmentMobilization?.playersToMove || [];
     const viewingPlayer = gameState.players.find(p => p.id === viewingPlayerId);
     const isReadyToConfirm = playersToMove.length > 0 && playersToMove.every(id => plannedMoves.hasOwnProperty(id));
 
-    // === Helper Functions ===
     const resetToMainView = () => {
         setViewingPlayerId(null);
         setSubStep(null);
@@ -6324,9 +6316,6 @@ const GovernmentMobilizationModal: React.FC<{
         resetToMainView();
     };
 
-    // === Sub-Component Renderers ===
-
-    // View for when a player needs to choose a passenger (Sailor/Railwayman)
     const renderPassengerSelection = () => {
         if (!viewingPlayer || !tempMoveData) return null;
         const potentialPassengers = gameState.players.filter(p => p.id !== viewingPlayer.id && p.location === viewingPlayer.location);
@@ -6348,7 +6337,6 @@ const GovernmentMobilizationModal: React.FC<{
         );
     };
 
-    // View for when a non-Sailor needs to discard a card for a ship move
     const renderCardSelection = () => {
         if (!viewingPlayer || !tempMoveData || tempMoveData.moveType !== 'Ship') return null;
 
@@ -6382,7 +6370,6 @@ const GovernmentMobilizationModal: React.FC<{
         );
     };
 
-    // View for selecting a destination and move type
     const renderMoveSelection = () => {
         if (!viewingPlayer) return null;
 
@@ -6461,7 +6448,6 @@ const GovernmentMobilizationModal: React.FC<{
         );
     };
 
-    // Main view showing the list of all players and their planned moves
     const renderMainList = () => {
         return (
             <div>
@@ -6509,8 +6495,7 @@ const GovernmentMobilizationModal: React.FC<{
             </div>
         );
     };
-
-    // Determine which view to render inside the modal
+    
     const renderContent = () => {
         if (viewingPlayerId !== null) {
             switch (subStep) {
@@ -6520,6 +6505,8 @@ const GovernmentMobilizationModal: React.FC<{
                 default: return renderMoveSelection();
             }
         }
+        // Always return the main list if not editing a specific player.
+        // This removes the buggy "final confirmation" screen.
         return renderMainList();
     };
 
