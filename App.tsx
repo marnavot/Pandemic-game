@@ -80,7 +80,7 @@ export const App: React.FC = () => {
         handleResolveMorsTuaVitaMea, handleResolveHomoFaberFortunaeSuae, handleResolveAleaIactaEst, handleResolveAbundansCautelaNonNocet, handleResolveMeliusCavereQuamPavere,
         handleResolveMortuiNonMordent, handleResolveFestinaLente, handleResolveVeniVidiVici, handleResolveFreeBattle, handleResolveCarpeDiem, handlePurificationChoice,
         handleAgronomistPurifyChoice, handleNurseTokenPlacement, handleConfirmGovernmentMoves, handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails,
-        handleResolvePurifyWaterEvent, handleResolveRingRailroads, handleResolveScienceTriumph, handleResolveScienceTriumphChoice,
+        handleResolvePurifyWaterEvent, handleResolveRingRailroads, handleResolveScienceTriumph, handleResolveScienceTriumphChoice, handleResolveShipsArrive,
     } = useGameLogic();
 
 
@@ -1130,6 +1130,7 @@ export const App: React.FC = () => {
                 handleResolveNewRails={handleResolveNewRails}
                 handleResolveScienceTriumph={handleResolveScienceTriumph}
                 handleResolveScienceTriumphChoice={handleResolveScienceTriumphChoice}
+                handleResolveShipsArrive={handleResolveShipsArrive}
                 newRailsSelections={newRailsSelections}
                 onCancelEventResolution={() => {
                     handleCancelEventResolution();
