@@ -601,6 +601,7 @@ OverseasMigration = "Overseas Migration",
 PurifyWater = "Purify Water",
 RingRailroads = "Ring Railroads",
 ScienceTriumph = "Science Triumph",
+SecondChance = "Second Chance",
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -644,6 +645,7 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.PurifyWater]: "Put up to 2 purification tokens onto the board, placed into one or two different regions. (Play at any time)",
 [EventCardName.RingRailroads]: "Add 3 railroad tokens between port cities. (Not possible on dashed lines.) (Play at any time)",
 [EventCardName.ScienceTriumph]: "Remove up to 1 cube from each city in one region. (Play at any time).",
+[EventCardName.SecondChance]: "Take the City card matching your current city from the Player Discard pile. (Play at any time).", 
 
 };
 
@@ -798,6 +800,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.PurifyWater,
     EventCardName.RingRailroads,
     EventCardName.ScienceTriumph,
+    EventCardName.SecondChance,
 ];
 
 export interface Player {
