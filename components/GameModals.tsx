@@ -5666,6 +5666,62 @@ const ScienceTriumphModal: React.FC<{
     );
 };
 
+const ScienceTriumphChoiceModal: React.FC<{
+    show: boolean;
+    onConfirm: (city: CityName, color: DiseaseColor) => void;
+    gameState: GameState;
+}> = ({ show, onConfirm, gameState }) => {
+    const choiceState = gameState.pendingScienceTriumphChoice;
+    
+    if (!choiceState || choiceState.citiesWithChoices.length === 0) {
+        return null;
+    }
+
+    const currentChoice = choiceState.citiesWithChoices[0];
+    const cityData = CITIES_DATA[currentChoice.city];
+
+    return (
+        <Modal
+            title="Science Triumph: Choose Cube"
+            show={show}
+            isSidePanel={true}
+            titleColor="text-yellow-400"
+        >
+            <div className="space-y-4">
+                <p>
+                    The city of <span className="font-bold">{cityData.name}</span> has multiple disease cubes.
+                </p>
+                <p className="text-lg font-semibold text-yellow-300">
+                    Please choose one color to remove.
+                </p>
+                
+                <div className="p-3 bg-gray-900 rounded-lg">
+                    <h4 className="font-bold text-center mb-2">{cityData.name}</h4>
+                    <div className="flex justify-center items-center space-x-2">
+                        <CubeDisplay cubes={gameState.diseaseCubes[currentChoice.city]} />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    {currentChoice.colors.map(color => (
+                        <button
+                            key={color}
+                            onClick={() => onConfirm(currentChoice.city, color)}
+                            className={`w-full p-3 rounded-md text-white font-bold capitalize transition-colors hover:opacity-90 ${CITY_COLOR_CLASSES[color]}`}
+                        >
+                            Remove {color} Cube
+                        </button>
+                    ))}
+                </div>
+
+                <p className="text-sm text-gray-400 text-center mt-4">
+                    {choiceState.citiesWithChoices.length - 1} more choice(s) remaining.
+                </p>
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -5849,6 +5905,7 @@ interface GameModalsProps {
     handleResolveNewRails: (connections: { from: CityName, to: CityName }[]) => void;
     newRailsSelections: { from: CityName, to: CityName }[];
     handleResolveScienceTriumph: (regionName: string) => void;
+    handleResolveScienceTriumphChoice: (city: CityName, color: DiseaseColor) => void; 
 }
 
 const VaeVictisModal: React.FC<{
@@ -7089,6 +7146,11 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
             <ScienceTriumphModal
                 show={gameState.gamePhase === GamePhase.ResolvingScienceTriumph}
                 onClose={onCancelEventResolution}
+            />
+            <ScienceTriumphChoiceModal
+                show={gameState.gamePhase === GamePhase.ResolvingScienceTriumphChoice}
+                onConfirm={props.handleResolveScienceTriumphChoice}
+                gameState={gameState}
             />
       
 
