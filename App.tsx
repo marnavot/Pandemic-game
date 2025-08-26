@@ -270,7 +270,6 @@ export const App: React.FC = () => {
             const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
             const existingRailroads = new Set((gameState.railroads || []).map(r => [r.from, r.to].sort().join('_||_')));
         
-            // vvv REPLACE THE OLD FOR LOOP WITH THIS NEW LOGIC vvv
             const validConnections: { from: CityName; to: CityName }[] = [];
             const processedPairs = new Set<string>();
         
@@ -296,6 +295,15 @@ export const App: React.FC = () => {
             }
             setHighlightedConnections(validConnections);
             setHighlightedRegions([]);
+        } else if (gameState?.gamePhase === GamePhase.ResolvingScienceTriumph) {
+            const regionsWithCubes = IBERIA_REGIONS.filter(region => 
+                region.vertices.some(city => {
+                    const cityCubes = gameState.diseaseCubes[city];
+                    return cityCubes && Object.values(cityCubes).some(count => count > 0);
+                })
+            ).map(r => r.name);
+            setHighlightedRegions(regionsWithCubes);
+            setHighlightedConnections([]);
         } else if (gameState?.gamePhase === GamePhase.ResolvingNewRails) {
             const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
             const existingRailroads = new Set((gameState.railroads || []).map(r => [r.from, r.to].sort().join('_||_')));
@@ -527,6 +535,11 @@ export const App: React.FC = () => {
 
         if (gameState?.gamePhase === GamePhase.ResolvingPurifyWaterEvent) {
             handleResolvePurifyWaterEvent(regionName);
+            return;
+        }
+
+        if (gameState?.gamePhase === GamePhase.ResolvingScienceTriumph) {
+            handleResolveScienceTriumph(regionName);
             return;
         }
         
@@ -1115,6 +1128,7 @@ export const App: React.FC = () => {
                 handleHospitalFounding={handleHospitalFounding}
                 handleResolveMailCorrespondence={handleResolveMailCorrespondence}
                 handleResolveNewRails={handleResolveNewRails}
+                handleResolveScienceTriumph={handleResolveScienceTriumph}
                 newRailsSelections={newRailsSelections}
                 onCancelEventResolution={() => {
                     handleCancelEventResolution();
