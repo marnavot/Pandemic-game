@@ -1029,6 +1029,7 @@ export const App: React.FC = () => {
                 handleFortRelocation={handleFortRelocation}
                 handleCancelFortRelocation={handleCancelFortRelocation}
                 handleChooseStartingCity={handleChooseStartingCity}
+                pendingEventCardForModal={gameState.pendingEventCardForModal} 
                 onInitiateVestalisDrawEvent={handleInitiateVestalisDrawEvent}
                 handleConfirmVestalisDrawEvent={handleConfirmVestalisDrawEvent}
                 handleConfirmVestalisDrawAction={handleConfirmVestalisDrawAction}
