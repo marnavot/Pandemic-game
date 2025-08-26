@@ -287,6 +287,13 @@ export const PlayableEvents: React.FC<{
                                     isDisabled = true;
                                 }
                                 break;
+                            
+                            case EventCardName.SecondChance:
+                                isDisabled = !gameState.playerDiscard.some(c => c.type === 'city' && c.name === player.location);
+                                if (isEpidemic || gameState.gamePhase === GamePhase.DrawingPlayerCards) {
+                                    isDisabled = true;
+                                }
+                                break;
 
                             default: // Most other cards
                                 if (isEpidemic || gameState.gamePhase === GamePhase.DrawingPlayerCards) {
