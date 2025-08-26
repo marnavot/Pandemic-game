@@ -5722,6 +5722,108 @@ const ScienceTriumphChoiceModal: React.FC<{
     );
 };
 
+const ShipsArriveModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    onConfirm: (destination: CityName, pawnsToMoveIds: number[]) => void;
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, gameState }) => {
+    const [step, setStep] = useState<'select_city' | 'select_pawns'>('select_city');
+    const [selectedCity, setSelectedCity] = useState<CityName | null>(null);
+    const [selectedPawnIds, setSelectedPawnIds] = useState<number[]>([]);
+
+    const portCities = useMemo(() =>
+        Array.from(IBERIA_PORT_CITIES).sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name))
+    , []);
+
+    useEffect(() => {
+        if (show) {
+            setStep('select_city');
+            setSelectedCity(null);
+            setSelectedPawnIds([]);
+        }
+    }, [show]);
+
+    const handleCitySelect = (city: CityName) => {
+        setSelectedCity(city);
+        setStep('select_pawns');
+    };
+
+    const handlePawnToggle = (pawnId: number) => {
+        setSelectedPawnIds(prev =>
+            prev.includes(pawnId) ? prev.filter(id => id !== pawnId) : [...prev, pawnId]
+        );
+    };
+    
+    const handleConfirmClick = () => {
+        if (selectedCity && selectedPawnIds.length > 0) {
+            onConfirm(selectedCity, selectedPawnIds);
+        }
+    };
+
+    return (
+        <Modal
+            title={step === 'select_city' ? "Ships Arrive: Select Port" : `Ships Arrive: Select Pawns`}
+            show={show}
+            onClose={onClose}
+            isSidePanel={true}
+        >
+            <div className="space-y-4">
+                <EventCardImage cardName={EventCardName.ShipsArrive} />
+
+                {step === 'select_city' && (
+                    <>
+                        <p className="text-lg font-semibold text-yellow-300">Select a destination port city.</p>
+                        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                            {portCities.map(city => (
+                                <button
+                                    key={city}
+                                    onClick={() => handleCitySelect(city)}
+                                    className="w-full p-2 bg-gray-700 hover:bg-gray-600 rounded text-left flex items-center justify-between transition-colors"
+                                >
+                                    <span className="font-bold">{CITIES_DATA[city].name}</span>
+                                    <CubeDisplay cubes={gameState.diseaseCubes[city]} />
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {step === 'select_pawns' && selectedCity && (
+                    <>
+                        <p>Move one or more pawns to <span className="font-bold">{CITIES_DATA[selectedCity].name}</span>.</p>
+                         <div className="space-y-2">
+                            {gameState.players.map(pawn => (
+                                <button
+                                    key={pawn.id}
+                                    onClick={() => handlePawnToggle(pawn.id)}
+                                    className={`w-full p-3 rounded-md text-left transition-colors flex items-center justify-between ${selectedPawnIds.includes(pawn.id) ? 'bg-blue-800 ring-2 ring-blue-400' : 'bg-gray-700 hover:bg-gray-600'}`}
+                                >
+                                    <div>
+                                        <p className="font-bold">{pawn.name}</p>
+                                        <p className="text-xs text-gray-400">({pawn.role}) in {CITIES_DATA[pawn.location].name}</p>
+                                    </div>
+                                    <div className={`w-6 h-6 rounded-full border-2 ${selectedPawnIds.includes(pawn.id) ? 'bg-blue-500 border-white' : 'border-gray-500'}`}></div>
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex space-x-2 mt-4">
+                            <button onClick={() => setStep('select_city')} className="w-1/3 p-2 bg-gray-500 hover:bg-gray-400 rounded">Back</button>
+                            <button
+                                onClick={handleConfirmClick}
+                                disabled={selectedPawnIds.length === 0}
+                                className="w-2/3 p-2 bg-blue-600 hover:bg-blue-500 rounded disabled:bg-gray-600"
+                            >
+                                Confirm Move ({selectedPawnIds.length})
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -5905,7 +6007,8 @@ interface GameModalsProps {
     handleResolveNewRails: (connections: { from: CityName, to: CityName }[]) => void;
     newRailsSelections: { from: CityName, to: CityName }[];
     handleResolveScienceTriumph: (regionName: string) => void;
-    handleResolveScienceTriumphChoice: (city: CityName, color: DiseaseColor) => void; 
+    handleResolveScienceTriumphChoice: (city: CityName, color: DiseaseColor) => void;
+    handleResolveShipsArrive: (destination: CityName, pawnsToMoveIds: number[]) => void;
 }
 
 const VaeVictisModal: React.FC<{
@@ -7150,6 +7253,12 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
             <ScienceTriumphChoiceModal
                 show={gameState.gamePhase === GamePhase.ResolvingScienceTriumphChoice}
                 onConfirm={props.handleResolveScienceTriumphChoice}
+                gameState={gameState}
+            />
+            <ShipsArriveModal
+                show={gameState.gamePhase === GamePhase.ResolvingShipsArrive}
+                onClose={props.onCancelEventResolution}
+                onConfirm={props.handleResolveShipsArrive}
                 gameState={gameState}
             />
       
