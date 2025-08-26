@@ -269,28 +269,31 @@ export const App: React.FC = () => {
         } else if (gameState?.gamePhase === GamePhase.ResolvingRingRailroads) {
             const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
             const existingRailroads = new Set((gameState.railroads || []).map(r => [r.from, r.to].sort().join('_||_')));
-        const validConnections: { from: CityName; to: CityName }[] = [];
-        const processedPairs = new Set<string>();
-        // Iterate through all connections once to find valid pairs
-        for (const fromCity of Object.keys(IBERIA_CONNECTIONS) as CityName[]) {
-            for (const toCity of IBERIA_CONNECTIONS[fromCity as keyof typeof IBERIA_CONNECTIONS]) {
-                // Create a unique key to ensure we only process each connection once
-                const key = [fromCity, toCity].sort().join('_||_');
-                if (processedPairs.has(key)) continue;
-                processedPairs.add(key);
-    
-                // Check if both ends are port cities
-                if (IBERIA_PORT_CITIES.has(fromCity) && IBERIA_PORT_CITIES.has(toCity)) {
-                    // Check against other rules (not a sea route, no existing railroad)
-                    const isSeaRoute = seaRoutes.has(key);
-                    const hasRailroad = existingRailroads.has(key);
-    
-                    if (!isSeaRoute && !hasRailroad) {
-                        validConnections.push({ from: fromCity, to: toCity });
+        
+            // vvv REPLACE THE OLD FOR LOOP WITH THIS NEW LOGIC vvv
+            const validConnections: { from: CityName; to: CityName }[] = [];
+            const processedPairs = new Set<string>();
+        
+            // A more direct approach: iterate only through known port cities.
+            for (const fromCity of Array.from(IBERIA_PORT_CITIES) as CityName[]) {
+                // Get the neighbors for the current port city.
+                const neighbors = IBERIA_CONNECTIONS[fromCity as keyof typeof IBERIA_CONNECTIONS] || [];
+        
+                for (const toCity of neighbors) {
+                    // Check if the neighbor is ALSO a port city.
+                    if (IBERIA_PORT_CITIES.has(toCity)) {
+                        // Create a unique key to ensure we only process each connection once.
+                        const key = [fromCity, toCity].sort().join('_||_');
+                        if (processedPairs.has(key)) continue;
+                        processedPairs.add(key);
+        
+                        // Check against other rules (not a sea route, no existing railroad).
+                        if (!seaRoutes.has(key) && !existingRailroads.has(key)) {
+                            validConnections.push({ from: fromCity, to: toCity });
+                        }
                     }
                 }
             }
-        }
             setHighlightedConnections(validConnections);
             setHighlightedRegions([]);
         } else if (gameState?.gamePhase === GamePhase.NursePlacingPreventionToken) {
