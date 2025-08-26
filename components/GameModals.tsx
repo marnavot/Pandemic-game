@@ -5585,6 +5585,36 @@ const PurifyWaterEventModal: React.FC<{
     );
 };
 
+const RingRailroadsModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    gameState: GameState;
+}> = ({ show, onClose, gameState }) => {
+    const tokensRemaining = gameState.pendingRingRailroadsEvent?.tokensRemaining || 0;
+
+    return (
+        <Modal
+            title="Event: Ring Railroads"
+            show={show}
+            onClose={onClose}
+            isSidePanel={true}
+        >
+            <div className="space-y-4">
+                <EventCardImage cardName={EventCardName.RingRailroads} />
+                <p>
+                    Place {tokensRemaining} more railroad token(s) between adjacent port cities.
+                </p>
+                <p className="text-lg font-semibold text-yellow-300 animate-pulse">
+                    Please click a highlighted connection on the map to place a railroad.
+                </p>
+                <p className="text-sm text-gray-400">
+                    Railroads cannot be placed on dashed sea routes or where one already exists.
+                </p>
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -7008,6 +7038,11 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
             />
             <PurifyWaterEventModal
                 show={gameState.gamePhase === GamePhase.ResolvingPurifyWaterEvent} 
+                onClose={onCancelEventResolution}
+                gameState={gameState}
+            />
+            <RingRailroadsModal
+                show={gameState.gamePhase === GamePhase.ResolvingRingRailroads}
                 onClose={onCancelEventResolution}
                 gameState={gameState}
             />
