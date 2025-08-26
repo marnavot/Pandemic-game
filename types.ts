@@ -598,6 +598,7 @@ MailCorrespondence = "Mail Correspondence",
 NewRails = "New Rails",
 OneMoreDay = "One More Day", 
 OverseasMigration = "Overseas Migration",
+PurifyWater = "Purify Water",
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -638,6 +639,7 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.NewRails]: "Add 2 railroad tokens anywhere on the board. (Not possible on dashed lines.) (Play at any time).",
 [EventCardName.OneMoreDay]: "The current player may take 2 more actions this turn. (Play at any time)",
 [EventCardName.OverseasMigration]: "Remove up to 2 cubes from the board. (Play at any time)",
+[EventCardName.PurifyWater]: "Put up to 2 purification tokens onto the board, placed into one or two different regions. (Play at any time)",
 };
 
 export enum VirulentStrainEpidemicCardName {
@@ -788,6 +790,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.NewRails,
     EventCardName.OneMoreDay,
     EventCardName.OverseasMigration,
+    EventCardName.PurifyWater,
 ];
 
 export interface Player {
@@ -868,6 +871,7 @@ ResolvingGovernmentMobilization,
 ResolvingHospitalFounding,
 ResolvingMailCorrespondence,
 ResolvingNewRails,
+ResolvingPurifyWaterEvent,
 ResolvingPurifyWater,
 ResolvingPurificationChoice,
 ResolvingAgronomistPurifyChoice,
@@ -968,6 +972,7 @@ pendingVaeVictisContext: { maxToRemove: number } | null;
 aleaIactaEstStatus: 'inactive' | 'normal_available' | 'corrupt_active' | null;
 abundansCautelaStatus: 'inactive' | 'normal_active' | 'corrupt_active';
 veniVidiViciStatus: 'inactive' | 'corrupt_battle_pending';
+pendingPurifyWaterEvent: { tokensRemaining: number } | null;
 pendingGovernmentMobilization: { playersToMove: number[] } | null;
 
 // Fall of Rome specific state
