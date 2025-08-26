@@ -296,6 +296,26 @@ export const App: React.FC = () => {
             }
             setHighlightedConnections(validConnections);
             setHighlightedRegions([]);
+        } else if (gameState?.gamePhase === GamePhase.ResolvingNewRails) {
+            const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
+            const existingRailroads = new Set((gameState.railroads || []).map(r => [r.from, r.to].sort().join('_||_')));
+    
+            const validConnections: { from: CityName, to: CityName }[] = [];
+            const processedPairs = new Set<string>();
+    
+            for (const fromCity of Object.keys(IBERIA_CONNECTIONS) as CityName[]) {
+                for (const toCity of IBERIA_CONNECTIONS[fromCity as keyof typeof IBERIA_CONNECTIONS]) {
+                    const key = [fromCity, toCity].sort().join('_||_');
+                    if (processedPairs.has(key)) continue;
+                    processedPairs.add(key);
+    
+                    if (!seaRoutes.has(key) && !existingRailroads.has(key)) {
+                        validConnections.push({ from: fromCity, to: toCity });
+                    }
+                }
+            }
+            setHighlightedConnections(validConnections);
+            setHighlightedRegions([]);
         } else if (gameState?.gamePhase === GamePhase.NursePlacingPreventionToken) {
             const nurse = gameState.players.find(p => p.role === PlayerRole.Nurse);
             if (nurse && nurse.role === PlayerRole.Nurse) {
@@ -311,29 +331,6 @@ export const App: React.FC = () => {
         }
     }, [gameState?.gamePhase, gameState?.pendingPurificationChoice, gameState?.players, gameState?.pendingRailwaymanBuild, gameState?.railroads, gameState?.currentPlayerIndex]);
 
-    useEffect(() => {
-        if (gameState?.gamePhase === GamePhase.ResolvingNewRails) {
-            const seaRoutes = new Set(IBERIA_SEA_CONNECTIONS.map(c => [c[0], c[1]].sort().join('_||_')));
-            const existingRailroads = new Set(gameState.railroads.map(r => [r.from, r.to].sort().join('_||_')));
-            
-            const validConnections: { from: CityName, to: CityName }[] = [];
-            for (const from of Object.keys(IBERIA_CITIES_DATA) as CityName[]) {
-                for (const to of CONNECTIONS[from]) {
-                    const key = [from, to].sort().join('_||_');
-                    if (!seaRoutes.has(key) && !existingRailroads.has(key)) {
-                        validConnections.push({ from, to });
-                    }
-                }
-            }
-            setHighlightedConnections(validConnections);
-        } else {
-            // Clear selections and highlights when not in the phase
-            setHighlightedConnections([]);
-            if (newRailsSelections.length > 0) {
-                setNewRailsSelections([]);
-            }
-        }
-    }, [gameState?.gamePhase, gameState?.railroads]);
 
     // Game Setup/Lobby Handlers
     const handleStartGameClick = async (config: GameSetupConfig) => {
