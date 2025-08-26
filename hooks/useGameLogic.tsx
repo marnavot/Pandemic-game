@@ -3130,7 +3130,7 @@ export const useGameLogic = () => {
                 [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
                 [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
                 [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
-                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment
+                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment,
                 [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
                 [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
                 [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
