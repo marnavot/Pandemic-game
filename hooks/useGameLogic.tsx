@@ -5880,7 +5880,6 @@ export const useGameLogic = () => {
         handleHospitalFounding,
         handleResolveMailCorrespondence,
         handleResolveNewRails,
-        handleResolveNewRails,
         handleResolvePurifyWaterEvent,
     };
 };
