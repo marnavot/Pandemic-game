@@ -3157,16 +3157,24 @@ export const useGameLogic = () => {
                     logEvent("The next infection phase will be skipped.");
                     break;
                 case EventCardName.OneMoreDay:
-                case EventCardName.BorrowedTime:
-                    const currentPlayer = newState.players[newState.currentPlayerIndex];
-                    if (newOwner.id === currentPlayer.id) {
+                case EventCardName.BorrowedTime: { // A block is used to create a new scope for constants
+                    const isActionPhase = newState.gamePhase === GamePhase.PlayerAction;
+                
+                    if (isActionPhase) {
+                        // Card is played during the action phase. Award actions to the CURRENT player.
+                        const currentPlayer = newState.players[newState.currentPlayerIndex];
                         newState.actionsRemaining += 2;
-                        logEvent(`${currentPlayer.name} gets 2 extra actions this turn.`);
+                        logEvent(`${owner.name} played ${cardName}. ${currentPlayer.name} gets 2 extra actions THIS turn.`);
                     } else {
+                        // Card is played outside the action phase. Award actions to the NEXT player.
                         newState.extraActionsForNextTurn += 2;
-                        logEvent(`${currentPlayer.name} will get 2 extra actions on their next turn.`);
+                        // The current turn is not over yet, so the "next" player is still currentPlayerIndex + 1
+                        const nextPlayerIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
+                        const nextPlayer = newState.players[nextPlayerIndex];
+                        logEvent(`${owner.name} played ${cardName}. ${nextPlayer.name} will get 2 extra actions on their NEXT turn.`);
                     }
                     break;
+                }
                 case EventCardName.MobileHospital:
                     newState.mobileHospitalActiveThisTurn = true;
                     logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
@@ -3379,16 +3387,24 @@ export const useGameLogic = () => {
                     logEvent("The next infection phase will be skipped.");
                     break;
                 case EventCardName.OneMoreDay:
-                case EventCardName.BorrowedTime:
-                    const currentPlayer = newState.players[newState.currentPlayerIndex];
-                    if (newOwner.id === currentPlayer.id) {
+                case EventCardName.BorrowedTime: { // A block is used to create a new scope for constants
+                    const isActionPhase = newState.gamePhase === GamePhase.PlayerAction;
+                
+                    if (isActionPhase) {
+                        // Card is played during the action phase. Award actions to the CURRENT player.
+                        const currentPlayer = newState.players[newState.currentPlayerIndex];
                         newState.actionsRemaining += 2;
-                        logEvent(`${currentPlayer.name} gets 2 extra actions this turn.`);
+                        logEvent(`${owner.name} played ${cardName}. ${currentPlayer.name} gets 2 extra actions THIS turn.`);
                     } else {
+                        // Card is played outside the action phase. Award actions to the NEXT player.
                         newState.extraActionsForNextTurn += 2;
-                        logEvent(`${currentPlayer.name} will get 2 extra actions on their next turn.`);
+                        // The current turn is not over yet, so the "next" player is still currentPlayerIndex + 1
+                        const nextPlayerIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
+                        const nextPlayer = newState.players[nextPlayerIndex];
+                        logEvent(`${owner.name} played ${cardName}. ${nextPlayer.name} will get 2 extra actions on their NEXT turn.`);
                     }
                     break;
+                }
                 case EventCardName.MobileHospital:
                     newState.mobileHospitalActiveThisTurn = true;
                     logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
