@@ -5636,6 +5636,36 @@ const RingRailroadsModal: React.FC<{
     );
 };
 
+const ScienceTriumphModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+}> = ({ show, onClose }) => {
+    return (
+        <Modal
+            title="Event: Science Triumph"
+            show={show}
+            onClose={onClose}
+            isSidePanel={true}
+        >
+            <div className="space-y-4">
+                <EventCardImage cardName={EventCardName.ScienceTriumph} />
+                <p>
+                    Remove up to 1 cube from each city in one region.
+                </p>
+                <p className="text-lg font-semibold text-yellow-300 animate-pulse">
+                    Please click on a highlighted region on the map to resolve the event.
+                </p>
+                <button
+                    onClick={onClose}
+                    className="w-full mt-4 p-2 bg-gray-500 hover:bg-gray-400 rounded text-white font-bold"
+                >
+                    Cancel Event
+                </button>
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -5818,6 +5848,7 @@ interface GameModalsProps {
     handleResolveMailCorrespondence: (payload: { player1Id: number; player2Id: number; card1: PlayerCard & { type: 'city' }; card2: PlayerCard & { type: 'city' }; }) => void;
     handleResolveNewRails: (connections: { from: CityName, to: CityName }[]) => void;
     newRailsSelections: { from: CityName, to: CityName }[];
+    handleResolveScienceTriumph: (regionName: string) => void;
 }
 
 const VaeVictisModal: React.FC<{
@@ -7054,6 +7085,10 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 show={gameState.gamePhase === GamePhase.ResolvingRingRailroads}
                 onClose={onCancelEventResolution}
                 gameState={gameState}
+            />
+            <ScienceTriumphModal
+                show={gameState.gamePhase === GamePhase.ResolvingScienceTriumph}
+                onClose={onCancelEventResolution}
             />
       
 
