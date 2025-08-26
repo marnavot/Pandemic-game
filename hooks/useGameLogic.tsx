@@ -5868,34 +5868,95 @@ export const useGameLogic = () => {
                 return newState;
             }
     
-            let cubesRemovedCount = 0;
-            const removedLogParts: string[] = [];
+            const citiesWithChoices: { city: CityName; colors: DiseaseColor[] }[] = [];
+            const processedCities: { city: CityName; colorRemoved: DiseaseColor }[] = [];
     
             region.vertices.forEach(city => {
                 const cityCubes = newState.diseaseCubes[city];
-                if (cityCubes && Object.values(cityCubes).some(count => count > 0)) {
-                    // Find the first color with cubes to remove one from.
-                    const colorToRemove = (Object.keys(cityCubes) as DiseaseColor[]).find(color => (cityCubes[color] || 0) > 0);
-                    
-                    if (colorToRemove) {
-                        newState.diseaseCubes[city]![colorToRemove]!--;
-                        newState.remainingCubes[colorToRemove]++;
-                        cubesRemovedCount++;
-                        removedLogParts.push(`1 ${colorToRemove} from ${CITIES_DATA[city].name}`);
-                        _checkForEradication(newState, colorToRemove);
-                    }
+                if (!cityCubes || Object.values(cityCubes).every(c => c === 0)) {
+                    return; // No cubes in this city
+                }
+    
+                const colorsPresent = (Object.keys(cityCubes) as DiseaseColor[]).filter(color => (cityCubes[color] || 0) > 0);
+    
+                if (colorsPresent.length === 1) {
+                    // Auto-remove the only color
+                    const colorToRemove = colorsPresent[0];
+                    newState.diseaseCubes[city]![colorToRemove]!--;
+                    newState.remainingCubes[colorToRemove]++;
+                    processedCities.push({ city, colorRemoved: colorToRemove });
+                    _checkForEradication(newState, colorToRemove);
+                } else if (colorsPresent.length > 1) {
+                    // Player needs to choose
+                    citiesWithChoices.push({ city, colors: colorsPresent });
                 }
             });
     
-            if (cubesRemovedCount > 0) {
-                playSound('treatdisease');
-                logEvent(`Science Triumph removes ${cubesRemovedCount} cube(s) from Region ${regionName}: ${removedLogParts.join(', ')}.`);
+            if (citiesWithChoices.length > 0) {
+                // Pause for player choice
+                newState.gamePhase = GamePhase.ResolvingScienceTriumphChoice;
+                newState.pendingScienceTriumphChoice = {
+                    regionName,
+                    citiesWithChoices,
+                    processedCities
+                };
+                logEvent(`Science Triumph in Region ${regionName}: Player must choose which cubes to remove from ${citiesWithChoices.length} cities.`);
             } else {
-                logEvent(`Science Triumph had no effect in Region ${regionName} as there were no cubes to remove.`);
+                // No choices needed, resolve immediately
+                if (processedCities.length > 0) {
+                    const removedLogParts = processedCities.map(p => `1 ${p.colorRemoved} from ${CITIES_DATA[p.city].name}`);
+                    logEvent(`Science Triumph removes ${processedCities.length} cube(s) from Region ${regionName}: ${removedLogParts.join(', ')}.`);
+                    playSound('treatdisease');
+                } else {
+                    logEvent(`Science Triumph had no effect in Region ${regionName} as there were no cubes to remove.`);
+                }
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
             }
     
-            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-            newState.phaseBeforeEvent = null;
+            return newState;
+        });
+    };
+
+    const handleResolveScienceTriumphChoice = (city: CityName, color: DiseaseColor) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingScienceTriumphChoice || !prevState.pendingScienceTriumphChoice) {
+                return prevState;
+            }
+    
+            const newState = safeCloneGameState(prevState);
+            const choiceState = newState.pendingScienceTriumphChoice!;
+    
+            // 1. Perform the action
+            newState.diseaseCubes[city]![color]!--;
+            newState.remainingCubes[color]++;
+            _checkForEradication(newState, color);
+    
+            // 2. Update the pending state
+            choiceState.processedCities.push({ city, colorRemoved: color });
+            choiceState.citiesWithChoices = choiceState.citiesWithChoices.filter(c => c.city !== city);
+    
+            logEvent(`Player chose to remove a ${color} cube from ${CITIES_DATA[city].name}.`);
+    
+            // 3. Check if we're done
+            if (choiceState.citiesWithChoices.length === 0) {
+                const { processedCities, regionName } = choiceState;
+                const totalRemoved = processedCities.length;
+    
+                if (totalRemoved > 0) {
+                     const removedLogParts = processedCities.map(p => `1 ${p.colorRemoved} from ${CITIES_DATA[p.city].name}`);
+                    logEvent(`Science Triumph event completed in Region ${regionName}, removing a total of ${totalRemoved} cube(s): ${removedLogParts.join(', ')}.`);
+                    playSound('treatdisease');
+                }
+                else { 
+                    logEvent(`Science Triumph had no effect in Region ${regionName}.`);
+                }
+                
+                newState.pendingScienceTriumphChoice = null;
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+            }
+            // If not done, the state is updated and the modal will show the next city.
     
             return newState;
         });
@@ -5993,5 +6054,6 @@ export const useGameLogic = () => {
         handleResolvePurifyWaterEvent,
         handleResolveRingRailroads,
         handleResolveScienceTriumph,
+        handleResolveScienceTriumphChoice,
     };
 };
