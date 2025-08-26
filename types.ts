@@ -881,6 +881,7 @@ ResolvingNewRails,
 ResolvingRingRailroads,
 ResolvingPurifyWaterEvent,
 ResolvingScienceTriumph,
+ResolvingScienceTriumphChoice,
 ResolvingPurifyWater,
 ResolvingPurificationChoice,
 ResolvingAgronomistPurifyChoice,
@@ -984,6 +985,14 @@ veniVidiViciStatus: 'inactive' | 'corrupt_battle_pending';
 pendingPurifyWaterEvent: { tokensRemaining: number } | null;
 pendingRingRailroadsEvent: { tokensRemaining: number } | null; 
 pendingGovernmentMobilization: { playersToMove: number[] } | null;
+pendingScienceTriumphChoice: {
+  regionName: string;
+  citiesWithChoices: {
+    city: CityName;
+    colors: DiseaseColor[];
+  }[];
+  processedCities: { city: CityName; colorRemoved: DiseaseColor }[];
+} | null;
 
 // Fall of Rome specific state
 forts: CityName[];
