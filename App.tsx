@@ -80,6 +80,7 @@ export const App: React.FC = () => {
         handleResolveMorsTuaVitaMea, handleResolveHomoFaberFortunaeSuae, handleResolveAleaIactaEst, handleResolveAbundansCautelaNonNocet, handleResolveMeliusCavereQuamPavere,
         handleResolveMortuiNonMordent, handleResolveFestinaLente, handleResolveVeniVidiVici, handleResolveFreeBattle, handleResolveCarpeDiem, handlePurificationChoice,
         handleAgronomistPurifyChoice, handleNurseTokenPlacement, handleConfirmGovernmentMoves, handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails,
+        handleResolvePurifyWaterEvent,
     } = useGameLogic();
 
 
@@ -260,6 +261,9 @@ export const App: React.FC = () => {
         if (gameState?.gamePhase === GamePhase.ResolvingPurificationChoice) {
             setPurificationChoiceModalOpen(true);
             setHighlightedRegions(gameState.pendingPurificationChoice?.availableRegions || []);
+            setHighlightedConnections([]);
+        } else if (gameState?.gamePhase === GamePhase.ResolvingPurifyWaterEvent) {
+            setHighlightedRegions(IBERIA_REGIONS.map(r => r.name));
             setHighlightedConnections([]);
         } else if (gameState?.gamePhase === GamePhase.NursePlacingPreventionToken) {
             const nurse = gameState.players.find(p => p.role === PlayerRole.Nurse);
@@ -487,6 +491,11 @@ export const App: React.FC = () => {
             }
             // In this phase, clicks outside valid regions do nothing.
             return; 
+        }
+
+        if (gameState?.gamePhase === GamePhase.ResolvingPurifyWaterEvent) {
+            handleResolvePurifyWaterEvent(regionName);
+            return;
         }
         
         if (gameState?.gamePhase === GamePhase.NursePlacingPreventionToken) {
