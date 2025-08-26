@@ -80,7 +80,7 @@ export const App: React.FC = () => {
         handleResolveMorsTuaVitaMea, handleResolveHomoFaberFortunaeSuae, handleResolveAleaIactaEst, handleResolveAbundansCautelaNonNocet, handleResolveMeliusCavereQuamPavere,
         handleResolveMortuiNonMordent, handleResolveFestinaLente, handleResolveVeniVidiVici, handleResolveFreeBattle, handleResolveCarpeDiem, handlePurificationChoice,
         handleAgronomistPurifyChoice, handleNurseTokenPlacement, handleConfirmGovernmentMoves, handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails,
-        handleResolvePurifyWaterEvent, handleResolveRingRailroads,
+        handleResolvePurifyWaterEvent, handleResolveRingRailroads, handleResolveScienceTriumph,
     } = useGameLogic();
 
 
