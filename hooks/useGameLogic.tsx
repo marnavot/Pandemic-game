@@ -3138,6 +3138,7 @@ export const useGameLogic = () => {
                 [EventCardName.AudentesFortunaIuvat]: GamePhase.ResolvingAudentesFortunaIuvat,
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent, 
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
+                [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3395,6 +3396,7 @@ export const useGameLogic = () => {
                 [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
+                [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -5852,6 +5854,53 @@ export const useGameLogic = () => {
         });
     }, [setGameState, logEvent, _handlePostMoveEffects, _handleNursePostMove]);
 
+    const handleResolveScienceTriumph = (regionName: string) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingScienceTriumph) return prevState;
+    
+            const newState = safeCloneGameState(prevState);
+            const region = IBERIA_REGIONS.find(r => r.name === regionName);
+    
+            if (!region) {
+                logEvent(`Error: Region ${regionName} not found.`);
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+                return newState;
+            }
+    
+            let cubesRemovedCount = 0;
+            const removedLogParts: string[] = [];
+    
+            region.vertices.forEach(city => {
+                const cityCubes = newState.diseaseCubes[city];
+                if (cityCubes && Object.values(cityCubes).some(count => count > 0)) {
+                    // Find the first color with cubes to remove one from.
+                    const colorToRemove = (Object.keys(cityCubes) as DiseaseColor[]).find(color => (cityCubes[color] || 0) > 0);
+                    
+                    if (colorToRemove) {
+                        newState.diseaseCubes[city]![colorToRemove]!--;
+                        newState.remainingCubes[colorToRemove]++;
+                        cubesRemovedCount++;
+                        removedLogParts.push(`1 ${colorToRemove} from ${CITIES_DATA[city].name}`);
+                        _checkForEradication(newState, colorToRemove);
+                    }
+                }
+            });
+    
+            if (cubesRemovedCount > 0) {
+                playSound('treatdisease');
+                logEvent(`Science Triumph removes ${cubesRemovedCount} cube(s) from Region ${regionName}: ${removedLogParts.join(', ')}.`);
+            } else {
+                logEvent(`Science Triumph had no effect in Region ${regionName} as there were no cubes to remove.`);
+            }
+    
+            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+            newState.phaseBeforeEvent = null;
+    
+            return newState;
+        });
+    };
+
     return {
         gameState,
         setGameState,
@@ -5943,5 +5992,6 @@ export const useGameLogic = () => {
         handleResolveNewRails,
         handleResolvePurifyWaterEvent,
         handleResolveRingRailroads,
+        handleResolveScienceTriumph,
     };
 };
