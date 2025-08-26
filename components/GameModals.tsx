@@ -5555,6 +5555,36 @@ const NewRailsModal: React.FC<{
     );
 };
 
+const PurifyWaterEventModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    gameState: GameState;
+}> = ({ show, onClose, gameState }) => {
+    const tokensRemaining = gameState.pendingPurifyWaterEvent?.tokensRemaining || 0;
+
+    return (
+        <Modal
+            title="Event: Purify Water"
+            show={show}
+            onClose={onClose}
+            isSidePanel={true}
+        >
+            <div className="space-y-4">
+                <EventCardImage cardName={EventCardName.PurifyWater} />
+                <p>
+                    Place up to {tokensRemaining} more purification token(s) onto the board.
+                </p>
+                <p className="text-lg font-semibold text-yellow-300 animate-pulse">
+                    Please click on a region on the map to place a token.
+                </p>
+                <p className="text-sm text-gray-400">
+                    You can click the same region twice to place both tokens there, or click two different regions.
+                </p>
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -6975,6 +7005,11 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={onCancelEventResolution}
                 onConfirm={() => handleResolveNewRails(newRailsSelections)}
                 selectedConnections={newRailsSelections}
+            />
+            <PurifyWaterEventModal
+                show={gameState.gamePhase === GamePhase.ResolvingPurifyWaterEvent} 
+                onClose={onCancelEventResolution}
+                gameState={gameState}
             />
       
 
