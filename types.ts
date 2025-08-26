@@ -597,6 +597,7 @@ HospitalFounding = "Hospital Founding",
 MailCorrespondence = "Mail Correspondence",
 NewRails = "New Rails",
 OneMoreDay = "One More Day", 
+OverseasMigration = "Overseas Migration",
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -636,6 +637,7 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.MailCorrespondence]: "Two players (anywhere on the board) can swap 1 card from their hands. (Play at any time).",
 [EventCardName.NewRails]: "Add 2 railroad tokens anywhere on the board. (Not possible on dashed lines.) (Play at any time).",
 [EventCardName.OneMoreDay]: "The current player may take 2 more actions this turn. (Play at any time)",
+[EventCardName.OverseasMigration]: "Remove up to 2 cubes from the board. (Play at any time)",
 };
 
 export enum VirulentStrainEpidemicCardName {
@@ -785,6 +787,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.MailCorrespondence,
     EventCardName.NewRails,
     EventCardName.OneMoreDay,
+    EventCardName.OverseasMigration,
 ];
 
 export interface Player {
@@ -957,6 +960,7 @@ improvedSanitationPlayerId: number | null;
 sequencingBreakthroughPlayerId: number | null;
 stationRelocationTargetCity: CityName | null;
 stationRelocationTrigger: 'action' | 'event' | null;
+pendingEventCardForModal: EventCardName | null;
 pendingEvent: { cardName: EventCardName, ownerId: number, from: 'hand' | 'contingency' } | null;
 pendingVestalisDraw: { drawnCard: PlayerCard & { type: 'event' }; validDiscards: (PlayerCard & { type: 'city'})[] } | null;
 pendingVestalisPlayerCardDraw: PlayerCard[] | null;
