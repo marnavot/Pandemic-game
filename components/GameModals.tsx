@@ -3669,13 +3669,34 @@ const DiscardModal: React.FC<{
     onInitiateVestalisDrawEvent: () => void;
 }> = ({ gameState, getHandLimit, onConfirm, handlePlayEventCard, onPlayContingencyCard, onViewEventInfo, onInitiateReturnSamples, onInitiatePlayResilientPopulation, onInitiateVestalisDrawEvent }) => {
     const [discardSelection, setDiscardSelection] = useState<number[]>([]);
-    if (gameState.playerToDiscardId === null) return null;
-
+    
+    // This component is only rendered when playerToDiscardId is not null.
     const player = gameState.players.find(p => p.id === gameState.playerToDiscardId);
+
+    // This useEffect resets the selection if the player being forced to discard changes
+    useEffect(() => {
+        setDiscardSelection([]);
+    }, [gameState.playerToDiscardId]);
+
     if (!player) return null;
 
     const handLimit = getHandLimit(player);
     const cardsToDiscardCount = player.hand.length - handLimit;
+
+    // If the player no longer needs to discard, show a simple confirmation modal.
+    if (cardsToDiscardCount <= 0) {
+        return (
+            <Modal title={`${player.name}, Hand Limit Met`} show={true}>
+                <p className="mb-4">You have played an event card and your hand is now at or below the limit of {handLimit} cards.</p>
+                <button
+                    onClick={() => onConfirm([])} // Confirm with an empty selection to proceed
+                    className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold mt-4"
+                >
+                    Continue Turn
+                </button>
+            </Modal>
+        );
+    }
 
     const toggleSelection = (cardIndex: number) => {
         setDiscardSelection(prev => {
@@ -3687,7 +3708,7 @@ const DiscardModal: React.FC<{
 
     const handleConfirm = () => {
         onConfirm(discardSelection);
-        setDiscardSelection([]);
+        setDiscardSelection([]); // Reset selection after confirm
     };
 
     const handlePlayCardFromHand = (card: PlayerCard & {type: 'event'}) => {
@@ -6810,7 +6831,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 outOfTurnActionsComponent={outOfTurnActionsComponent}
                 onInitiateVestalisDrawEvent={props.onInitiateVestalisDrawEvent}
             />
-            {gameState.playerToDiscardId !== null && (
+            {gameState.playerToDiscardId !== null && gameState.gamePhase === GamePhase.Discarding && (
                  <DiscardModal
                     gameState={gameState}
                     getHandLimit={props.getHandLimit}
