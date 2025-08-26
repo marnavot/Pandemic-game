@@ -3383,7 +3383,7 @@ export const useGameLogic = () => {
             if (targetPhase) {
                 if (cardName === EventCardName.RapidVaccineDeployment && prevState.gamePhase !== GamePhase.PostCureAction) {
                     logEvent("Rapid Vaccine Deployment can only be played immediately after discovering a cure.");
-                    break; // Revert state change
+                    return prevState; // Revert state change
                 }
                 newState.phaseBeforeEvent = newState.gamePhase;
                 newState.gamePhase = targetPhase;
@@ -3393,7 +3393,7 @@ export const useGameLogic = () => {
                     newState.pendingEventCardForModal = cardName;
                 }
             
-                break;
+                return newState;
             }
 
              switch(cardName) {
