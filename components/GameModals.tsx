@@ -6009,6 +6009,7 @@ interface GameModalsProps {
     handleResolveScienceTriumph: (regionName: string) => void;
     handleResolveScienceTriumphChoice: (city: CityName, color: DiseaseColor) => void;
     handleResolveShipsArrive: (destination: CityName, pawnsToMoveIds: number[]) => void;
+    handleResolveTelegraphMessage: (payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => void;
 }
 
 const VaeVictisModal: React.FC<{
