@@ -1893,27 +1893,41 @@ export const useGameLogic = () => {
                 case 'LocalLiaisonShare': {
                     const { card, toPlayerId } = payload;
                     if (player.role !== PlayerRole.LocalLiaison || newState.hasUsedLocalLiaisonShare) break;
+                
+                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId);
                     
-                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId)!;
+                    // FIX 1: Add a guard clause to prevent crashing if toPlayer is not found.
+                    if (!toPlayer) {
+                        logEvent(`Error: Could not find player for Local Liaison Share action.`);
+                        break;
+                    }
+                
                     const cardInHand = player.hand.find((c: PlayerCard) => c.type === 'city' && c.name === card.name && c.color === card.color);
-
+                
                     if (!cardInHand || cardInHand.type !== 'city') break;
-
-                    const liaisonCityColor = CITIES_DATA[player.location].color;
+                
+                    // FIX 2: Correctly check city colors for both Pandemic and Fall of Rome.
+                    const liaisonCityData = CITIES_DATA[player.location];
+                    const liaisonCityColors = (liaisonCityData as any).boardColors || [liaisonCityData.color];
+                
+                    const toPlayerData = CITIES_DATA[toPlayer.location];
+                    const recipientCityColors = (toPlayerData as any).boardColors || [toPlayerData.color];
+                    
                     const cardColor = cardInHand.color;
-                    const recipientCityColor = CITIES_DATA[toPlayer.location].color;
-
-                    if (liaisonCityColor === cardColor && cardColor === recipientCityColor) {
+                
+                    if (liaisonCityColors.includes(cardColor) && recipientCityColors.includes(cardColor)) {
                         const cardIndex = player.hand.findIndex((c: PlayerCard) => c.type === 'city' && c.name === card.name && c.color === card.color);
-                        const [movedCard] = player.hand.splice(cardIndex, 1);
-                        toPlayer.hand.push(movedCard);
-
-                        newState.log.unshift(`- ${player.name} (Local Liaison) shares the ${getCardDisplayName(card)} card with ${toPlayer.name}.`);
-                        newState.hasUsedLocalLiaisonShare = true;
-                        
-                        checkHandLimit(newState, toPlayer);
-                        playSound('shareknowledge')
-                        actionTaken = true;
+                        if (cardIndex > -1) { // Add this check for safety, though it should always pass here.
+                            const [movedCard] = player.hand.splice(cardIndex, 1);
+                            toPlayer.hand.push(movedCard);
+                
+                            newState.log.unshift(`- ${player.name} (Local Liaison) shares the ${getCardDisplayName(card)} card with ${toPlayer.name}.`);
+                            newState.hasUsedLocalLiaisonShare = true;
+                            
+                            checkHandLimit(newState, toPlayer);
+                            playSound('shareknowledge');
+                            actionTaken = true;
+                        }
                     }
                     break;
                 }
