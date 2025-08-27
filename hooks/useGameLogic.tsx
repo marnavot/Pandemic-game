@@ -1676,8 +1676,14 @@ export const useGameLogic = () => {
 
                 case 'ShareKnowledge': {
                     const { fromPlayerId, toPlayerId, card } = payload;
-                    const fromPlayer = newState.players.find((p: Player) => p.id === fromPlayerId)!;
-                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId)!;
+                    const fromPlayer = newState.players.find((p: Player) => p.id === fromPlayerId);
+                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId);
+                
+                    if (!fromPlayer || !toPlayer) {
+                        logEvent(`Error: Could not find players for Share Knowledge action.`);
+                        break; // Exit safely if a player is not found
+                    }
+                
                     const cardIndex = fromPlayer.hand.findIndex((c: PlayerCard) => c.type === 'city' && c.name === card.name && c.color === card.color);
                     
                     if (cardIndex > -1) {
