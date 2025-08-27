@@ -6709,6 +6709,140 @@ const GovernmentMobilizationModal: React.FC<{
     );
 };
 
+const TelegraphMessageModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    onConfirm: (payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => void;
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, gameState }) => {
+    type Step = 'select_sender' | 'select_receiver' | 'select_cards';
+    const [step, setStep] = useState<Step>('select_sender');
+    const [senderId, setSenderId] = useState<number | null>(null);
+    const [receiverId, setReceiverId] = useState<number | null>(null);
+    const [selectedCards, setSelectedCards] = useState<(PlayerCard & { type: 'city' })[]>([]);
+
+    const sender = gameState.players.find(p => p.id === senderId);
+    const senderCityCards = sender?.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[] || [];
+
+    useEffect(() => {
+        if (show) {
+            // Reset state when the modal becomes visible
+            setStep('select_sender');
+            setSenderId(null);
+            setReceiverId(null);
+            setSelectedCards([]);
+        }
+    }, [show]);
+
+    const handleCardClick = (card: PlayerCard & { type: 'city' }) => {
+        setSelectedCards(prev => {
+            const isSelected = prev.some(c => c.name === card.name && c.color === card.color);
+            if (isSelected) {
+                return prev.filter(c => c.name !== card.name || c.color !== card.color);
+            }
+            if (prev.length < 2) {
+                return [...prev, card];
+            }
+            return prev;
+        });
+    };
+
+    const handleConfirmClick = () => {
+        if (senderId !== null && receiverId !== null && selectedCards.length > 0 && selectedCards.length <= 2) {
+            onConfirm({ fromPlayerId: senderId, toPlayerId: receiverId, cardsToGive: selectedCards });
+        }
+    };
+    
+    const isValid = senderId !== null && receiverId !== null && selectedCards.length > 0 && selectedCards.length <= 2;
+
+    const renderStepContent = () => {
+        switch (step) {
+            case 'select_sender':
+                return (
+                    <div>
+                        <h3 className="text-lg font-semibold mb-4 text-center">Step 1: Who is sending the cards?</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {gameState.players.map(player => (
+                                <button
+                                    key={player.id}
+                                    onClick={() => { setSenderId(player.id); setStep('select_receiver'); }}
+                                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded text-left transition-colors"
+                                >
+                                    <p className="font-bold">{player.name}</p>
+                                    <p className="text-xs text-gray-400">{player.role}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'select_receiver':
+                return (
+                     <div>
+                        <h3 className="text-lg font-semibold mb-4 text-center">Step 2: Who is receiving the cards?</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {gameState.players.filter(p => p.id !== senderId).map(player => (
+                                <button
+                                    key={player.id}
+                                    onClick={() => { setReceiverId(player.id); setStep('select_cards'); }}
+                                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded text-left transition-colors"
+                                >
+                                    <p className="font-bold">{player.name}</p>
+                                    <p className="text-xs text-gray-400">{player.role}</p>
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={() => setStep('select_sender')} className="w-full mt-4 text-sm text-gray-400 hover:text-white">← Back</button>
+                    </div>
+                );
+            case 'select_cards':
+                return (
+                     <div>
+                        <h3 className="text-lg font-semibold mb-4 text-center">Step 3: Select 1 or 2 City cards to give</h3>
+                        <p className="text-sm text-center mb-4 text-gray-400">{sender?.name} → {gameState.players.find(p => p.id === receiverId)?.name}</p>
+                        {senderCityCards.length > 0 ? (
+                             <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-2">
+                                {senderCityCards.map((card, index) => {
+                                    const isSelected = selectedCards.some(c => c.name === card.name && c.color === card.color);
+                                    return (
+                                        <div
+                                            key={index}
+                                            onClick={() => handleCardClick(card)}
+                                            className={`cursor-pointer rounded-lg overflow-hidden h-28 transition-all duration-200 ${isSelected ? 'ring-4 ring-yellow-400' : 'ring-2 ring-transparent'}`}
+                                        >
+                                            <PlayerCardDisplay card={card} isLarge={false} gameType="iberia" />
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-center text-gray-500 py-8">The sender has no City cards to give.</p>
+                        )}
+                        <button onClick={() => setStep('select_receiver')} className="w-full mt-4 text-sm text-gray-400 hover:text-white">← Back</button>
+                    </div>
+                );
+        }
+    };
+    
+    return (
+        <Modal title="Telegraph Message" show={show} onClose={onClose}>
+            <div>
+                {renderStepContent()}
+                {step === 'select_cards' && (
+                     <div className="mt-6 border-t border-gray-700 pt-4">
+                        <button
+                            onClick={handleConfirmClick}
+                            disabled={!isValid}
+                            className="w-full p-3 bg-green-600 hover:bg-green-500 rounded font-bold disabled:bg-gray-600 disabled:cursor-not-allowed"
+                        >
+                            Confirm Transfer ({selectedCards.length} cards)
+                        </button>
+                    </div>
+                )}
+            </div>
+        </Modal>
+    );
+};
+
 export const GameModals: React.FC<GameModalsProps> = (props) => {
     const { 
         gameState, setShareModalState, setDispatchSummonModalState, setTakeEventModalState, 
@@ -6737,7 +6871,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
         politicianSwapModalOpen, setPoliticianSwapModalOpen, railwaymanTrainModalState, setRailwaymanTrainModalState, railwaymanModalOpen, onCancelRailwaymanBuild,
         onConfirmRuralDoctorTreat, onConfirmRoyalAcademyScientistForecast, onConfirmAcknowledgeForecast, onCancelAcknowledgeForecast,
         handleAction, handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
-        handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections,
+        handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections, handleResolveTelegraphMessage,
     } = props;
     
     const T = getTerminology(gameState)
@@ -7259,6 +7393,12 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 show={gameState.gamePhase === GamePhase.ResolvingShipsArrive}
                 onClose={props.onCancelEventResolution}
                 onConfirm={props.handleResolveShipsArrive}
+                gameState={gameState}
+            />
+            <TelegraphMessageModal
+                show={gameState.gamePhase === GamePhase.ResolvingTelegraphMessage}
+                onClose={onCancelEventResolution}
+                onConfirm={props.handleResolveTelegraphMessage}
                 gameState={gameState}
             />
       
