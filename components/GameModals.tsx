@@ -4408,7 +4408,22 @@ const AirliftModal: React.FC<{
     const [step, setStep] = useState<'select_pawn' | 'select_destination'>('select_pawn');
     const [pawnToMove, setPawnToMove] = useState<Player | null>(null);
 
-    const cityKeys = useMemo(() => Object.keys(gameState.gameType === 'pandemic' ? PANDEMIC_CITIES_DATA : FALLOFROME_CITIES_DATA) as CityName[], [gameState.gameType]);
+    const cityKeys = useMemo(() => {
+        let citiesData;
+        switch (gameState.gameType) {
+            case 'iberia':
+                citiesData = IBERIA_CITIES_DATA;
+                break;
+            case 'fallOfRome':
+                citiesData = FALLOFROME_CITIES_DATA;
+                break;
+            case 'pandemic':
+            default:
+                citiesData = PANDEMIC_CITIES_DATA;
+                break;
+        }
+        return Object.keys(citiesData) as CityName[];
+    }, [gameState.gameType]);
     
     const handleClose = () => {
         setStep('select_pawn');
