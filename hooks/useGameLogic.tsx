@@ -3139,6 +3139,7 @@ export const useGameLogic = () => {
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent, 
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
                 [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
+                [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3419,6 +3420,7 @@ export const useGameLogic = () => {
                 [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
                 [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
+                [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -6034,6 +6036,61 @@ export const useGameLogic = () => {
         });
     };
 
+    const handleResolveTelegraphMessage = useCallback((payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingTelegraphMessage) return prevState;
+            
+            const newState = safeCloneGameState(prevState);
+            const { fromPlayerId, toPlayerId, cardsToGive } = payload;
+            
+            const fromPlayer = newState.players.find(p => p.id === fromPlayerId);
+            const toPlayer = newState.players.find(p => p.id === toPlayerId);
+            
+            if (!fromPlayer || !toPlayer) {
+                logEvent("Error: Could not find players for Telegraph Message.");
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+                return newState;
+            }
+            
+            const cardKeysToMove = new Set(cardsToGive.map(c => `${c.name}|${c.color}`));
+            const cardsActuallyMoved: PlayerCard[] = [];
+            
+            // Remove cards from the sender's hand
+            fromPlayer.hand = fromPlayer.hand.filter(card => {
+                if (card.type === 'city' && cardKeysToMove.has(`${card.name}|${card.color}`)) {
+                    cardsActuallyMoved.push(card);
+                    cardKeysToMove.delete(`${card.name}|${card.color}`); // Prevent removing duplicates
+                    return false;
+                }
+                return true;
+            });
+            
+            // Add the moved cards to the receiver's hand
+            toPlayer.hand.push(...cardsActuallyMoved);
+            
+            const cardNames = cardsActuallyMoved.map(c => getCardDisplayName(c)).join(', ');
+            logEvent(`${fromPlayer.name} sends ${cardsActuallyMoved.length} card(s) (${cardNames}) to ${toPlayer.name} via Telegraph Message.`);
+            
+            // Restore the game phase from before the event was played
+            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+            newState.phaseBeforeEvent = null;
+            
+            // IMPORTANT: Check if the receiving player is now over their hand limit
+            const handLimit = getHandLimit(toPlayer);
+            if (toPlayer.hand.length > handLimit) {
+                newState.playerToDiscardId = toPlayer.id;
+                newState.gamePhase = GamePhase.Discarding; // This phase takes priority
+                discardTriggerRef.current = 'action'; // Treat this as an action-based discard
+                // Store the phase we would have returned to, so we can go there after discarding
+                newState.phaseBeforeEvent = prevState.phaseBeforeEvent || GamePhase.PlayerAction; 
+                logEvent(`${toPlayer.name} is now over their hand limit and must discard.`);
+            }
+            
+            return newState;
+        });
+    }, [logEvent, getHandLimit]);
+
     return {
         gameState,
         setGameState,
@@ -6128,5 +6185,6 @@ export const useGameLogic = () => {
         handleResolveScienceTriumph,
         handleResolveScienceTriumphChoice,
         handleResolveShipsArrive,
+        handleResolveTelegraphMessage,
     };
 };
