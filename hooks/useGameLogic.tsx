@@ -61,6 +61,92 @@ export const useGameLogic = () => {
         }
     };
 
+        // A shared helper to contain the logic for playing an event card.
+    const _playEventCardLogic = (gs: GameState, cardName: EventCardName, ownerId: number, isReplay: boolean = false) => {
+        const owner = gs.players.find(p => p.id === ownerId)!;
+        
+        // Non-interactive events resolve immediately and restore the previous game phase.
+        const nonInteractiveEvents: Partial<Record<EventCardName, () => void>> = {
+            [EventCardName.OneQuietNight]: () => { gs.oneQuietNightActive = true; },
+            [EventCardName.GoodSeasons]: () => { gs.goodSeasonsActive = true; },
+            [EventCardName.BorrowedTime]: () => { 
+                if (gs.gamePhase === GamePhase.PlayerAction) gs.actionsRemaining += 2;
+                else gs.extraActionsForNextTurn += 2;
+            },
+            [EventCardName.OneMoreDay]: () => {
+                if (gs.gamePhase === GamePhase.PlayerAction) gs.actionsRemaining += 2;
+                else gs.extraActionsForNextTurn += 2;
+            },
+            [EventCardName.MobileHospital]: () => { gs.mobileHospitalActiveThisTurn = true; },
+            [EventCardName.CommercialTravelBan]: () => { gs.commercialTravelBanPlayerId = gs.players[gs.currentPlayerIndex].id; },
+            [EventCardName.InfectionZoneBan]: () => { gs.infectionZoneBanPlayerId = gs.players[gs.currentPlayerIndex].id; },
+            [EventCardName.ImprovedSanitation]: () => { gs.improvedSanitationPlayerId = gs.players[gs.currentPlayerIndex].id; },
+            [EventCardName.SequencingBreakthrough]: () => { gs.sequencingBreakthroughPlayerId = gs.players[gs.currentPlayerIndex].id; },
+            [EventCardName.SecondChance]: () => {
+                const cardIndex = gs.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
+                if (cardIndex > -1) {
+                    const [retrievedCard] = gs.playerDiscard.splice(cardIndex, 1);
+                    owner.hand.push(retrievedCard);
+                }
+            },
+        };
+
+        const interactiveEventPhases: Partial<Record<EventCardName, GamePhase>> = {
+            [EventCardName.GovernmentGrant]: GamePhase.ResolvingGovernmentGrant,
+            [EventCardName.Airlift]: GamePhase.ResolvingAirlift,
+            [EventCardName.Forecast]: GamePhase.ResolvingForecast,
+            [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
+            [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
+            [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
+            [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment,
+            [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
+            [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
+            // Fall of Rome
+            [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
+            [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
+            [EventCardName.AudentesFortunaIuvat]: GamePhase.ResolvingAudentesFortunaIuvat,
+            [EventCardName.DoUtDes]: GamePhase.ResolvingDoUtDes,
+            [EventCardName.MorsTuaVitaMea]: GamePhase.ResolvingMorsTuaVitaMea,
+            [EventCardName.HomoFaberFortunaeSuae]: GamePhase.ResolvingHomoFaberFortunaeSuae,
+            [EventCardName.AleaIactaEst]: GamePhase.ResolvingAleaIactaEst,
+            [EventCardName.AbundansCautelaNonNocet]: GamePhase.ResolvingAbundansCautelaNonNocet,
+            [EventCardName.MeliusCavereQuamPavere]: GamePhase.ResolvingMeliusCavereQuamPavere,
+            [EventCardName.MortuiNonMordent]: GamePhase.ResolvingMortuiNonMordent,
+            [EventCardName.FestinaLente]: GamePhase.ResolvingFestinaLente,
+            [EventCardName.VeniVidiVici]: GamePhase.ResolvingVeniVidiVici,
+            [EventCardName.CarpeDiem]: GamePhase.ResolvingCarpeDiem,
+            // Iberia
+            [EventCardName.TravelDayAndNight]: GamePhase.ResolvingAirlift,
+            [EventCardName.GovernmentMobilization]: GamePhase.ResolvingGovernmentMobilization,
+            [EventCardName.HospitalFounding]: GamePhase.ResolvingHospitalFounding,
+            [EventCardName.MailCorrespondence]: GamePhase.ResolvingMailCorrespondence,
+            [EventCardName.NewRails]: GamePhase.ResolvingNewRails,
+            [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
+            [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
+            [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
+            [EventCardName.ShipsArrive]: GamePhase.ResolvingShipsArrive,
+            [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
+            [EventCardName.WhenThePlansWereGood]: GamePhase.ResolvingWhenThePlansWereGood,
+        };
+
+        const eventHandler = nonInteractiveEvents[cardName];
+        const targetPhase = interactiveEventPhases[cardName];
+
+        if (eventHandler) {
+            eventHandler();
+            gs.gamePhase = gs.phaseBeforeEvent || gs.gamePhase;
+            gs.phaseBeforeEvent = null;
+        } else if (targetPhase) {
+            gs.gamePhase = targetPhase;
+             if ([EventCardName.RemoteTreatment, EventCardName.OverseasMigration, EventCardName.Airlift, EventCardName.TravelDayAndNight].includes(cardName)) {
+                gs.pendingEventCardForModal = cardName;
+            }
+             if (cardName === EventCardName.WhenThePlansWereGood) {
+                 gs.pendingEvent = { cardName, ownerId, from: isReplay ? 'contingency' : 'hand' }; // store context
+             }
+        }
+    };
+
     const handleNurseTokenPlacement = (region: string) => {
         setGameState(prevState => {
             if (!prevState || prevState.gamePhase !== GamePhase.NursePlacingPreventionToken) return prevState;
@@ -3100,8 +3186,8 @@ export const useGameLogic = () => {
         setGameState(prevState => {
             if (!prevState) return null;
             
-            const owner = prevState.players.find((p: Player) => p.id === ownerId)!;
-            const cardIndex = owner.hand.findIndex((c: PlayerCard) => c.type === 'event' && c.name === cardName);
+            const owner = prevState.players.find(p => p.id === ownerId)!;
+            const cardIndex = owner.hand.findIndex(c => c.type === 'event' && c.name === cardName);
             if (cardIndex === -1) return prevState;
 
             if (cardName === EventCardName.Forecast) {
@@ -3116,276 +3202,24 @@ export const useGameLogic = () => {
             const { actionHistory, ...stateToSave } = snapshot;
 
             const newState = safeCloneGameState(prevState);
-            newState.actionHistory.push(stateToSave as GameState); // Save state before mutation
+            newState.actionHistory.push(stateToSave as GameState); 
 
-            const newOwner = newState.players.find((p: Player) => p.id === ownerId)!;
-            
+            const newOwner = newState.players.find(p => p.id === ownerId)!;
             const [card] = newOwner.hand.splice(cardIndex, 1);
             newState.playerDiscard.push(card);
             logEvent(`${newOwner.name} plays the event card: ${cardName}.`);
 
-            const interactiveEventPhases: Partial<Record<EventCardName, GamePhase>> = {
-                [EventCardName.GovernmentGrant]: GamePhase.ResolvingGovernmentGrant,
-                [EventCardName.Airlift]: GamePhase.ResolvingAirlift,
-                [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
-                [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
-                [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
-                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment,
-                [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
-                [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
-                [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
-                [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
-                [EventCardName.AudentesFortunaIuvat]: GamePhase.ResolvingAudentesFortunaIuvat,
-                [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent, 
-                [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
-                [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
-                [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
-                [EventCardName.TravelDayAndNight]: GamePhase.ResolvingAirlift,
-            };
+            newState.phaseBeforeEvent = prevState.gamePhase;
+            _playEventCardLogic(newState, cardName, ownerId);
 
-            const targetPhase = interactiveEventPhases[cardName];
-            if (targetPhase) {
-                if (cardName === EventCardName.RapidVaccineDeployment && prevState.gamePhase !== GamePhase.PostCureAction) {
-                    logEvent("Rapid Vaccine Deployment can only be played immediately after discovering a cure.");
-                    return prevState; // Revert state change
-                }
-                if (cardName === EventCardName.AudentesFortunaIuvat && (prevState.gamePhase !== GamePhase.DrawingPlayerCards && prevState.gamePhase !== GamePhase.ResolvingVestalisPlayerCardDraw)) {
-                    logEvent("Audentes Fortuna Iuvat can only be played after drawing your player cards.");
-                    return prevState;
-                }
-                newState.phaseBeforeEvent = newState.gamePhase;
-                newState.gamePhase = targetPhase;
-            
-                // Set the card for the modal if it's one of our target events
-                if ([EventCardName.RemoteTreatment, EventCardName.OverseasMigration, EventCardName.Airlift, EventCardName.TravelDayAndNight].includes(cardName)) {
-                    newState.pendingEventCardForModal = cardName;
-                }
-                if (cardName === EventCardName.PurifyWater) {
-                    if (newState.purificationTokenSupply < 1) {
-                        logEvent("Cannot play Purify Water: No purification tokens are left in the supply.");
-                        return prevState; // Revert state change
-                    }
-                    newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
-                }
-                if (cardName === EventCardName.RingRailroads) {
-                    if ((newState.railroads?.length || 0) > 17) { // 20 total, need 3
-                        logEvent("Cannot play Ring Railroads: Fewer than 3 railroad tokens remain.");
-                        return prevState;
-                    }
-                    newState.pendingRingRailroadsEvent = { tokensRemaining: 3 };
-                }
-            
-                return newState;
-            }
-
-            switch(cardName) {
-                case EventCardName.OneQuietNight:
-                    newState.oneQuietNightActive = true;
-                    logEvent("The next infection phase will be skipped.");
-                    break;
-                case EventCardName.OneMoreDay:
-                case EventCardName.BorrowedTime: { // A block is used to create a new scope for constants
-                    const isActionPhase = newState.gamePhase === GamePhase.PlayerAction;
-                
-                    if (isActionPhase) {
-                        // Card is played during the action phase. Award actions to the CURRENT player.
-                        const currentPlayer = newState.players[newState.currentPlayerIndex];
-                        newState.actionsRemaining += 2;
-                        logEvent(`${owner.name} played ${cardName}. ${currentPlayer.name} gets 2 extra actions THIS turn.`);
-                    } else {
-                        // Card is played outside the action phase. Award actions to the NEXT player.
-                        newState.extraActionsForNextTurn += 2;
-                        // The current turn is not over yet, so the "next" player is still currentPlayerIndex + 1
-                        const nextPlayerIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
-                        const nextPlayer = newState.players[nextPlayerIndex];
-                        logEvent(`${owner.name} played ${cardName}. ${nextPlayer.name} will get 2 extra actions on their NEXT turn.`);
-                    }
-                    break;
-                }
-                case EventCardName.SecondChance: {
-                    const owner = newState.players.find(p => p.id === ownerId)!;
-                    const cardIndex = newState.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
-                    if (cardIndex > -1) {
-                        const [retrievedCard] = newState.playerDiscard.splice(cardIndex, 1);
-                        owner.hand.push(retrievedCard);
-                        logEvent(`${owner.name} plays Second Chance to retrieve the ${getCardDisplayName(retrievedCard)} card.`);
-                        if (owner.hand.length > getHandLimit(owner)) {
-                            newState.playerToDiscardId = owner.id;
-                            newState.gamePhase = GamePhase.Discarding;
-                            discardTriggerRef.current = 'action'; // Treat it as an action for discard purposes
-                            newState.log.unshift(`- ${owner.name} is over the hand limit and must discard.`);
-                        }
-                    } else {
-                        logEvent(`Error: Second Chance played by ${owner.name}, but no ${CITIES_DATA[owner.location].name} card found in discard.`);
-                    }
-                    break;
-                }
-                case EventCardName.ShipsArrive:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingShipsArrive;
-                    break;
-                case EventCardName.MobileHospital:
-                    newState.mobileHospitalActiveThisTurn = true;
-                    logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
-                    break;
-                case EventCardName.CommercialTravelBan:
-                    newState.commercialTravelBanPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent(`The infection rate is now 1 until the start of ${newState.players[newState.currentPlayerIndex].name}'s next turn.`);
-                    break;
-                case EventCardName.InfectionZoneBan:
-                    newState.infectionZoneBanPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("Chain reaction outbreaks are now ignored until the start of your next turn.");
-                    break;
-                case EventCardName.ImprovedSanitation:
-                    newState.improvedSanitationPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("Treat Disease actions are now more effective until the start of your next turn.");
-                    break;
-                case EventCardName.SequencingBreakthrough:
-                    newState.sequencingBreakthroughPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("The next Discover a Cure action requires one fewer card.");
-                    break;
-                case EventCardName.DoUtDes:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingDoUtDes;
-                    return newState; // Return early as this is interactive
-                case EventCardName.VaeVictis:
-                    if (!newState.pendingVaeVictisContext) {
-                        logEvent("Vae Victis can only be played immediately after a battle where barbarians were removed.");
-                        return prevState; // Revert because it's an invalid play
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingVaeVictis;
-                    return newState;
-                case EventCardName.MorsTuaVitaMea:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMorsTuaVitaMea;
-                    return newState;
-                case EventCardName.HomoFaberFortunaeSuae:
-                    if (!prevState.playerDiscard.some(c => c.type === 'city')) {
-                        logEvent("Homo Faber Fortunae Suae cannot be played as there are no city cards in the discard pile.");
-                        return prevState;
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingHomoFaberFortunaeSuae;
-                    return newState;
-                case EventCardName.AleaIactaEst:
-                    if (prevState.gamePhase !== GamePhase.PlayerAction) {
-                        logEvent("Alea Iacta Est can only be played during the Do Actions step.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingAleaIactaEst;
-                    return newState;
-                case EventCardName.AbundansCautelaNonNocet:
-                    // This card can be played at any time.
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                         logEvent("Cannot play Abundans Cautela Non Nocet at this time.");
-                         return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingAbundansCautelaNonNocet;
-                    return newState;
-                case EventCardName.MeliusCavereQuamPavere:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Melius Cavere Quam Pavere at this time.");
-                        return prevState; // Revert
-                    }
-                    if (newState.infectionDeck.length === 0) {
-                        logEvent("Cannot play Melius Cavere Quam Pavere as the Barbarian Deck is empty.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMeliusCavereQuamPavere;
-                    return newState;
-                case EventCardName.MortuiNonMordent:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Mortui Non Mordent at this time.");
-                        return prevState; // Revert
-                    }
-                    const areAnyCubesOnBoard = Object.values(newState.diseaseCubes).some(cityCubes =>
-                        Object.values(cityCubes || {}).some(count => count > 0)
-                    );
-                    if (!areAnyCubesOnBoard) {
-                        logEvent("Cannot play Mortui Non Mordent as there are no barbarians on the board.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMortuiNonMordent;
-                    return newState
-                case EventCardName.FestinaLente:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Festina Lente at this time.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingFestinaLente;
-                    return newState;
-                case EventCardName.VeniVidiVici:
-                    if (prevState.gamePhase !== GamePhase.PlayerAction) {
-                        logEvent("Veni, Vidi, Vici can only be played during the Do Actions step.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingVeniVidiVici;
-                    return newState;
-                case EventCardName.CarpeDiem:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Carpe Diem at this time.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingCarpeDiem;
-                    return newState;
-                case EventCardName.GoodSeasons: {
-                    newState.goodSeasonsActive = true;
-                    logEvent("The next infection phase will be affected by Good Seasons.");
-                    break;
-                    }
-                case EventCardName.GovernmentMobilization: {
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingGovernmentMobilization;
-                    
-                    const currentPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    const currentIdIndex = newState.players.findIndex(p => p.id === currentPlayerId);
-                
-                    const playersToMove = [
-                        ...newState.players.slice(currentIdIndex).map(p => p.id),
-                        ...newState.players.slice(0, currentIdIndex).map(p => p.id)
-                    ];
-                
-                    newState.pendingGovernmentMobilization = { playersToMove };
-                    logEvent("Government Mobilization is played! Each player will move once for free.");
-                    return newState; // Return early for interactive events
-                }
-                case EventCardName.HospitalFounding: {
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingHospitalFounding;
-                    return newState;
-                }
-                case EventCardName.MailCorrespondence: {
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMailCorrespondence;
-                    return newState;
-                }
-                case EventCardName.NewRails: {
-                    if ((newState.railroads?.length || 0) >= 18) {
-                        logEvent("Cannot play New Rails: Fewer than 2 railroad tokens remain in the supply.");
-                        return prevState; // Revert state change because it's an invalid play
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingNewRails;
-                    return newState;
-                }
-
-                }
-                return newState;
-            });
-        }, [logEvent]);
+            return newState;
+        });
+    }, [logEvent]);
 
     const handlePlayContingencyCard = useCallback((cardName: EventCardName, ownerId: number) => {
         setGameState(prevState => {
-             if (!prevState) return null;
-            const owner = prevState.players.find((p: Player) => p.id === ownerId)!;
+            if (!prevState) return null;
+            const owner = prevState.players.find(p => p.id === ownerId)!;
             if (owner.role !== PlayerRole.ContingencyPlanner || owner.contingencyCard !== cardName) return prevState;
             
             if (cardName === EventCardName.Forecast) {
@@ -3400,226 +3234,15 @@ export const useGameLogic = () => {
             const { actionHistory, ...stateToSave } = snapshot;
 
             const newState = safeCloneGameState(prevState);
-            newState.actionHistory.push(stateToSave as GameState); // Save state before mutation
+            newState.actionHistory.push(stateToSave as GameState);
 
-            const newOwner = newState.players.find((p: Player) => p.id === ownerId)!;
-            newOwner.contingencyCard = null;
+            const newOwner = newState.players.find(p => p.id === ownerId)!;
+            newOwner.contingencyCard = null; // Card is removed from the game, not discarded
 
             logEvent(`${newOwner.name} plays their planned event: ${cardName}.`);
             
-            const interactiveEventPhases: Partial<Record<EventCardName, GamePhase>> = {
-                [EventCardName.GovernmentGrant]: GamePhase.ResolvingGovernmentGrant,
-                [EventCardName.Airlift]: GamePhase.ResolvingAirlift,
-                [EventCardName.NewAssignment]: GamePhase.ResolvingNewAssignment,
-                [EventCardName.SpecialOrders]: GamePhase.ResolvingSpecialOrders,
-                [EventCardName.RemoteTreatment]: GamePhase.ResolvingRemoteTreatment,
-                [EventCardName.OverseasMigration]: GamePhase.ResolvingRemoteTreatment,
-                [EventCardName.ReExaminedResearch]: GamePhase.ResolvingReExaminedResearch,
-                [EventCardName.RapidVaccineDeployment]: GamePhase.ResolvingRapidVaccineDeployment,
-                [EventCardName.SiVisPacemParaBellum]: GamePhase.ResolvingSiVisPacemParaBellum,
-                [EventCardName.HicManebimusOptime]: GamePhase.ResolvingHicManebimusOptime,
-                [EventCardName.PurifyWater]: GamePhase.ResolvingPurifyWaterEvent,
-                [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
-                [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
-                [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
-                [EventCardName.TravelDayAndNight]: GamePhase.ResolvingAirlift,
-            };
-
-            const targetPhase = interactiveEventPhases[cardName];
-            if (targetPhase) {
-                if (cardName === EventCardName.RapidVaccineDeployment && prevState.gamePhase !== GamePhase.PostCureAction) {
-                    logEvent("Rapid Vaccine Deployment can only be played immediately after discovering a cure.");
-                    return prevState; // Revert state change
-                }
-                newState.phaseBeforeEvent = newState.gamePhase;
-                newState.gamePhase = targetPhase;
-            
-                // Set the card for the modal if it's one of our target events
-                if ([EventCardName.RemoteTreatment, EventCardName.OverseasMigration, EventCardName.Airlift, EventCardName.TravelDayAndNight].includes(cardName)) {
-                    newState.pendingEventCardForModal = cardName;
-                }
-                if (cardName === EventCardName.PurifyWater) {
-                    if (newState.purificationTokenSupply < 1) {
-                        logEvent("Cannot play Purify Water: No purification tokens are left in the supply.");
-                        return prevState; // Revert state change
-                    }
-                    newState.pendingPurifyWaterEvent = { tokensRemaining: Math.min(2, newState.purificationTokenSupply) };
-                }
-                if (cardName === EventCardName.RingRailroads) {
-                    if ((newState.railroads?.length || 0) > 17) {
-                        logEvent("Cannot play Ring Railroads: Fewer than 3 railroad tokens remain.");
-                        return prevState;
-                    }
-                    newState.pendingRingRailroadsEvent = { tokensRemaining: 3 };
-                }
-            
-                return newState;
-            }
-
-             switch(cardName) {
-                case EventCardName.OneQuietNight:
-                    newState.oneQuietNightActive = true;
-                    logEvent("The next infection phase will be skipped.");
-                    break;
-                case EventCardName.OneMoreDay:
-                case EventCardName.BorrowedTime: { // A block is used to create a new scope for constants
-                    const isActionPhase = newState.gamePhase === GamePhase.PlayerAction;
-                
-                    if (isActionPhase) {
-                        // Card is played during the action phase. Award actions to the CURRENT player.
-                        const currentPlayer = newState.players[newState.currentPlayerIndex];
-                        newState.actionsRemaining += 2;
-                        logEvent(`${owner.name} played ${cardName}. ${currentPlayer.name} gets 2 extra actions THIS turn.`);
-                    } else {
-                        // Card is played outside the action phase. Award actions to the NEXT player.
-                        newState.extraActionsForNextTurn += 2;
-                        // The current turn is not over yet, so the "next" player is still currentPlayerIndex + 1
-                        const nextPlayerIndex = (newState.currentPlayerIndex + 1) % newState.players.length;
-                        const nextPlayer = newState.players[nextPlayerIndex];
-                        logEvent(`${owner.name} played ${cardName}. ${nextPlayer.name} will get 2 extra actions on their NEXT turn.`);
-                    }
-                    break;
-                }
-                case EventCardName.SecondChance: {
-                    const owner = newState.players.find(p => p.id === ownerId)!;
-                    const cardIndex = newState.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
-                    if (cardIndex > -1) {
-                        const [retrievedCard] = newState.playerDiscard.splice(cardIndex, 1);
-                        owner.hand.push(retrievedCard);
-                        logEvent(`${owner.name} plays Second Chance to retrieve the ${getCardDisplayName(retrievedCard)} card.`);
-                        if (owner.hand.length > getHandLimit(owner)) {
-                            newState.playerToDiscardId = owner.id;
-                            newState.gamePhase = GamePhase.Discarding;
-                            discardTriggerRef.current = 'action';
-                            newState.log.unshift(`- ${owner.name} is over the hand limit and must discard.`);
-                        }
-                    } else {
-                        logEvent(`Error: Second Chance played by ${owner.name}, but no ${CITIES_DATA[owner.location].name} card found in discard.`);
-                    }
-                    break;
-                }
-                case EventCardName.ShipsArrive:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingShipsArrive;
-                    break;
-                case EventCardName.MobileHospital:
-                    newState.mobileHospitalActiveThisTurn = true;
-                    logEvent(`Mobile Hospital is active for the rest of ${newState.players[newState.currentPlayerIndex].name}'s turn.`);
-                    break;
-                case EventCardName.CommercialTravelBan:
-                    newState.commercialTravelBanPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent(`The infection rate is now 1 until the start of ${newState.players[newState.currentPlayerIndex].name}'s next turn.`);
-                    break;
-                case EventCardName.InfectionZoneBan:
-                    newState.infectionZoneBanPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("Chain reaction outbreaks are now ignored until the start of your next turn.");
-                    break;
-                case EventCardName.ImprovedSanitation:
-                    newState.improvedSanitationPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("Treat Disease actions are now more effective until the start of your next turn.");
-                    break;
-                case EventCardName.SequencingBreakthrough:
-                    newState.sequencingBreakthroughPlayerId = newState.players[newState.currentPlayerIndex].id;
-                    logEvent("The next Discover a Cure action requires one fewer card.");
-                    break;
-                case EventCardName.DoUtDes:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingDoUtDes;
-                    return newState; // Return early as this is interactive
-                case EventCardName.VaeVictis:
-                    if (!newState.pendingVaeVictisContext) {
-                        logEvent("Vae Victis can only be played immediately after a battle where barbarians were removed.");
-                        return prevState; // Revert because it's an invalid play
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingVaeVictis;
-                    return newState;
-                case EventCardName.MorsTuaVitaMea:
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMorsTuaVitaMea;
-                    return newState;
-                case EventCardName.HomoFaberFortunaeSuae:
-                    if (!prevState.playerDiscard.some(c => c.type === 'city')) {
-                        logEvent("Homo Faber Fortunae Suae cannot be played as there are no city cards in the discard pile.");
-                        return prevState;
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingHomoFaberFortunaeSuae;
-                    return newState;
-                case EventCardName.AleaIactaEst:
-                    if (prevState.gamePhase !== GamePhase.PlayerAction) {
-                        logEvent("Alea Iacta Est can only be played during the Do Actions step.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingAleaIactaEst;
-                    return newState;
-                case EventCardName.AbundansCautelaNonNocet:
-                    // This card can be played at any time.
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                         logEvent("Cannot play Abundans Cautela Non Nocet at this time.");
-                         return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingAbundansCautelaNonNocet;
-                    return newState;
-                case EventCardName.MeliusCavereQuamPavere:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Melius Cavere Quam Pavere at this time.");
-                        return prevState; // Revert
-                    }
-                    if (newState.infectionDeck.length === 0) {
-                        logEvent("Cannot play Melius Cavere Quam Pavere as the Barbarian Deck is empty.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMeliusCavereQuamPavere;
-                    return newState;
-                case EventCardName.MortuiNonMordent:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Mortui Non Mordent at this time.");
-                        return prevState; // Revert
-                    }
-                    const areAnyCubesOnBoard = Object.values(newState.diseaseCubes).some(cityCubes =>
-                        Object.values(cityCubes || {}).some(count => count > 0)
-                    );
-                    if (!areAnyCubesOnBoard) {
-                        logEvent("Cannot play Mortui Non Mordent as there are no barbarians on the board.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingMortuiNonMordent;
-                    return newState;
-                case EventCardName.FestinaLente:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Festina Lente at this time.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingFestinaLente;
-                    return newState;
-                case EventCardName.VeniVidiVici:
-                    if (prevState.gamePhase !== GamePhase.PlayerAction) {
-                        logEvent("Veni, Vidi, Vici can only be played during the Do Actions step.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingVeniVidiVici;
-                    return newState;
-                case EventCardName.CarpeDiem:
-                    if (newState.phaseBeforeEvent || newState.gamePhase === GamePhase.GameOver) {
-                        logEvent("Cannot play Carpe Diem at this time.");
-                        return prevState; // Revert
-                    }
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingCarpeDiem;
-                    return newState;
-                case EventCardName.HospitalFounding: {
-                    newState.phaseBeforeEvent = newState.gamePhase;
-                    newState.gamePhase = GamePhase.ResolvingHospitalFounding;
-                    return newState;
-                }
-            }
+            newState.phaseBeforeEvent = prevState.gamePhase;
+            _playEventCardLogic(newState, cardName, ownerId);
             
             return newState;
         });
@@ -6093,6 +5716,35 @@ export const useGameLogic = () => {
         });
     }, [logEvent, getHandLimit]);
 
+    const handleResolveWhenThePlansWereGood = (chosenEventName: EventCardName) => {
+        setGameState(prevState => {
+            if (!prevState || prevState.gamePhase !== GamePhase.ResolvingWhenThePlansWereGood) return prevState;
+    
+            const newState = safeCloneGameState(prevState);
+            const player = newState.players.find(p => p.id === newState.pendingEvent?.ownerId) || newState.players[newState.currentPlayerIndex];
+    
+            const cardIndexInDiscard = newState.playerDiscard.findIndex(c => c.type === 'event' && c.name === chosenEventName);
+            if (cardIndexInDiscard === -1) {
+                logEvent(`Error: Could not find ${chosenEventName} in the discard pile.`);
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+                return newState;
+            }
+            newState.playerDiscard.splice(cardIndexInDiscard, 1);
+            
+            logEvent(`${player.name} uses "When the Plans Were Good" to immediately play ${chosenEventName}.`);
+    
+            // We now "replay" the chosen event by calling the main play event handler.
+            // We pass a special flag to indicate this is a replay, which will cause the card
+            // to be removed from the game instead of discarded again.
+            // We also pass the original player who played "When the Plans were Good" as the owner.
+            _playEventCardLogic(newState, chosenEventName, player.id, true);
+    
+            // The phaseBeforeEvent is already set from "When the Plans Were Good" and will be used by _playEventCardLogic
+            return newState;
+        });
+    };
+
     return {
         gameState,
         setGameState,
@@ -6188,5 +5840,6 @@ export const useGameLogic = () => {
         handleResolveScienceTriumphChoice,
         handleResolveShipsArrive,
         handleResolveTelegraphMessage,
+        handleResolveWhenThePlansWereGood,
     };
 };
