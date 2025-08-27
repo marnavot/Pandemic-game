@@ -6551,8 +6551,8 @@ const PoliticianSwapCardModal: React.FC<{
 
 const GovernmentMobilizationModal: React.FC<{
     show: boolean;
-    onClose: () => void; // This is now used for "Cancel Event"
-    onConfirm: (plannedMoves: Record<number, any>) => void; // The new handler
+    onClose: () => void;
+    onConfirm: (plannedMoves: Record<number, any>) => void;
     gameState: GameState;
 }> = ({ show, onClose, onConfirm, gameState }) => {
     // === State Management ===
@@ -6768,7 +6768,6 @@ const GovernmentMobilizationModal: React.FC<{
                         );
                     })}
                 </div>
-                {/* THIS IS THE CRITICAL CHANGE. This button now calls onConfirm directly. */}
                 <button
                     disabled={!isReadyToConfirm}
                     onClick={() => onConfirm(plannedMoves)}
@@ -6780,8 +6779,6 @@ const GovernmentMobilizationModal: React.FC<{
         );
     };
     
-    // THIS IS THE OTHER CRITICAL CHANGE. This function's logic is simplified to remove
-    // the possibility of rendering a second, broken confirmation screen.
     const renderContent = () => {
         if (viewingPlayerId !== null) {
             switch (subStep) {
@@ -6796,6 +6793,7 @@ const GovernmentMobilizationModal: React.FC<{
 
     return (
         <Modal title="Government Mobilization" show={show} onClose={onClose} isSidePanel={true}>
+            <EventCardImage cardName={EventCardName.GovernmentMobilization} />
             {renderContent()}
         </Modal>
     );
