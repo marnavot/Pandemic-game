@@ -1717,7 +1717,6 @@ export const useGameLogic = () => {
                     }
                     break;
                 }
-                }
                 case 'MercatorShare': {
                     if (player.role !== PlayerRole.Mercator || newState.hasUsedMercatorShare) break;
 
