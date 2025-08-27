@@ -1676,8 +1676,32 @@ export const useGameLogic = () => {
 
                 case 'ShareKnowledge': {
                     const { fromPlayerId, toPlayerId, card } = payload;
-                    const fromPlayer = newState.players.find((p: Player) => p.id === fromPlayerId)!;
-                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId)!;
+                    const fromPlayer = newState.players.find((p: Player) => p.id === fromPlayerId);
+                    const toPlayer = newState.players.find((p: Player) => p.id === toPlayerId);
+                
+                    if (!fromPlayer || !toPlayer) {
+                        logEvent(`Error: Could not find players for Share Knowledge action.`);
+                        break;
+                    }
+                
+                    // THIS IS THE DEFINITIVE FIX:
+                    // A single, complete validation check that enforces all rules for all roles.
+                    const isShareValid =
+                        // Rule 1: Both players MUST be in the same city.
+                        (fromPlayer.location === toPlayer.location) &&
+                        // Rule 2: EITHER the card must match the city OR a role exception applies.
+                        (
+                            (card.name === fromPlayer.location) || // Base Rule
+                            (fromPlayer.role === PlayerRole.Researcher) || // Researcher Exception (Giver)
+                            (toPlayer.role === PlayerRole.Researcher) // Researcher Exception (Receiver)
+                        );
+                
+                    if (!isShareValid) {
+                        // This will now correctly catch invalid shares and prevent the crash.
+                        logEvent(`Invalid Share Knowledge action attempted between ${fromPlayer.name} and ${toPlayer.name}.`);
+                        break;
+                    }
+                
                     const cardIndex = fromPlayer.hand.findIndex((c: PlayerCard) => c.type === 'city' && c.name === card.name && c.color === card.color);
                     
                     if (cardIndex > -1) {
@@ -1686,11 +1710,13 @@ export const useGameLogic = () => {
                         const actionVerb = newState.gameType === 'fallOfRome' ? 'plots with' : 'shares knowledge with';
                         newState.log.unshift(`- ${fromPlayer.name} ${actionVerb} ${toPlayer.name}, giving them the ${getCardDisplayName(card)} card.`);
                         
+                        // This function is now safe because the action is guaranteed to be valid.
                         checkHandLimit(newState, toPlayer);
                         playSound('shareknowledge');
                         actionTaken = true;
                     }
                     break;
+                }
                 }
                 case 'MercatorShare': {
                     if (player.role !== PlayerRole.Mercator || newState.hasUsedMercatorShare) break;
