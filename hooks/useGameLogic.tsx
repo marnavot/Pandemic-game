@@ -61,7 +61,7 @@ export const useGameLogic = () => {
         }
     };
 
-        // A shared helper to contain the logic for playing an event card.
+    // A shared helper to contain the logic for playing an event card.
     const _playEventCardLogic = (gs: GameState, cardName: EventCardName, ownerId: number, isReplay: boolean = false) => {
         const owner = gs.players.find(p => p.id === ownerId)!;
         
@@ -144,6 +144,15 @@ export const useGameLogic = () => {
              if (cardName === EventCardName.WhenThePlansWereGood) {
                  gs.pendingEvent = { cardName, ownerId, from: isReplay ? 'contingency' : 'hand' }; // store context
              }
+             if (cardName === EventCardName.RingRailroads) {
+                gs.pendingRingRailroadsEvent = { tokensRemaining: 3 };
+            }
+            if (cardName === EventCardName.PurifyWater) {
+                gs.pendingPurifyWaterEvent = { tokensRemaining: 2 };
+            }
+            if (cardName === EventCardName.GovernmentMobilization) {
+                gs.pendingGovernmentMobilization = { playersToMove: gs.players.map(p => p.id) };
+            }
         }
     };
 
