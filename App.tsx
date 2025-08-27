@@ -567,7 +567,7 @@ export const App: React.FC = () => {
         if (!gameState) return;
         const player = gameState.players[gameState.currentPlayerIndex];
         const options: ShareOption[] = [];
-        const otherPlayersInCity = gameState.players.filter(p => p.id !== player.id && p.location === player.location);
+        const otherPlayersInCity = gameState.players.filter(p => p && p.id !== player.id && p.location === player.location);
 
         otherPlayersInCity.forEach(otherPlayer => {
             const cardsPlayerCanGive = player.hand.filter(c => c.type === 'city' && (c.name === player.location || player.role === PlayerRole.Researcher)) as (PlayerCard & { type: 'city' })[];
