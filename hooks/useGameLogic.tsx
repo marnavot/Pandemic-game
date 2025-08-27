@@ -3140,6 +3140,7 @@ export const useGameLogic = () => {
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
                 [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
                 [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
+                [EventCardName.TravelDayAndNight]: GamePhase.ResolvingAirlift,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3156,7 +3157,7 @@ export const useGameLogic = () => {
                 newState.gamePhase = targetPhase;
             
                 // Set the card for the modal if it's one of our target events
-                if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
+                if ([EventCardName.RemoteTreatment, EventCardName.OverseasMigration, EventCardName.Airlift, EventCardName.TravelDayAndNight].includes(cardName)) {
                     newState.pendingEventCardForModal = cardName;
                 }
                 if (cardName === EventCardName.PurifyWater) {
@@ -3421,6 +3422,7 @@ export const useGameLogic = () => {
                 [EventCardName.RingRailroads]: GamePhase.ResolvingRingRailroads,
                 [EventCardName.ScienceTriumph]: GamePhase.ResolvingScienceTriumph,
                 [EventCardName.TelegraphMessage]: GamePhase.ResolvingTelegraphMessage,
+                [EventCardName.TravelDayAndNight]: GamePhase.ResolvingAirlift,
             };
 
             const targetPhase = interactiveEventPhases[cardName];
@@ -3433,7 +3435,7 @@ export const useGameLogic = () => {
                 newState.gamePhase = targetPhase;
             
                 // Set the card for the modal if it's one of our target events
-                if (cardName === EventCardName.RemoteTreatment || cardName === EventCardName.OverseasMigration) {
+                if ([EventCardName.RemoteTreatment, EventCardName.OverseasMigration, EventCardName.Airlift, EventCardName.TravelDayAndNight].includes(cardName)) {
                     newState.pendingEventCardForModal = cardName;
                 }
                 if (cardName === EventCardName.PurifyWater) {
