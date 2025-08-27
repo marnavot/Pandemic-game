@@ -599,7 +599,10 @@ const canRecruitArmy = inActionPhase &&
     PlayerRole.LocalLiaison,
     PlayerRole.PraefectusFabrum,
   ]), []);
+  
 
+  console.log('Dashboard: pawnToMove', pawnToMove);
+  console.log('Dashboard: currentPlayer', currentPlayer);
   return (
     <div className="h-full bg-gray-800 bg-opacity-80 backdrop-blur-sm p-2 flex flex-col text-sm space-y-2 rounded-lg shadow-lg overflow-y-auto">
       <div className="bg-gray-900 p-3 rounded-lg">
@@ -992,14 +995,8 @@ const canRecruitArmy = inActionPhase &&
                 Battle
               </button>
             )}
-            console.log('Dashboard: pawnToMove', pawnToMove);
-            console.log('Dashboard: currentPlayer', currentPlayer);
             {gameState.gameType === 'fallOfRome' && <button disabled={!canEnlistBarbarians || pawnToMove.id !== currentPlayer.id} onClick={onInitiateEnlistBarbarians} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Enlist Barbarians</button>}
             {gameState.gameType !== 'fallOfRome' && <button disabled={!inActionPhase || pawnToMove.id !== currentPlayer.id} onClick={onInitiateTreatDisease} className="bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Treat Disease</button>}
-            
-            console.log('Dashboard: pawnToMove', pawnToMove);
-            console.log('Dashboard: currentPlayer', currentPlayer);
-            
             <button disabled={!inActionPhase || pawnToMove.id !== currentPlayer.id} onClick={onInitiateShareKnowledge} className="bg-indigo-500 hover:bg-indigo-400 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">
               {gameState.gameType === 'fallOfRome' ? 'Plot' : 'Share'}
             </button>
