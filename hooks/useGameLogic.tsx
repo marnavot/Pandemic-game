@@ -1681,7 +1681,21 @@ export const useGameLogic = () => {
                 
                     if (!fromPlayer || !toPlayer) {
                         logEvent(`Error: Could not find players for Share Knowledge action.`);
-                        break; // Exit safely if a player is not found
+                        break; 
+                    }
+                    
+                    // FIX: Add a validation check to ensure the share action is legal according to the rules.
+                    const isShareValid = 
+                        // Standard rule: card matches the city.
+                        (card.name === fromPlayer.location) || 
+                        // Researcher rule: the GIVER is the Researcher.
+                        (fromPlayer.role === PlayerRole.Researcher) || 
+                        // Researcher rule: the RECEIVER is the Researcher.
+                        (toPlayer.role === PlayerRole.Researcher);
+                
+                    if (!isShareValid) {
+                        logEvent(`Invalid Share Knowledge action attempted.`);
+                        break;
                     }
                 
                     const cardIndex = fromPlayer.hand.findIndex((c: PlayerCard) => c.type === 'city' && c.name === card.name && c.color === card.color);
