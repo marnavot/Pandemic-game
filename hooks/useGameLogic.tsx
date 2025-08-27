@@ -1865,7 +1865,7 @@ export const useGameLogic = () => {
                     summonedPawn.location = destinationCity;
                     newState.log.unshift(`- ${player.name} (Dispatcher) summons ${summonedPawn.name} to ${CITIES_DATA[destinationCity].name}.`);
                     _handlePostMoveEffects(newState, summonedPawn, 'Other');
-                    _handleNursePostMove(newState, pawnToMove);
+                    _handleNursePostMove(newState, summonedPawn);
                     playSound('directflight')
                     actionTaken = true;
                     break;
