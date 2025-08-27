@@ -4417,8 +4417,8 @@ const AirliftModal: React.FC<{
     }
 
     return (
-        <Modal title="Airlift" show={show} onClose={handleClose}>
-            <EventCardImage cardName={EventCardName.Airlift} />
+        <Modal title={gameState.pendingEventCardForModal || 'Airlift'} show={show} onClose={handleClose}>
+            {gameState.pendingEventCardForModal && <EventCardImage cardName={gameState.pendingEventCardForModal} />}
             {step === 'select_pawn' ? (
                 <div>
                     <p className="mb-4">Select a pawn to move.</p>
