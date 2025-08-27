@@ -5839,6 +5839,81 @@ const ShipsArriveModal: React.FC<{
     );
 };
 
+const getPlayableEventsFromDiscard = (gs: GameState): (PlayerCard & { type: 'event' })[] => {
+    const eventCardsInDiscard = gs.playerDiscard.filter(c => c.type === 'event') as (PlayerCard & { type: 'event' })[];
+    const uniqueEventCards = Array.from(new Map(eventCardsInDiscard.map(card => [card.name, card])).values());
+
+    const phase = gs.phaseBeforeEvent || gs.gamePhase;
+
+    const forbiddenPhases = [
+        GamePhase.GameOver, GamePhase.EpidemicAnnounceInfect, GamePhase.EpidemicIntensify,
+        GamePhase.DrawingPlayerCards, GamePhase.ResolvingVestalisPlayerCardDraw,
+    ];
+    if (forbiddenPhases.includes(phase)) return [];
+
+    return uniqueEventCards.filter(card => {
+        switch (card.name) {
+            case EventCardName.WhenThePlansWereGood:
+                return false; // Prevent recursion
+            case EventCardName.OneQuietNight:
+            case EventCardName.GoodSeasons:
+            case EventCardName.AbundansCautelaNonNocet:
+                return phase !== GamePhase.InfectionStep;
+            case EventCardName.ResilientPopulation:
+                return gs.infectionDiscard.length > 0;
+            case EventCardName.Forecast:
+            case EventCardName.MeliusCavereQuamPavere:
+                return gs.infectionDeck.length > 0;
+            case EventCardName.ReExaminedResearch:
+            case EventCardName.HomoFaberFortunaeSuae:
+                return gs.playerDiscard.some(c => c.type === 'city');
+            case EventCardName.SecondChance:
+                const player = gs.players.find(p => p.id === gs.pendingEvent?.ownerId) || gs.players[gs.currentPlayerIndex];
+                return gs.playerDiscard.some(c => c.type === 'city' && c.name === player.location);
+            case EventCardName.RapidVaccineDeployment:
+                return phase === GamePhase.PostCureAction;
+            case EventCardName.AudentesFortunaIuvat:
+                return phase === GamePhase.DrawingPlayerCards || phase === GamePhase.ResolvingVestalisPlayerCardDraw;
+            case EventCardName.VaeVictis:
+                return !!gs.pendingVaeVictisContext;
+            case EventCardName.AleaIactaEst:
+            case EventCardName.VeniVidiVici:
+                return phase === GamePhase.PlayerAction;
+            default: // Most cards are "any time"
+                return true;
+        }
+    });
+};
+
+const WhenThePlansWereGoodModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    onConfirm: (cardName: EventCardName) => void;
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, gameState }) => {
+    const playableEvents = useMemo(() => getPlayableEventsFromDiscard(gameState), [gameState]);
+
+    return (
+        <Modal title="When the Plans Were Good" show={show} onClose={onClose}>
+            <EventCardImage cardName={EventCardName.WhenThePlansWereGood} />
+            <p className="mb-4">Select an event card from the discard pile to play immediately.</p>
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                {playableEvents.length > 0 ? playableEvents.map(card => (
+                    <button
+                        key={card.name}
+                        onClick={() => onConfirm(card.name)}
+                        className="w-full p-3 bg-teal-700 hover:bg-teal-600 rounded-lg text-left"
+                    >
+                        <h3 className="font-bold">{card.name}</h3>
+                    </button>
+                )) : (
+                    <p className="text-center text-gray-400 py-4">There are no playable event cards in the discard pile right now.</p>
+                )}
+            </div>
+        </Modal>
+    );
+};
+
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
     gameState: GameState;
@@ -6025,6 +6100,7 @@ interface GameModalsProps {
     handleResolveScienceTriumphChoice: (city: CityName, color: DiseaseColor) => void;
     handleResolveShipsArrive: (destination: CityName, pawnsToMoveIds: number[]) => void;
     handleResolveTelegraphMessage: (payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => void;
+    handleResolveWhenThePlansWereGood: (cardName: EventCardName) => void;
 }
 
 const VaeVictisModal: React.FC<{
@@ -6888,6 +6964,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
         onConfirmRuralDoctorTreat, onConfirmRoyalAcademyScientistForecast, onConfirmAcknowledgeForecast, onCancelAcknowledgeForecast,
         handleAction, handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
         handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections, handleResolveTelegraphMessage,
+        handleResolveWhenThePlansWereGood,
     } = props;
     
     const T = getTerminology(gameState)
@@ -7415,6 +7492,12 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 show={gameState.gamePhase === GamePhase.ResolvingTelegraphMessage}
                 onClose={onCancelEventResolution}
                 onConfirm={props.handleResolveTelegraphMessage}
+                gameState={gameState}
+            />
+            <WhenThePlansWereGoodModal
+                show={gameState.gamePhase === GamePhase.ResolvingWhenThePlansWereGood}
+                onClose={onCancelEventResolution}
+                onConfirm={handleResolveWhenThePlansWereGood}
                 gameState={gameState}
             />
       
