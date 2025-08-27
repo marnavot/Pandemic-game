@@ -564,6 +564,8 @@ export const App: React.FC = () => {
     
     // Modal initiators
     const handleInitiateShareKnowledge = useCallback(() => {
+        console.log('App.tsx: handleInitiateShareKnowledge called');
+        console.log('App.tsx: gameState', gameState);
         if (!gameState) return;
         const player = gameState.players[gameState.currentPlayerIndex];
         const options: ShareOption[] = [];
