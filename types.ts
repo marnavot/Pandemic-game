@@ -605,6 +605,7 @@ SecondChance = "Second Chance",
 ShipsArrive = "Ships Arrive",
 TelegraphMessage = "Telegraph Message",
 TravelDayAndNight = "Travel Day and Night",
+WhenThePlansWereGood = "When the Plans Were Good",
 }
 
 export const EVENT_CARD_INFO: Record<EventCardName, string> = {
@@ -652,6 +653,7 @@ export const EVENT_CARD_INFO: Record<EventCardName, string> = {
 [EventCardName.ShipsArrive]: "Select a port city. Move 1 or more player pawns there from anywhere on the board (with permission). (Play at any time).",
 [EventCardName.TelegraphMessage]: "One player may give 1 or 2 City cards to one other player anywhere on the board. (Play at any time).",
 [EventCardName.TravelDayAndNight]: "Move a pawn to any city on the board (with permission). (Play at any time).",
+[EventCardName.WhenThePlansWereGood]: "Take 1 Event card from the Player Discard Pile and play it immediately. (Play at any time).",
 };
 
 export enum VirulentStrainEpidemicCardName {
@@ -809,6 +811,7 @@ export const IBERIA_EVENTS: EventCardName[] = [
     EventCardName.ShipsArrive,
     EventCardName.TelegraphMessage,
     EventCardName.TravelDayAndNight,
+    EventCardName.WhenThePlansWereGood,
 ];
 
 export interface Player {
@@ -895,6 +898,7 @@ ResolvingScienceTriumph,
 ResolvingScienceTriumphChoice,
 ResolvingShipsArrive,
 ResolvingTelegraphMessage,
+ResolvingWhenThePlansWereGood,
 ResolvingPurifyWater,
 ResolvingPurificationChoice,
 ResolvingAgronomistPurifyChoice,
