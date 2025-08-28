@@ -130,11 +130,7 @@ const Dashboard: React.FC<{
   const inActionPhase = gameState.gamePhase === GamePhase.PlayerAction;
   const isSpecialOrdersActive = gameState.specialOrdersControlledPawnId !== null;
 
-  const handleCardAction = (card: PlayerCard) => {
-    if(card.type === 'city') {
-        onAction('DirectFlight', { destination: card.name });
-    }
-  };
+  const handleCardAction = (card: PlayerCard) => {  };
 
   const pawnToMoveId = dispatcherTargetId !== null ? dispatcherTargetId : currentPlayer.id;
   const pawnToMove = gameState.players.find(p => p.id === pawnToMoveId)!;
