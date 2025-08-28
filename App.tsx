@@ -564,12 +564,10 @@ export const App: React.FC = () => {
     
     // Modal initiators
     const handleInitiateShareKnowledge = useCallback(() => {
-        console.log('App.tsx: handleInitiateShareKnowledge called');
-        console.log('App.tsx: gameState', gameState);
         if (!gameState) return;
         const player = gameState.players[gameState.currentPlayerIndex];
         const options: ShareOption[] = [];
-        const otherPlayersInCity = gameState.players.filter(p => p && p.id !== player.id && p.location === player.location);
+        const otherPlayersInCity = gameState.players.filter(p => p.id !== player.id && p.location === player.location);
 
         otherPlayersInCity.forEach(otherPlayer => {
             const cardsPlayerCanGive = player.hand.filter(c => c.type === 'city' && (c.name === player.location || player.role === PlayerRole.Researcher)) as (PlayerCard & { type: 'city' })[];
@@ -1050,7 +1048,7 @@ export const App: React.FC = () => {
                 infectionStepState={infectionStepState} handleProcessInfectionStep={handleAcknowledgeInfectionStep}
                 intensifyModalOpen={intensifyModalOpen} executeIntensify={executeIntensify}
                 handleContinueToInfectionPhase={handleContinueToInfectionPhase}
-                handleAction={handleDashboardAction}
+                handleAction={handleAction}
                 handlePlayEventCard={handlePlayEventCard}
                 onPlayContingencyCard={handlePlayEventCard}
                 handlePlayResilientPopulation={handlePlayResilientPopulation}
@@ -1141,7 +1139,6 @@ export const App: React.FC = () => {
                     handleCancelEventResolution();
                     setNewRailsSelections([]);
                 }}
-                handleAction={handleAction}
                 sailorPassengerModalState={sailorPassengerModalState}
                 setSailorPassengerModalState={setSailorPassengerModalState}
                 dispatcherTargetId={dispatcherTargetId}
