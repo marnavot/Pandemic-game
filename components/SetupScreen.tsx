@@ -64,9 +64,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
   
   // Effect to automatically calculate event cards when "By Rules" is selected
   useEffect(() => {
-    if (gameType === 'fallOfRome' || gameType === 'iberia') {
+    if (eventCountRule === 'byRules') {
         let calculatedNumEvents = 0;
-        if (gameType === 'fallOfRome') {
+        if (gameType === 'fallOfRome' || gameType === 'iberia') { 
             switch (numPlayers) {
                 case 2: calculatedNumEvents = 4; break;
                 case 3: calculatedNumEvents = 5; break;
