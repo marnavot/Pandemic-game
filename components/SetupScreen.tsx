@@ -464,9 +464,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                                 checked={firstPlayerRule === (gameType === 'fallOfRome' ? 'farthestFromRoma' : 'highestPopulation')}
                                 onChange={() => setFirstPlayerRule(gameType === 'fallOfRome' ? 'farthestFromRoma' : 'highestPopulation')}
                                 className="sr-only"
-                                disabled={gameType === 'iberia'}
                             />
-                            {gameType === 'fallOfRome' ? 'Farthest from Roma' : 'Highest Pop.'}
+                            {gameType === 'fallOfRome' ? 'Farthest from Roma' : gameType === 'iberia' ? 'Earliest Founding' : 'Highest Pop.'}
                         </label>
                         <label className="flex-1 p-3 bg-gray-700 rounded-md text-center cursor-pointer has-[:checked]:bg-green-600 has-[:checked]:ring-2 ring-green-400 transition-all">
                             <input type="radio" name="firstPlayerRule" value="player1" checked={firstPlayerRule === 'player1'} onChange={() => setFirstPlayerRule('player1')} className="sr-only"/> Player 1
