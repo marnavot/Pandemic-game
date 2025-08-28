@@ -64,7 +64,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
   
   // Effect to automatically calculate event cards when "By Rules" is selected
   useEffect(() => {
-    if (eventCountRule === 'byRules') {
+    if (gameType === 'fallOfRome' || gameType === 'iberia') {
         let calculatedNumEvents = 0;
         if (gameType === 'fallOfRome') {
             switch (numPlayers) {
@@ -74,7 +74,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                 case 5: calculatedNumEvents = 8; break;
                 default: calculatedNumEvents = 4;
             }
-        } else { // Pandemic & Iberia
+        } else { // Pandemic
             if (useVirulentStrainChallenge || useMutationChallenge) {
                 calculatedNumEvents = numPlayers * 2;
             } else {
