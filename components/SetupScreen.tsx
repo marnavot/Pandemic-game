@@ -46,50 +46,59 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
   useEffect(() => {
     setSelectedRoles(Array(5).fill(null));
     setRolePool([]);
-    // Challenges are not compatible with Fall of Rome or Iberia
+    
+    // Reset challenges and epidemic counts based on the new game type
     if (gameType === 'fallOfRome' || gameType === 'iberia') {
-      setNumEpidemics(gameType === 'fallOfRome' ? 6 : 5); // Standard for FoR, placeholder for Iberia
+      setNumEpidemics(gameType === 'fallOfRome' ? 6 : 5);
       setUseVirulentStrainChallenge(false);
       setUseMutationChallenge(false);
-      if (firstPlayerRule === 'highestPopulation') {
-        setFirstPlayerRule(gameType === 'fallOfRome' ? 'farthestFromRoma' : 'random');
-      }
     } else { // pandemic
-      setNumEpidemics(5); // Standard for Pandemic
+      setNumEpidemics(5);
+    }
+  
+    // Correct the first player rule only if it becomes invalid for the newly selected game type.
+    // This prevents resetting a valid choice.
+    if (gameType === 'fallOfRome') {
+      if (firstPlayerRule === 'highestPopulation') {
+        // 'highestPopulation' is for Pandemic/Iberia, so switch to a valid FoR rule.
+        setFirstPlayerRule('farthestFromRoma');
+      }
+    } else { // 'pandemic' or 'iberia'
       if (firstPlayerRule === 'farthestFromRoma') {
+        // 'farthestFromRoma' is only for FoR, so switch to a valid rule for the others.
         setFirstPlayerRule('highestPopulation');
       }
     }
-  }, [gameType, firstPlayerRule]);
-  
-  // Effect to automatically calculate event cards when "By Rules" is selected
-  useEffect(() => {
-    if (eventCountRule === 'byRules') {
-        let calculatedNumEvents = 0;
-        if (gameType === 'fallOfRome' || gameType === 'iberia') { 
-            switch (numPlayers) {
-                case 2: calculatedNumEvents = 4; break;
-                case 3: calculatedNumEvents = 5; break;
-                case 4: calculatedNumEvents = 6; break;
-                case 5: calculatedNumEvents = 8; break;
-                default: calculatedNumEvents = 4;
-            }
-        } else { // Pandemic
-            if (useVirulentStrainChallenge || useMutationChallenge) {
-                calculatedNumEvents = numPlayers * 2;
-            } else {
-                calculatedNumEvents = 5;
-            }
-        }
-        // Clamp to max 10
-        const finalNumEvents = Math.min(calculatedNumEvents, 10);
-        if (finalNumEvents !== numEvents) {
-            setNumEvents(finalNumEvents);
-            setSelectedEvents([]);
-            setEventPool([]);
-        }
-    }
-  }, [eventCountRule, gameType, numPlayers, useVirulentStrainChallenge, useMutationChallenge, numEvents]);
+  }, [gameType]); // IMPORTANT: Only run this effect when the game type changes.
+    
+    // Effect to automatically calculate event cards when "By Rules" is selected
+    useEffect(() => {
+      if (eventCountRule === 'byRules') {
+          let calculatedNumEvents = 0;
+          if (gameType === 'fallOfRome' || gameType === 'iberia') { 
+              switch (numPlayers) {
+                  case 2: calculatedNumEvents = 4; break;
+                  case 3: calculatedNumEvents = 5; break;
+                  case 4: calculatedNumEvents = 6; break;
+                  case 5: calculatedNumEvents = 8; break;
+                  default: calculatedNumEvents = 4;
+              }
+          } else { // Pandemic
+              if (useVirulentStrainChallenge || useMutationChallenge) {
+                  calculatedNumEvents = numPlayers * 2;
+              } else {
+                  calculatedNumEvents = 5;
+              }
+          }
+          // Clamp to max 10
+          const finalNumEvents = Math.min(calculatedNumEvents, 10);
+          if (finalNumEvents !== numEvents) {
+              setNumEvents(finalNumEvents);
+              setSelectedEvents([]);
+              setEventPool([]);
+          }
+      }
+    }, [eventCountRule, gameType, numPlayers, useVirulentStrainChallenge, useMutationChallenge, numEvents]);
 
 
   const getDisplayName = (item: PlayerRole | EventCardName): string => {
