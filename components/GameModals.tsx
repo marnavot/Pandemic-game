@@ -7613,7 +7613,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setPoliticianGiveModalOpen(false)}
                 gameState={gameState}
                 onConfirm={(payload) => {
-                    handleAction('PoliticianGiveCard', payload);
+                    handleAction('PoliticianGiveCard', payload, dispatcherTargetId);
                     setPoliticianGiveModalOpen(false);
                 }}
             />
@@ -7622,7 +7622,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setPoliticianSwapModalOpen(false)}
                 gameState={gameState}
                 onConfirm={(payload) => {
-                    handleAction('PoliticianSwapCard', payload);
+                    handleAction('PoliticianSwapCard', payload, dispatcherTargetId);
                     setPoliticianSwapModalOpen(false);
                 }}
             />
