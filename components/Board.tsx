@@ -553,6 +553,7 @@ const Board: React.FC<{
                 />
               </g>
             );
+          })}
         </g>
   
         {/* Render Purification Tokens */}
