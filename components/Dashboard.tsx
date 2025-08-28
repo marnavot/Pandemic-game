@@ -599,7 +599,7 @@ const canRecruitArmy = inActionPhase &&
     PlayerRole.LocalLiaison,
     PlayerRole.PraefectusFabrum,
   ]), []);
-  
+
   return (
     <div className="h-full bg-gray-800 bg-opacity-80 backdrop-blur-sm p-2 flex flex-col text-sm space-y-2 rounded-lg shadow-lg overflow-y-auto">
       <div className="bg-gray-900 p-3 rounded-lg">

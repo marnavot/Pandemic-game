@@ -5916,8 +5916,7 @@ const WhenThePlansWereGoodModal: React.FC<{
 
 // MAIN MODAL WRAPPER
 interface GameModalsProps {
-    gameState: GameState;
-    handleAction: (action: string, payload?: any, dispatcherTargetId?: number | null) => void; 
+    gameState: GameState; 
     shareModalState: { isOpen: boolean; options: ShareOption[] };
     setShareModalState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; options: ShareOption[] }>>;
     dispatchSummonModalState: { isOpen: boolean };
@@ -6935,7 +6934,7 @@ const TelegraphMessageModal: React.FC<{
 
 export const GameModals: React.FC<GameModalsProps> = (props) => {
     const { 
-        gameState, setShareModalState, setDispatchSummonModalState, setTakeEventModalState, 
+        gameState, handleAction, setShareModalState, setDispatchSummonModalState, setTakeEventModalState, 
         setTreatDiseaseModalState, setCollectSampleModalState, setCureDiseaseModalState, 
         setExpertFlightModalOpen, setReturnSamplesModalState, setResilientPopulationModalState, 
         setLocalLiaisonShareModalState, setVirologistTreatModalOpen, setViewingDiscard, 
@@ -6960,7 +6959,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
         setPurificationChoiceModalOpen, handlePurificationChoice, handleAgronomistPurifyChoice, politicianGiveModalOpen, setPoliticianGiveModalOpen,
         politicianSwapModalOpen, setPoliticianSwapModalOpen, railwaymanTrainModalState, setRailwaymanTrainModalState, railwaymanModalOpen, onCancelRailwaymanBuild,
         onConfirmRuralDoctorTreat, onConfirmRoyalAcademyScientistForecast, onConfirmAcknowledgeForecast, onCancelAcknowledgeForecast,
-        handleAction, handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
+        handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
         handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections, handleResolveTelegraphMessage,
         handleResolveWhenThePlansWereGood,
     } = props;
@@ -7024,7 +7023,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setShareModalState({ isOpen: false, options: [] })}
                 options={props.shareModalState.options}
                 onConfirm={(option) => {
-                    handleAction('ShareKnowledge', option);
+                    handleAction('ShareKnowledge', option, props.dispatcherTargetId);
                     setShareModalState({ isOpen: false, options: [] });
                 }}
                 players={gameState.players}
@@ -7645,7 +7644,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 show={props.sailorPassengerModalState.isOpen}
                 onClose={() => props.setSailorPassengerModalState({ isOpen: false, destination: null, passengers: [] })}
                 onConfirm={(passengerId) => {
-                    handleAction('Sail', { destination: props.sailorPassengerModalState.destination, passengerId }, props.dispatcherTargetId);
+                    props.handleAction('Sail', { destination: props.sailorPassengerModalState.destination, passengerId }, props.dispatcherTargetId);
                     props.setSailorPassengerModalState({ isOpen: false, destination: null, passengers: [] });
                 }}
                 destination={props.sailorPassengerModalState.destination}
