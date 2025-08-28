@@ -553,10 +553,8 @@ export const PLAYER_ROLE_INFO: Record<PlayerRole, string> = {
 [PlayerRole.Nurse]: "Your prevention token always travels with you. Whenever your pawn moves, immediately put your prevention token into a region adjacent to your pawn. Cities adjacent to your prevention token cannot be infected.",
 [PlayerRole.Railwayman]: "Once per turn, when you do the Build Railroad action, you may place two consecutive railroad tokens starting from your current city. When you do the Move by Train action, you may take 1 pawn in your city with you.",
 [PlayerRole.RoyalAcademyScientist]: "When you do the Purify Water action, you may play any City card, regardless of color. As an action, you may look at the top 3 cards of the Player Deck and rearrange them as you like.",
-[PlayerRole.RoyalAcademyScientist]: "When you do the Purify Water action, you may play any City card, regardless of color. As an action, you may look at the top 3 cards of the Player Deck and rearrange them as you like.",
 [PlayerRole.RuralDoctor]: "When you do the Treat Disease action, remove one cube from your city, and one additional cube from your city or from a different city in an adjacent region (if one exists).",
 [PlayerRole.Sailor]: "When you Move by Ship, do not spend a card. When you Move by Ship you may take one passenger (a pawn in your city) with you.",
-};
 };
 
 
