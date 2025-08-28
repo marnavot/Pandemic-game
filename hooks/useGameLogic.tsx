@@ -891,14 +891,41 @@ export const useGameLogic = () => {
 
         let firstPlayerIndex = 0;
         if (config.firstPlayerRule === 'highestPopulation') {
-            const playerPops = newState.players.map(player => {
-                const cityCardsInHand = player.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
-                if (cityCardsInHand.length === 0) return { playerId: player.id, playerName: player.name, maxPop: 0, city: 'N/A' };
-                const highestPopCard = cityCardsInHand.reduce((highest, card) => CITIES_DATA[card.name].population > CITIES_DATA[highest.name].population ? card : highest);
-                return { playerId: player.id, playerName: player.name, maxPop: CITIES_DATA[highestPopCard.name].population, city: CITIES_DATA[highestPopCard.name].name };
-            });
-            playerPops.sort((a, b) => b.maxPop - a.maxPop);
-            firstPlayerIndex = playerPops[0].playerId;
+            if (config.gameType === 'iberia') {
+                let earliestDate = Infinity;
+                let playerWithEarliestDate = -1;
+        
+                newState.players.forEach(player => {
+                    const cityCardsInHand = player.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
+                    if (cityCardsInHand.length === 0) return;
+        
+                    // Find the single card with the earliest date in this player's hand
+                    const earliestCardInHand = cityCardsInHand.reduce((earliest, card) => {
+                        const cardDate = IBERIA_CITIES_DATA[card.name as keyof typeof IBERIA_CITIES_DATA].foundingDate;
+                        const earliestDate = IBERIA_CITIES_DATA[earliest.name as keyof typeof IBERIA_CITIES_DATA].foundingDate;
+                        return cardDate < earliestDate ? card : earliest;
+                    });
+                    
+                    const playerEarliestDate = IBERIA_CITIES_DATA[earliestCardInHand.name as keyof typeof IBERIA_CITIES_DATA].foundingDate;
+        
+                    if (playerEarliestDate < earliestDate) {
+                        earliestDate = playerEarliestDate;
+                        playerWithEarliestDate = player.id;
+                    }
+                });
+                
+                firstPlayerIndex = playerWithEarliestDate !== -1 ? playerWithEarliestDate : 0; // Default to player 0 if no cards
+        
+            } else { // This is the original logic for Pandemic
+                const playerPops = newState.players.map(player => {
+                    const cityCardsInHand = player.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
+                    if (cityCardsInHand.length === 0) return { playerId: player.id, playerName: player.name, maxPop: 0, city: 'N/A' };
+                    const highestPopCard = cityCardsInHand.reduce((highest, card) => CITIES_DATA[card.name].population > CITIES_DATA[highest.name].population ? card : highest);
+                    return { playerId: player.id, playerName: player.name, maxPop: CITIES_DATA[highestPopCard.name].population, city: CITIES_DATA[highestPopCard.name].name };
+                });
+                playerPops.sort((a, b) => b.maxPop - a.maxPop);
+                firstPlayerIndex = playerPops[0].playerId;
+            }
         } else if (config.firstPlayerRule === 'farthestFromRoma') {
             let maxDistance = -1;
             let playerWithFarthestCity = -1;
