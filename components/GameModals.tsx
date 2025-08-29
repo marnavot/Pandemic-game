@@ -7074,7 +7074,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setTreatDiseaseModalState({ isOpen: false, availableColors: [] })}
                 availableColors={props.treatDiseaseModalState.availableColors}
                 onConfirm={(color) => {
-                    handleAction('TreatDisease', { city: currentPlayer.location, color: color });
+                    handleAction('TreatDisease', { city: currentPlayer.location, color: color }, dispatcherTargetId);
                     setTreatDiseaseModalState({ isOpen: false, availableColors: [] });
                 }}
             />
