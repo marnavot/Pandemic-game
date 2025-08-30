@@ -4002,6 +4002,9 @@ const EpidemicAnnounceModal: React.FC<{
     const card = gameState.epidemicCardToAnnounce;
     const [report, setReport] = useState<string | null>(null);
     const T = getTerminology(gameState); // Get the correct terminology
+    const epidemicCard = gameState.playerDiscard[gameState.playerDiscard.length - 1];
+    const isVirulentStrain = epidemicCard?.type === 'virulent_strain_epidemic';
+    const virulentStrainInfo = isVirulentStrain ? VIRULENT_STRAIN_EPIDEMIC_INFO[epidemicCard.name as VirulentStrainEpidemicCardName] : null;
 
     const rates = gameState.gameType === 'fallOfRome' ? FALLOFROME_INVASION_RATES : PANDEMIC_INFECTION_RATES;
 
@@ -4052,6 +4055,16 @@ const EpidemicAnnounceModal: React.FC<{
                     {wasOutbreakDuringEpidemic && <InfectionResultList title={`Chain Reaction ${T.outbreak}`} results={gameState.outbreakResults} />}
                 </div>
                 
+                {virulentStrainInfo && (
+                    <div className="p-3 bg-purple-900 border-2 border-purple-700 rounded-lg text-center">
+                        <h3 className="font-orbitron text-lg text-purple-300 mb-1">VIRULENT STRAIN EFFECT</h3>
+                        <p className="font-semibold">{virulentStrainInfo.name}</p>
+                        <p className="text-sm text-gray-300 mt-1 italic">"{virulentStrainInfo.description}"</p>
+                        <p className={`text-xs font-bold mt-2 ${virulentStrainInfo.continuing ? 'text-purple-400' : 'text-yellow-400'}`}>
+                            {virulentStrainInfo.continuing ? 'Continuing Effect' : 'Immediate Effect'}
+                        </p>
+                    </div>
+                )}
                 {/* AI Report */}
                 {gameState.useAiNarratives && (
                     <div className="p-3 bg-black bg-opacity-20 rounded-lg border border-gray-700 min-h-[6rem] flex items-center justify-center">
