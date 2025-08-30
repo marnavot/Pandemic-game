@@ -4848,6 +4848,33 @@ const AcknowledgeMutationResultModal: React.FC<{
     </Modal>
 );
 
+const MutationEventModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    onConfirm: (event: MutationEventCardName) => void;
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, gameState }) => {
+    const eventToResolve = gameState.pendingMutationEvents[0];
+    if (!eventToResolve) return null;
+
+    const eventInfo = MUTATION_EVENT_CARD_INFO[eventToResolve];
+
+    return (
+        <Modal title="Mutation Event!" show={show} onClose={onClose} titleColor="text-purple-400">
+            <div className="text-center">
+                <h3 className="text-xl font-bold mb-2 text-purple-300">{eventToResolve}</h3>
+                <p className="text-base mb-6 italic">"{eventInfo}"</p>
+                <button
+                    onClick={() => onConfirm(eventToResolve)}
+                    className="w-full p-3 bg-purple-600 hover:bg-purple-500 rounded text-white font-bold"
+                >
+                    Resolve Event
+                </button>
+            </div>
+        </Modal>
+    );
+};
+
 const MobileHospitalModal: React.FC<{
     show: boolean;
     onConfirm: (color: DiseaseColor) => void;
@@ -7608,6 +7635,12 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                     result={gameState.mutationEventResult}
                 />
             )}
+            <MutationEventModal
+                show={gameState.gamePhase === GamePhase.ResolvingMutationEvent}
+                onClose={props.onCancelEventResolution}
+                onConfirm={props.onResolveMutationEvent}
+                gameState={gameState}
+            />
             <StationRelocationModal
                 show={gameState.gamePhase === GamePhase.ResolvingStationRelocation}
                 onClose={props.onCancelEventResolution}
