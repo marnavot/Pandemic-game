@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PlayerCard, InfectionCard, GameState, CityName, DiseaseColor, CITIES_DATA, EventCardName, Player, PlayerRole, GamePhase, VirulentStrainEpidemicCardName, MutationEventCardName, FALLOFROME_CITIES_DATA } from '../types';
+import { PlayerCard, InfectionCard, GameState, CityName, DiseaseColor, CITIES_DATA, EventCardName, Player, PlayerRole, GamePhase, VirulentStrainEpidemicCardName, MutationEventCardName, FALLOFROME_CITIES_DATA, InfectionResult } from '../types';
 
 export const PLAYER_PAWN_COLORS = ['#ec4899', '#22d3ee', '#f97316', '#84cc16', '#e2e8f0']; // Tailwind: pink-500, cyan-400, orange-500, lime-500, slate-200
 
@@ -84,7 +84,7 @@ export const getCardDisplayName = (card: PlayerCard | InfectionCard): string => 
     return 'Unknown Card';
 };
 
-export const PlayerCardDisplay: React.FC<{ card: PlayerCard; isLarge?: boolean; gameType?: 'pandemic' | 'fallOfRome' }> = ({ card, isLarge = false, gameType = 'pandemic' }) => {
+export const PlayerCardDisplay: React.FC<{ card: PlayerCard; isLarge?: boolean; gameType?: 'pandemic' | 'fallOfRome' | 'iberia'; }> = ({ card, isLarge = false, gameType = 'pandemic' }) => {
     const sizeClasses = isLarge ? 'w-full h-full text-sm p-2' : 'w-full h-full text-xs p-1';
     const baseClasses = 'flex flex-col justify-center items-center text-center rounded-lg shadow-md';
     const isFallOfRome = gameType === 'fallOfRome';
@@ -153,7 +153,7 @@ export const PlayerCardDisplay: React.FC<{ card: PlayerCard; isLarge?: boolean; 
     return null;
 };
 
-export const InfectionCardDisplay: React.FC<{ card: InfectionCard; gameType?: 'pandemic' | 'fallOfRome' }> = ({ card, gameType = 'pandemic' }) => {
+export const InfectionCardDisplay: React.FC<{ card: InfectionCard; gameType?: 'pandemic' | 'fallOfRome' | 'iberia'; }> = ({ card, gameType = 'pandemic' }) => {
     const isFallOfRome = gameType === 'fallOfRome';
 
     if (card.type === 'city') {
