@@ -6809,6 +6809,7 @@ const TelegraphMessageModal: React.FC<{
     const [senderId, setSenderId] = useState<number | null>(null);
     const [receiverId, setReceiverId] = useState<number | null>(null);
     const [selectedCards, setSelectedCards] = useState<(PlayerCard & { type: 'city' })[]>([]);
+    const [showAllHands, setShowAllHands] = useState(false);
 
     const sender = gameState.players.find(p => p.id === senderId);
     const senderCityCards = sender?.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[] || [];
@@ -6820,6 +6821,7 @@ const TelegraphMessageModal: React.FC<{
             setSenderId(null);
             setReceiverId(null);
             setSelectedCards([]);
+            setShowAllHands(false);
         }
     }, [show]);
 
@@ -6906,6 +6908,44 @@ const TelegraphMessageModal: React.FC<{
                         ) : (
                             <p className="text-center text-gray-500 py-8">The sender has no City cards to give.</p>
                         )}
+                        <div className="mt-4 border-t border-gray-600 pt-4">
+                            <button
+                                onClick={() => setShowAllHands(!showAllHands)}
+                                className="w-full text-sm text-cyan-400 hover:text-cyan-300 mb-2 font-semibold text-left"
+                            >
+                                {showAllHands ? '▼ Hide All Player Hands' : '▶ Show All Player Hands'}
+                            </button>
+                            {showAllHands && (
+                                <div className="space-y-3 max-h-56 overflow-y-auto pr-2 bg-black bg-opacity-25 p-2 rounded-lg">
+                                    {gameState.players.map(player => (
+                                        <div key={player.id} className="bg-gray-700 bg-opacity-50 p-2 rounded-md">
+                                            <p className="font-bold text-sm">{player.name} <span className="text-xs text-gray-400">({player.role})</span></p>
+                                            {player.hand.length > 0 ? (
+                                                <div className="grid grid-cols-5 gap-1 mt-1">
+                                                    {player.hand.map((card, index) => (
+                                                        <div key={index} className="h-24">
+                                                            <PlayerCardDisplay card={card} isLarge={false} gameType={gameState.gameType} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-gray-500 italic mt-1">No cards in hand.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="mt-6 flex justify-between">
+                            <button
+                                onClick={handleConfirmClick}
+                                disabled={!isValid}
+                                className="w-full p-3 bg-green-600 hover:bg-green-500 rounded font-bold disabled:bg-gray-600 disabled:cursor-not-allowed"
+                            >
+                                Confirm Transfer ({selectedCards.length}/2)
+                            </button>
+                        </div>
                         <button onClick={() => setStep('select_receiver')} className="w-full mt-4 text-sm text-gray-400 hover:text-white">← Back</button>
                     </div>
                 );
@@ -6913,7 +6953,7 @@ const TelegraphMessageModal: React.FC<{
     };
     
     return (
-        <Modal title="Telegraph Message" show={show} onClose={onClose}>
+        <Modal title="Telegraph Message" show={show} onClose={onClose} maxWidth="max-w-2xl">
             <div>
                 {renderStepContent()}
                 {step === 'select_cards' && (
