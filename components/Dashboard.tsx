@@ -102,6 +102,7 @@ const Dashboard: React.FC<{
   onInitiatePurifyWater: () => void;
   onInitiatePoliticianGiveCard: () => void; 
   onInitiatePoliticianSwapCard: () => void;
+  onInitiateRoyalAcademyScientistForecast: () => void;
   onPlayEventCard: (cardName: EventCardName, ownerId: number) => void;
   onPlayContingencyCard: (cardName: EventCardName, ownerId: number) => void;
   onViewPlayerDiscard: () => void;
@@ -424,7 +425,7 @@ const canLocalLiaisonShare = useMemo(() => {
 
     const liaisonCity = CITIES_DATA[currentPlayer.location];
     // For Pandemic, boardColors is undefined, so we use the single color. For FoR, we use boardColors.
-    const liaisonCityColors = (liaisonCity as any).boardColors || [liaisonCity.color];
+    const liaisonCityColors = (CITIES_DATA[liaisonCity.location] as any).boardColors || [liaisonCity.color];
     const cityCardsInHand = currentPlayer.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
 
     // Iterate through each color of the city the Liaison is in.
@@ -664,7 +665,7 @@ const canRecruitArmy = inActionPhase &&
         {gameState.gameType === 'fallOfRome' && (
             <div className="flex items-center justify-between">
                 <span>Recruitment Rate:</span>
-                <span className="font-bold text-xl">{FALLOFROME_RECRUITMENT_RATES[gameState.recruitmentRateIndex]}</span>
+                <span className="font-bold text-xl">{FALLOFROME_RECRUITMENT_RATES[gameState.recruitmentRateIndex] || 'N/A'}</span>
             </div>
         )}
         <div className="flex items-center justify-between">
