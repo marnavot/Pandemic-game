@@ -439,7 +439,7 @@ export const IBERIA_REGIONS: IberiaRegion[] = [
   { name: "R34", vertices: ["Albacete", "Valencia", "Alicante", "Cartagena"], center: { x: 54.9, y: 66.8 } },
 ];
 
-export const IBERIA_CITY_TO_REGIONS_MAP: Record<CityName, string[]> = {
+export const IBERIA_CITY_TO_REGIONS_MAP: Partial<Record<CityName, string[]>> = {
   ACoruña: ["R1"],
   Gijón: ["R1", "R9"],
   León: ["R1", "R9"],
@@ -1014,6 +1014,9 @@ pendingScienceTriumphChoice: {
 forts: CityName[];
 fortRelocationTargetCity: CityName | null;
 legions: CityName[];
+aleaIactaEstStatus: 'inactive' | 'normal_available' | 'corrupt_active';
+abundansCautelaStatus: 'inactive' | 'normal_active' | 'corrupt_active';
+veniVidiViciStatus: 'inactive' | 'corrupt_battle_pending';
 
 //Iberia specific state
 purificationTokens: { [key: string]: number };
@@ -1044,14 +1047,17 @@ pendingRuralDoctorChoice: {
 }[] | null;
 infectionContinuation: {
     type: 'epidemic' | 'outbreak';
-    city: CityName; // The city that was being infected or that outbroke
+    city: CityName;
     color: DiseaseColor;
-    remaining: number; // remaining cubes for epidemic
-    // For outbreaks
+    remaining: number;
+    outbreaksInTurn?: string[];
+    newlyOutbrokenCities?: CityName[];
     outbreakRemainingNeighbors?: CityName[];
+    outbreakOriginalColor?: DiseaseColor;
 } | null;
 nursePreventionTokenLocation: string | null;
 hasUsedRailwaymanDoubleBuild: boolean;
+pendingRailwaymanBuild: { firstConnection: { from: CityName; to: CityName } } | null;
 
 // Challenge State
 virulentStrainColor: DiseaseColor | null;
