@@ -5561,11 +5561,32 @@ export const useGameLogic = () => {
                 }
             }
     
-            // 4. Clean up and exit event
-            newState.pendingGovernmentMobilization = null;
-            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-            newState.phaseBeforeEvent = null;
-            newState.log.unshift("- Government Mobilization is complete.");
+        // 4. Clean up and exit event
+        newState.pendingGovernmentMobilization = null;
+        let nextPhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+        newState.phaseBeforeEvent = null;
+        newState.log.unshift("- Government Mobilization is complete.");
+        
+        // If the event was triggered from a discard phase, check if the discard is still necessary.
+        if (nextPhase === GamePhase.Discarding && newState.playerToDiscardId !== null) {
+            const playerToDiscard = newState.players.find(p => p.id === newState.playerToDiscardId)!;
+            
+            // Check if the player has met their hand limit after all event actions.
+            if (playerToDiscard.hand.length <= getHandLimit(playerToDiscard)) {
+                // The discard is no longer needed.
+                newState.playerToDiscardId = null;
+                
+                // Determine the phase that should follow the discard phase.
+                if (discardTriggerRef.current === 'draw') {
+                    nextPhase = GamePhase.PreInfectionPhase;
+                } else { // 'action' or null
+                    nextPhase = newState.actionsRemaining > 0 ? GamePhase.PlayerAction : GamePhase.PreDrawPlayerCards;
+                }
+                discardTriggerRef.current = null; // Consume the trigger
+            }
+        }
+        
+        newState.gamePhase = nextPhase;
     
             return newState;
         });
