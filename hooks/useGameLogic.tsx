@@ -1612,12 +1612,17 @@ export const useGameLogic = () => {
                         // 2. Calculate all valid targets for the second cube removal
                         const secondCubeTargets: { city: CityName; color: DiseaseColor }[] = [];
                         
-                        // Option A: The current city (if it still has cubes of that color)
-                        if ((newState.diseaseCubes[city]?.[color] || 0) > 0) {
-                            secondCubeTargets.push({ city, color });
+                        // Option A: The current city (check for any color)
+                        const currentCityCubes = newState.diseaseCubes[city];
+                        if (currentCityCubes) {
+                            (Object.keys(currentCityCubes) as DiseaseColor[]).forEach(cubeColor => {
+                                if (currentCityCubes[cubeColor]! > 0) {
+                                    secondCubeTargets.push({ city, color: cubeColor });
+                                }
+                            });
                         }
                         
-                        // Option B: Cities that share a region with the player's city
+                        // Option B: Cities in adjacent regions (check for any color)
                         const currentRegions = new Set(IBERIA_CITY_TO_REGIONS_MAP[player.location] || []);
                         
                         (Object.keys(IBERIA_CITIES_DATA) as CityName[]).forEach(cityName => {
@@ -1626,26 +1631,31 @@ export const useGameLogic = () => {
                             const cityRegions = IBERIA_CITY_TO_REGIONS_MAP[cityName] || [];
                             const sharesRegion = cityRegions.some(r => currentRegions.has(r));
                         
-                            if (sharesRegion && (newState.diseaseCubes[cityName]?.[color] || 0) > 0) {
-                                secondCubeTargets.push({ city: cityName, color });
+                            if (sharesRegion) {
+                                const adjacentCityCubes = newState.diseaseCubes[cityName];
+                                if (adjacentCityCubes) {
+                                    (Object.keys(adjacentCityCubes) as DiseaseColor[]).forEach(cubeColor => {
+                                        if (adjacentCityCubes[cubeColor]! > 0) {
+                                            secondCubeTargets.push({ city: cityName, color: cubeColor });
+                                        }
+                                    });
+                                }
                             }
                         });
                         
-                        const uniqueTargets = Array.from(new Map(secondCubeTargets.map(item => [item.city, item])).values());
-                        
                         // 3. Resolve the second cube removal
-                        if (uniqueTargets.length === 0) {
+                        if (secondCubeTargets.length === 0) {
                             newState.log.unshift(`- No other valid targets for Rural Doctor's second cube removal.`);
                             actionTaken = true;
-                        } else if (uniqueTargets.length === 1) {
-                            const target = uniqueTargets[0];
+                        } else if (secondCubeTargets.length === 1) {
+                            const target = secondCubeTargets[0];
                             newState.diseaseCubes[target.city]![target.color]!--;
                             newState.remainingCubes[target.color]++;
                             newState.log.unshift(`- Rural Doctor removes a second ${target.color} cube from ${CITIES_DATA[target.city].name}.`);
                             actionTaken = true;
                         } else {
                             // Multiple choices exist, pause for player input
-                            newState.pendingRuralDoctorChoice = uniqueTargets;
+                            newState.pendingRuralDoctorChoice = secondCubeTargets; // Use the full list of targets
                             newState.phaseBeforeEvent = GamePhase.PlayerAction;
                             newState.gamePhase = GamePhase.ResolvingRuralDoctorTreat;
                             // The action is considered "taken" here to be undoable, but we don't decrement the counter until it's fully resolved.
