@@ -7065,7 +7065,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setTakeEventModalState({ isOpen: false, cards: [] })}
                 cards={props.takeEventModalState.cards}
                 onConfirm={(cardName) => {
-                    handleAction('TakeEventCard', { cardName });
+                    handleAction('TakeEventCard', { cardName }, dispatcherTargetId);
                     setTakeEventModalState({ isOpen: false, cards: [] });
                 }}
             />
@@ -7102,7 +7102,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setCollectSampleModalState({ isOpen: false, availableColors: []})}
                 availableColors={props.collectSampleModalState.availableColors}
                 onConfirm={(color) => {
-                    handleAction('CollectSample', { color });
+                    handleAction('CollectSample', { color }, dispatcherTargetId);
                     setCollectSampleModalState({ isOpen: false, availableColors: []});
                 }}
             />
@@ -7111,7 +7111,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => props.setLocalLiaisonShareModalState({ isOpen: false, options: []})}
                 options={props.localLiaisonShareModalState.options}
                 onConfirm={({ card, toPlayerId }) => {
-                    handleAction('LocalLiaisonShare', { card, toPlayerId });
+                    handleAction('LocalLiaisonShare', { card, toPlayerId }, dispatcherTargetId);
                     props.setLocalLiaisonShareModalState({ isOpen: false, options: [] });
                 }}
             />
@@ -7120,7 +7120,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setVirologistTreatModalOpen(false)}
                 gameState={gameState}
                 onConfirm={(payload) => {
-                    handleAction('VirologistRemoteTreat', payload);
+                    handleAction('VirologistRemoteTreat', payload, dispatcherTargetId);
                     setVirologistTreatModalOpen(false);
                 }}
             />
@@ -7156,7 +7156,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setEnlistBarbariansModalState({ isOpen: false, options: [] })}
                 options={enlistBarbariansModalState.options}
                 onConfirm={({ cardToDiscard }) => {
-                    handleAction('EnlistBarbarians', { cardToDiscard });
+                    handleAction('EnlistBarbarians', { cardToDiscard }, dispatcherTargetId);
                     setEnlistBarbariansModalState({ isOpen: false, options: [] });
                 }}
                 gameState={gameState}
@@ -7533,7 +7533,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
             <FieldDirectorTreatModal
                 show={gameState.gamePhase === GamePhase.ResolvingFieldDirectorTreat}
                 onClose={props.handleCancelFieldDirectorAction}
-                onConfirm={(city, color) => handleAction('TreatDisease', { city, color })}
+                onConfirm={(city, color) => handleAction('TreatDisease', { city, color }, dispatcherTargetId)}
                 gameState={gameState}
             />
             <FieldDirectorMoveModal
@@ -7597,7 +7597,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 show={purifyWaterModalOpen}
                 onClose={() => setPurifyWaterModalOpen(false)}
                 onConfirm={(payload) => {
-                    handleAction('PurifyWater', payload);
+                    handleAction('PurifyWater', payload, dispatcherTargetId);
                     setPurifyWaterModalOpen(false);
                 }}
                 gameState={gameState}
