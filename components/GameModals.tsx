@@ -247,7 +247,7 @@ const VeniVidiViciModal: React.FC<{
             <p className="mb-4">I came, I saw, I conquered. Select a destination city for {player.name}.</p>
             <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = getCityDataForGame(cityName, gameState.gameType);
+                    const cityData = getCityDataForGame(city, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                 
@@ -429,7 +429,7 @@ const FestinaLenteModal: React.FC<{
             <p className="mb-4">Select a destination city.</p>
             <div className="space-y-1 max-h-72 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = getCityDataForGame(cityName, gameState.gameType);
+                    const cityData = getCityDataForGame(city, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                 
@@ -1342,7 +1342,7 @@ const SiVisPacemParaBellumModal: React.FC<{
             <p className="mb-4">Select a city to place a fort.</p>
             <div className="flex flex-col space-y-1 max-h-72 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = getCityDataForGame(cityName, gameState.gameType);
+                    const cityData = getCityDataForGame(city, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                     const hasFort = gameState.forts.includes(city);
@@ -1916,7 +1916,7 @@ const ChooseStartingCityModal: React.FC<{
                     (Object.keys(cityDataForGame) as CityName[])
                         .sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name))
                         .map(city => {
-                            const cityData = getCityDataForGame(cityName, gameState.gameType);
+                            const cityData = getCityDataForGame(city, gameState.gameType);
                             const textColor = (cityData.color === DiseaseColor.Yellow || cityData.color === DiseaseColor.White) ? 'text-black' : 'text-white';
                             return (
                                 <button
