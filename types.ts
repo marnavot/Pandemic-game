@@ -36,7 +36,7 @@ Montreal: { name: "Montreal", color: DiseaseColor.Blue, coords: { x: 25, y: 31 }
 NewYork: { name: "New York", color: DiseaseColor.Blue, coords: { x: 29, y: 34 }, population: 8398748 },
 Washington: { name: "Washington", color: DiseaseColor.Blue, coords: { x: 28, y: 43 }, population: 705749 },
 London: { name: "London", color: DiseaseColor.Blue, coords: { x: 45, y: 28 }, population: 8982000 },
-Madrid: { name: "Madrid", color: DiseaseColor.Blue, coords: { x: 44, y: 40 }, population: 3223334 },
+Madrid: { name: "Madrid", color: DiseaseColor.Blue, coords: { x: 39.5, y: 48.5 }, population: 3223334 },
 Paris: { name: "Paris", color: DiseaseColor.Blue, coords: { x: 51, y: 33 }, population: 2141000 },
 Essen: { name: "Essen", color: DiseaseColor.Blue, coords: { x: 52, y: 25 }, population: 583109 },
 Milan: { name: "Milan", color: DiseaseColor.Blue, coords: { x: 55, y: 32 }, population: 1352000 },
