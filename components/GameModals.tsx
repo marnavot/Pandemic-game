@@ -7139,7 +7139,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={() => setDispatchSummonModalState({ isOpen: false })}
                 gameState={gameState}
                 onConfirm={(pawnId, city) => {
-                    handleAction('DispatcherSummon', { pawnToMoveId: pawnId, destinationCity: city });
+                    handleAction('DispatcherSummon', { pawnToMoveId: pawnId, destinationCity: city }, dispatcherTargetId);
                     setDispatchSummonModalState({ isOpen: false });
                 }}
             />
