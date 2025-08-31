@@ -4148,20 +4148,23 @@ const ViewDiscardModal: React.FC<{
     cards: (PlayerCard | InfectionCard)[];
     title: string;
     gameState: GameState;
-}> = ({ show, onClose, cards, title, gameState }) => (
-    <Modal title={title} show={show} onClose={onClose} isSidePanel={true}>
-        <div className="grid grid-cols-2 gap-2">
-            {cards.map((card, index) => (
-                <div key={index} className="h-40">
-                    {('type' in card && 'name' in card && card.type === 'city')
-                        ? <InfectionCardDisplay card={card as InfectionCard} gameType={gameState.gameType} />
-                        : <PlayerCardDisplay card={card as PlayerCard} isLarge={true} gameType={gameState.gameType} />
-                    }
-                </div>
-            ))}
-        </div>
-    </Modal>
-);
+}> = ({ show, onClose, cards, title, gameState }) => {
+    const isViewingInfectionPile = title.includes('Infection');
+    return (
+        <Modal title={title} show={show} onClose={onClose} isSidePanel={true}>
+            <div className="grid grid-cols-2 gap-2">
+                {cards.map((card, index) => (
+                    <div key={index} className="h-40">
+                        {isViewingInfectionPile
+                            ? <InfectionCardDisplay card={card as InfectionCard} gameType={gameState.gameType} />
+                            : <PlayerCardDisplay card={card as PlayerCard} isLarge={true} gameType={gameState.gameType} />
+                        }
+                    </div>
+                ))}
+            </div>
+        </Modal>
+    );
+};
 
 const EventInfoModal: React.FC<{
     show: boolean;
