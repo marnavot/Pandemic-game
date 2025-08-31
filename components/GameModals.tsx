@@ -9,6 +9,20 @@ import { safeCloneGameState, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
+const getCityDataForGame = (city: CityName, gameType: 'pandemic' | 'fallOfRome' | 'iberia') => {
+    switch (gameType) {
+        case 'iberia':
+            // Prioritize Iberia data for Iberia games
+            return IBERIA_CITIES_DATA[city as keyof typeof IBERIA_CITIES_DATA] || CITIES_DATA[city];
+        case 'fallOfRome':
+            return FALLOFROME_CITIES_DATA[city as keyof typeof FALLOFROME_CITIES_DATA] || CITIES_DATA[city];
+        case 'pandemic':
+        default:
+            // MUST prioritize Pandemic data for Pandemic games to get blue Madrid
+            return PANDEMIC_CITIES_DATA[city as keyof typeof PANDEMIC_CITIES_DATA] || CITIES_DATA[city];
+    }
+};
+
 const EventCardImage: React.FC<{ cardName: EventCardName }> = ({ cardName }) => {
     const extensionsToTry = useMemo(() => ['jpg', 'png', 'jpeg', 'webp'], []);
     const [imageIndex, setImageIndex] = useState(0);
@@ -64,7 +78,7 @@ const InfectionResultDisplay: React.FC<{
 }> = ({ result, gameType, T }) => {
     if (!result) return null;
 
-    const cityData = CITIES_DATA[result.city];
+    const cityData = getCityDataForGame(result.city, gameType);
 
     // Iberia Purification Result
     if (result.purificationDefense) {
@@ -233,7 +247,7 @@ const VeniVidiViciModal: React.FC<{
             <p className="mb-4">I came, I saw, I conquered. Select a destination city for {player.name}.</p>
             <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = CITIES_DATA[city];
+                    const cityData = getCityDataForGame(cityName, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                 
@@ -415,7 +429,7 @@ const FestinaLenteModal: React.FC<{
             <p className="mb-4">Select a destination city.</p>
             <div className="space-y-1 max-h-72 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = CITIES_DATA[city];
+                    const cityData = getCityDataForGame(cityName, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                 
@@ -1328,7 +1342,7 @@ const SiVisPacemParaBellumModal: React.FC<{
             <p className="mb-4">Select a city to place a fort.</p>
             <div className="flex flex-col space-y-1 max-h-72 overflow-y-auto pr-2">
                 {cityKeys.sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                    const cityData = CITIES_DATA[city];
+                    const cityData = getCityDataForGame(cityName, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const legionCount = (gameState.legions || []).filter(l => l === city).length;
                     const hasFort = gameState.forts.includes(city);
@@ -1902,7 +1916,7 @@ const ChooseStartingCityModal: React.FC<{
                     (Object.keys(cityDataForGame) as CityName[])
                         .sort((a, b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name))
                         .map(city => {
-                            const cityData = CITIES_DATA[city];
+                            const cityData = getCityDataForGame(cityName, gameState.gameType);
                             const textColor = (cityData.color === DiseaseColor.Yellow || cityData.color === DiseaseColor.White) ? 'text-black' : 'text-white';
                             return (
                                 <button
@@ -2538,7 +2552,7 @@ const FortRelocationModal: React.FC<{
     const cityToAdd = gameState.fortRelocationTargetCity;
     if (!cityToAdd) return null;
 
-    const cityDataToAdd = CITIES_DATA[cityToAdd];
+    const cityDataToAdd = CITIES_DATA[cityToAdd]; 
 
     return (
         <Modal
@@ -2553,7 +2567,7 @@ const FortRelocationModal: React.FC<{
 
             <div className="space-y-1 max-h-80 overflow-y-auto pr-2">
                 {gameState.forts.sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(cityName => {
-                    const cityData = CITIES_DATA[cityName];
+                    const cityData = getCityDataForGame(cityName, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[cityName];
                     return (
                         <button
@@ -2924,7 +2938,7 @@ const DispatchSummonModal: React.FC<{
                     <p>Move {gameState.players.find(p => p.id === pawnToMoveId)?.name} to which city?</p>
                     {possibleDestinations.length > 0 ? possibleDestinations.map(city => {
                         const playersInCity = gameState.players.filter(p => p.location === city).map(p => p.name).join(', ');
-                        const cityData = CITIES_DATA[city];
+                        const cityData = getCityDataForGame(city, gameState.gameType);
                         return (
                             <button
                                 key={city}
@@ -3525,7 +3539,7 @@ const FieldDirectorMoveModal: React.FC<{
                     <p className="mb-4">Move {selectedPawn.name} from {CITIES_DATA[selectedPawn.location].name} to an adjacent city.</p>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                         {destinationOptions.map(dest => {
-                            const cityData = CITIES_DATA[dest];
+                            const cityData = getCityDataForGame(dest, gameState.gameType);
                             return (
                                 <button
                                     key={dest}
@@ -3891,7 +3905,7 @@ const InfectionStepModal: React.FC<{
     const renderInvasionResult = () => {
         if (!result) return null;
 
-        const cityData = CITIES_DATA[result.city];
+        const cityData = getCityDataForGame(result.city, gameState.gameType);
         if (result.defended) {
             return (
                 <div className="text-center p-3 bg-green-900 border-2 border-green-700 rounded-lg">
@@ -4395,7 +4409,7 @@ const GovernmentGrantModal: React.FC<{
             <p className="mb-4">Select any city to build a research station in.</p>
             <div className="flex flex-col space-y-1 max-h-72 overflow-y-auto pr-2">
                 {nonStationCities.map(city => {
-                    const cityData = CITIES_DATA[city];
+                    const cityData = getCityDataForGame(city, gameState.gameType);
                     const cityCubes = gameState.diseaseCubes[city];
                     const textColor = (cityData.color === DiseaseColor.Yellow || cityData.color === DiseaseColor.White) ? 'text-black' : 'text-white';
 
@@ -4467,7 +4481,7 @@ const AirliftModal: React.FC<{
                     <p className="mb-4">Select a destination for {pawnToMove.name} ({pawnToMove.role}).</p>
                     <div className="flex flex-col space-y-1 max-h-60 overflow-y-auto pr-2">
                         {cityKeys.filter(c => c !== pawnToMove.location).sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => {
-                            const cityData = CITIES_DATA[city];
+                            const cityData = getCityDataForGame(city, gameState.gameType);
                             const cityCubes = gameState.diseaseCubes[city];
                             const textColor = (cityData.color === DiseaseColor.Yellow || cityData.color === DiseaseColor.White) ? 'text-black' : 'text-white';
 
@@ -4688,7 +4702,7 @@ const RemoteTreatmentModal: React.FC<{
             <p className="mb-4">Select any 2 disease cubes to remove from the board. {2 - selectedIndices.length} remaining.</p>
             <div className="space-y-1 max-h-80 overflow-y-auto pr-2 bg-gray-900 p-2 rounded-md">
                 {allCubesOnBoard.length > 0 ? allCubesOnBoard.map(({ city, color }, index) => {
-                    const cityData = CITIES_DATA[city];
+                    const cityData = getCityDataForGame(city, gameState.gameType);
                     if (!cityData) return null; // Safeguard
                     const cityRegionColor = cityData.color;
                     
@@ -5736,7 +5750,7 @@ const ScienceTriumphChoiceModal: React.FC<{
     }
 
     const currentChoice = choiceState.citiesWithChoices[0];
-    const cityData = CITIES_DATA[currentChoice.city];
+    const cityData = getCityDataForGame(currentChoice.city, gameState.gameType);
 
     return (
         <Modal
