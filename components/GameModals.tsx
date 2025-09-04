@@ -6202,7 +6202,7 @@ const VaeVictisModal: React.FC<{
             if (change > 0 && totalSelected >= maxToRemove) return prev;
 
             if (selectedOption === 'normal') {
-                const otherSelectedCities = Object.keys(newSelections).filter(c => c !== city && Object.values(newSelections[c as CityName]!).some(val => val > 0));
+                const otherSelectedCities = Object.keys(newSelections).filter(c => c !== city && Object.values(newSelections[c as CityName]!).some(val => (val as number) > 0));
                 if (otherSelectedCities.length > 0 && newCount > 0) {
                     return prev;
                 }
