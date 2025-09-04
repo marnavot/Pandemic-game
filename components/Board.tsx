@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { GameState, CityName, CONNECTIONS, CITIES_DATA, DiseaseColor, Player, PlayerRole, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, PANDEMIC_CONNECTIONS, FALLOFROME_CONNECTIONS, BarbarianSupplySpace, FALLOFROME_BARBARIAN_SUPPLY_DATA, FALLOFROME_MIGRATION_PATHS, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, IBERIA_CITIES_DATA, IBERIA_CONNECTIONS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS } from '../types';
+import { GameState, CityName, CONNECTIONS, CITIES_DATA, DiseaseColor, Player, PlayerRole, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, PANDEMIC_CONNECTIONS, FALLOFROME_CONNECTIONS, BarbarianSupplySpace, FALLOFROME_BARBARIAN_SUPPLY_DATA, FALLOFROME_MIGRATION_PATHS, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, IBERIA_CITIES_DATA, IBERIA_CONNECTIONS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, city } from '../types';
 import { PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS } from '../hooks/ui';
 
 const DISEASE_COLOR_VALUES: Record<DiseaseColor, string> = {
@@ -335,7 +335,7 @@ const Board: React.FC<{
         };
         break;
     }
-    return { citiesToRenderData: cities, connectionsToRender: connections, backgroundImage: bg };
+    return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImage: bg };
   }, [gameState.gameType]);
   
   const migrationPathSegments = new Set<string>();
