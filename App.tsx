@@ -1077,7 +1077,6 @@ export const App: React.FC = () => {
                 onInitiateEpidemiologistTake={handleInitiateEpidemiologistTake}
                 handleCancelEpidemiologistTake={handleCancelEpidemiologistTake}
                 onResolveMutationEvent={handleResolveMutationEvent}
-                onCancelEventResolution={handleCancelEventResolution}
                 onAcknowledgeMutationResult={handleAcknowledgeMutationResult}
                 handleStationRelocation={handleStationRelocation}
                 handleConfirmForecastPlay={handleConfirmForecastPlay}
