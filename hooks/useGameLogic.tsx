@@ -239,7 +239,7 @@ export const useGameLogic = () => {
                 gs.log.unshift(`- Highly Contagious adds ${cubesToAdd} cube(s) to ${CITIES_DATA[neighbor].name}.`);
                 
                 for (let j = 0; j < cubesToAdd; j++) {
-                    if (gs.gamePhase === GamePhase.GameOver || gs.gamePhase === GamePhase.ResolvingPurificationChoice) break;
+                    if (gs.gamePhase === GamePhase.GameOver) break;
                     _performInfection(gs, neighbor, color, outbreaksInTurn, newlyOutbrokenCities, 1, outbreakResults);
                     if (gs.gamePhase === GamePhase.ResolvingPurificationChoice) {
                         // An infection needs a choice. We must pause the outbreak.
