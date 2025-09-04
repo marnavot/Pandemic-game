@@ -6609,7 +6609,8 @@ const GovernmentMobilizationModal: React.FC<{
     onClose: () => void;
     onConfirm: (plannedMoves: Record<number, any>) => void;
     gameState: GameState;
-}> = ({ show, onClose, onConfirm, gameState }) => {
+    selectedCity: CityName | null; 
+}> = ({ show, onClose, onConfirm, gameState, selectedCity }) => {
     // === State Management ===
     const [plannedMoves, setPlannedMoves] = useState<Record<number, any>>({});
     const [viewingPlayerId, setViewingPlayerId] = useState<number | null>(null);
