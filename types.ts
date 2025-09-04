@@ -1141,6 +1141,8 @@ legionsToAdd?: number;
 isFreeAction?: boolean;
 }
 
+export type ResolvingVaeVictis = { maxToRemove: number };
+
 export function isFallOfRomeDiseaseColor(color: DiseaseColor): color is FallOfRomeDiseaseColor {
 return color === DiseaseColor.Blue ||
 color === DiseaseColor.Orange ||
