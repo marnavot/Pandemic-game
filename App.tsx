@@ -588,7 +588,7 @@ export const App: React.FC = () => {
         const cityData = FALLOFROME_CITIES_DATA[player.location as keyof typeof FALLOFROME_CITIES_DATA];
         if (!cityData || !cityData.boardColors) return;
     
-        const cityColors = new Set(cityData.boardColors);
+        const cityColors = new Set<DiseaseColor>(cityData.boardColors);
         const otherPlayersInCity = gameState.players.filter(p => p.id !== player.id && p.location === player.location);
     
         otherPlayersInCity.forEach(otherPlayer => {
@@ -768,7 +768,7 @@ export const App: React.FC = () => {
         const cityData = FALLOFROME_CITIES_DATA[player.location as keyof typeof FALLOFROME_CITIES_DATA];
         if (!cityData?.boardColors) return;
 
-        const cityColors = new Set(cityData.boardColors);
+        const cityColors = new Set<DiseaseColor>(cityData.boardColors);
         const validCards = player.hand.filter(c => c.type === 'city' && cityColors.has(c.color)) as (PlayerCard & { type: 'city' })[];
 
         if (validCards.length === 0) return;
