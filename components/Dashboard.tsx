@@ -256,7 +256,7 @@ const Dashboard: React.FC<{
         return true;
     }
 
-    const destinationData = CITIES_DATA[destinationCity];
+    const destinationData = CITIES_DATA[destinationCity] as City;
     if (!destinationData) return false;
     
     // This now works for both Fall of Rome's `boardColors` and Iberia's single `color`
