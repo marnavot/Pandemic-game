@@ -5,7 +5,7 @@ import Modal from './Modal';
 import { GameState, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, PlayerRole, CITIES_DATA, CONNECTIONS, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, EventCardName, ALL_EVENT_CARDS, PLAYER_ROLE_INFO, EVENT_CARD_INFO, GamePhase, ShareOption, RemoteTreatmentSelection, CureOptionForModal, CureActionPayload, VirulentStrainEpidemicCardName, VIRULENT_STRAIN_EPIDEMIC_INFO, MutationEventCardName, MUTATION_EVENT_CARD_INFO, ON_THE_BRINK_EVENTS, IN_THE_LAB_EVENTS, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, FALLOFROME_MIGRATION_PATHS, FALLOFROME_BARBARIAN_SUPPLY_DATA, InfectionResult, BattleModalState, BattleDieResult, IBERIA_CITIES_DATA, IBERIA_PORT_CITIES, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, City } from '../types';
 import { PlayerCardDisplay, InfectionCardDisplay, PlayableEvents, FieldOperativeActions, DISEASE_TEXT_COLOR_MAP, CITY_COLOR_CLASSES, getCardDisplayName, InfectionResultList } from '../hooks/ui';
 import { generateEpidemicReport } from '../services/geminiService';
-import { safeCloneGameState, isReachableByTrain } from '../utils';
+import { safeCloneGameState, isReachableByTrain, getCityDataForGame } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
