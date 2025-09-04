@@ -11,6 +11,7 @@ import { generateGameOverReport } from './services/geminiService';
 import { useGameLogic } from './hooks/useGameLogic.tsx';
 import { GameModals } from './components/GameModals';
 import { createGame, getGameStream, updateGame, getGame, isFirebaseInitialized, joinGame, setPlayerOnlineStatus, updatePlayerName } from './services/firebase';
+import { getCityDataForGame } from './utils';
 
 const getLocalPlayerId = (): number | null => {
     const id = localStorage.getItem('pandemicPlayerId');
