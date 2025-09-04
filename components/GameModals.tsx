@@ -1459,7 +1459,7 @@ const VestalisOutOfTurnActions: React.FC<{
         }
         const vestalisCityData = FALLOFROME_CITIES_DATA[vestalis.location as keyof typeof FALLOFROME_CITIES_DATA];
         if (!vestalisCityData?.boardColors) return false;
-        const cityColors = new Set(vestalisCityData.boardColors);
+        const cityColors: Set<DiseaseColor> = new Set(vestalisCityData.boardColors);
         return vestalis.hand.some(c => c.type === 'city' && cityColors.has(c.color));
     }, [gameState.players, gameState.gameType, gameState.eventDeck, vestalis]);
 
