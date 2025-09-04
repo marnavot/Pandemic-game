@@ -896,10 +896,10 @@ const canRecruitArmy = inActionPhase &&
                     onClick={() => onAction('Train', { destination: selectedCity })}
                     className="bg-stone-500 hover:bg-stone-400 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold"
                 >
-                    {T.moveTrain}
+                    {T.moveTrain!}
                 </button>
             )}
-            {['fallOfRome', 'iberia'].includes(gameState.gameType) && <button disabled={!canSail} onClick={() => onAction('Sail', { destination: selectedCity })} className="bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">{T.moveSea}</button>}
+            {['fallOfRome', 'iberia'].includes(gameState.gameType) && <button disabled={!canSail} onClick={() => onAction('Sail', { destination: selectedCity })} className="bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">{T.moveSea!}</button>}
             {gameState.gameType === 'iberia' && (
                 <>
                     <button
@@ -926,7 +926,7 @@ const canRecruitArmy = inActionPhase &&
                   onClick={() => onAction('BuildHospital')}
                   className="bg-rose-600 hover:bg-rose-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold"
               >
-                  {T.buildHospital}
+                  {T.buildHospital!}
               </button>
             )}
             {gameState.gameType === 'iberia' && (
