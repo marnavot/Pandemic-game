@@ -6387,7 +6387,7 @@ const PurifyWaterModal: React.FC<{
         // Method 1: Card matches city color
         const regionData = IBERIA_REGIONS.find(r => r.name === selectedRegion);
         if (regionData) {
-            const regionCityColors = new Set(regionData.vertices.map(v => CITIES_DATA[v].color));
+            const regionCityColors: Set<DiseaseColor> = new Set(regionData.vertices.map(v => CITIES_DATA[v].color));
             playerHand.forEach(card => {
                 if (regionCityColors.has(card.color)) {
                     options.push({ region: selectedRegion, card, reason: `Matches a city of the ${card.color} color in this region.` });
