@@ -1,7 +1,36 @@
 import { GameState } from '../types';
 
 // Define all the terms that change between game modes
-const terms = {
+
+// NEW: A unified interface for all terminology sets.
+// Properties not present in all game types are optional.
+interface Terminology {
+  outbreak: string;
+  outbreaks: string;
+  outbreakMarker: string;
+  infection: string;
+  infect: string;
+  infectionRate: string;
+  infectionDeck: string;
+  infectionDiscard: string;
+  disease: string;
+  diseases: string;
+  treatDisease: string;
+  cure: string;
+  cures: string;
+  cured: string;
+  discoverCure: string;
+  epidemic: string;
+  researchStation: string;
+  playerDeck: string;
+  moveGround: string;
+  moveSea?: string;
+  moveTrain?: string;
+  buildHospital?: string;
+}
+
+// UPDATED: The terms object is now typed with our new interface.
+const terms: { [key in 'pandemic' | 'fallOfRome' | 'iberia']: Terminology } = {
   pandemic: {
     outbreak: 'Outbreak',
     outbreaks: 'Outbreaks',
@@ -76,7 +105,8 @@ const terms = {
  * @param gameState The current game state.
  * @returns An object containing the correct terms for the active game type.
  */
-export const getTerminology = (gameState: GameState) => {
+// UPDATED: The function now explicitly returns our new Terminology type.
+export const getTerminology = (gameState: GameState): Terminology => {
   const gameType = gameState.gameType || 'pandemic';
   return terms[gameType];
 };
