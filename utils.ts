@@ -1,4 +1,4 @@
-import { CityName, CONNECTIONS, CITIES_DATA, GameState } from './types';
+import { CityName, CONNECTIONS, CITIES_DATA, GameState, IBERIA_CITIES_DATA, FALLOFROME_CITIES_DATA, PANDEMIC_CITIES_DATA } from './types';
 
 export const shuffle = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -104,4 +104,18 @@ export const isReachableByTrain = (
 
   // 3. If loop finishes, 'end' was not reached
   return false;
+};
+
+export const getCityDataForGame = (city: CityName, gameType: 'pandemic' | 'fallOfRome' | 'iberia') => {
+    switch (gameType) {
+        case 'iberia':
+            // Prioritize Iberia data for Iberia games
+            return IBERIA_CITIES_DATA[city as keyof typeof IBERIA_CITIES_DATA] || CITIES_DATA[city];
+        case 'fallOfRome':
+            return FALLOFROME_CITIES_DATA[city as keyof typeof FALLOFROME_CITIES_DATA] || CITIES_DATA[city];
+        case 'pandemic':
+        default:
+            // MUST prioritize Pandemic data for Pandemic games to get blue Madrid
+            return PANDEMIC_CITIES_DATA[city as keyof typeof PANDEMIC_CITIES_DATA] || CITIES_DATA[city];
+    }
 };
