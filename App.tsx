@@ -439,7 +439,7 @@ export const App: React.FC = () => {
                     validCards: [],
                 });
             } else {
-                const destinationData = CITIES_DATA[destination];
+                const destinationData = getCityDataForGame(destination, gameState.gameType) as City;
                 if (!destinationData) return;
                 // This is the key change to make the color check generic
                 const destinationColors = new Set(destinationData.boardColors || [destinationData.color]);
