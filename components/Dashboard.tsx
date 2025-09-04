@@ -423,9 +423,9 @@ const canLocalLiaisonShare = useMemo(() => {
         return false;
     }
 
-    const liaisonCity = CITIES_DATA[currentPlayer.location];
+    const liaisonCity = CITIES_DATA[currentPlayer.location] as City;
     // For Pandemic, boardColors is undefined, so we use the single color. For FoR, we use boardColors.
-    const liaisonCityColors = (CITIES_DATA[liaisonCity.location] as any).boardColors || [liaisonCity.color];
+    const liaisonCityColors = liaisonCity.boardColors || [liaisonCity.color];
     const cityCardsInHand = currentPlayer.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
 
     // Iterate through each color of the city the Liaison is in.
