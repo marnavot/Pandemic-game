@@ -193,7 +193,7 @@ export const useGameLogic = () => {
     // The two functions below are mutually recursive. They are defined as function declarations
     // so they are hoisted and can call each other regardless of order.
     function _performOutbreak(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], isFromOverflow: boolean, outbreakResults: InfectionResult[]): void {
-        if (outbreaksInTurn.has(city) || gs.gamePhase === GamePhase.GameOver) return;
+        if (outbreaksInTurn.has(city)) return;
         
         if (gs.infectionZoneBanPlayerId !== null && newlyOutbrokenCities.length > 0) {
             gs.log.unshift(`- Infection Zone Ban prevents chain reaction outbreak in ${CITIES_DATA[city].name}.`);
