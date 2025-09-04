@@ -2828,7 +2828,7 @@ const ShareKnowledgeModal: React.FC<{
     options: ShareOption[];
     onConfirm: (option: ShareOption) => void;
     players: Player[];
-    gameType: 'pandemic' | 'fallOfRome';
+    gameType: 'pandemic' | 'fallOfRome' | 'iberia';
 }> = ({ show, onClose, options, onConfirm, players, gameType }) => (
     <Modal title={gameType === 'fallOfRome' ? 'Plot' : 'Share Knowledge'} show={show} onClose={onClose}>
         <div className="space-y-3">
