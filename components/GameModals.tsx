@@ -9,19 +9,6 @@ import { safeCloneGameState, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
-const getCityDataForGame = (city: CityName, gameType: 'pandemic' | 'fallOfRome' | 'iberia') => {
-    switch (gameType) {
-        case 'iberia':
-            // Prioritize Iberia data for Iberia games
-            return IBERIA_CITIES_DATA[city as keyof typeof IBERIA_CITIES_DATA] || CITIES_DATA[city];
-        case 'fallOfRome':
-            return FALLOFROME_CITIES_DATA[city as keyof typeof FALLOFROME_CITIES_DATA] || CITIES_DATA[city];
-        case 'pandemic':
-        default:
-            // MUST prioritize Pandemic data for Pandemic games to get blue Madrid
-            return PANDEMIC_CITIES_DATA[city as keyof typeof PANDEMIC_CITIES_DATA] || CITIES_DATA[city];
-    }
-};
 
 const EventCardImage: React.FC<{ cardName: EventCardName }> = ({ cardName }) => {
     const extensionsToTry = useMemo(() => ['jpg', 'png', 'jpeg', 'webp'], []);
