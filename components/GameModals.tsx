@@ -6678,7 +6678,7 @@ const GovernmentMobilizationModal: React.FC<{
     const renderCardSelection = () => {
         if (!viewingPlayer || !tempMoveData || tempMoveData.moveType !== 'Ship') return null;
 
-        const destinationData = CITIES_DATA[tempMoveData.destination];
+        const destinationData = getCityDataForGame(destination, gameState.gameType) as City;
         const requiredColors = new Set(destinationData.boardColors || [destinationData.color]);
         const validCards = viewingPlayer.hand.filter(c => c.type === 'city' && requiredColors.has(c.color)) as (PlayerCard & { type: 'city' })[];
 
