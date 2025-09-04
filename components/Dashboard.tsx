@@ -198,7 +198,7 @@ const Dashboard: React.FC<{
     // Method 1: Card matches a city color in the adjacent region
     const regionData = IBERIA_REGIONS.find(r => r.name === selectedRegion);
     if (regionData) {
-        const regionCityColors = new Set(regionData.vertices.map(v => CITIES_DATA[v].color));
+        const regionCityColors: Set<DiseaseColor> = new Set(regionData.vertices.map(v => CITIES_DATA[v].color));
         const hasMatchingCityCard = playerHand.some(card => regionCityColors.has(card.color));
         if (hasMatchingCityCard) return true;
     }
