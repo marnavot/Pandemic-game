@@ -1257,10 +1257,21 @@ export const useGameLogic = () => {
                     // Handle legions/barbarians for Fall of Rome
                     if (newState.gameType === 'fallOfRome') {
                         if (actualLegionsToMove > 0) {
-                            // ... (rest of legion moving logic, no changes needed here) ...
-                        }
-                        if (barbariansToMove && Object.values(barbariansToMove).some(c => c > 0)) {
-                            // ... (rest of barbarian moving logic, no changes needed here) ...
+                            let removedCount = 0;
+                            const newLegions: CityName[] = [];
+                            (newState.legions || []).forEach(l => {
+                                if (l === startCity && removedCount < actualLegionsToMove) {
+                                    removedCount++;
+                                } else {
+                                    newLegions.push(l);
+                                }
+                            });
+                            for (let i = 0; i < actualLegionsToMove; i++) {
+                                newLegions.push(destination);
+                            }
+                            newState.legions = newLegions;
+                            // This line correctly prepares the log message
+                            takingStr = `${actualLegionsToMove} legion(s)`;
                         }
                     }
                     
