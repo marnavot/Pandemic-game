@@ -193,7 +193,7 @@ export const useGameLogic = () => {
     // The two functions below are mutually recursive. They are defined as function declarations
     // so they are hoisted and can call each other regardless of order.
     function _performOutbreak(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], isFromOverflow: boolean, outbreakResults: InfectionResult[]): void {
-        if (outbreaksInTurn.has(city)) return;
+        if (outbreaksInTurn.has(city) || gs.gamePhase === GamePhase.GameOver) return;
         
         if (gs.infectionZoneBanPlayerId !== null && newlyOutbrokenCities.length > 0) {
             gs.log.unshift(`- Infection Zone Ban prevents chain reaction outbreak in ${CITIES_DATA[city].name}.`);
@@ -280,10 +280,7 @@ export const useGameLogic = () => {
 
     function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[]): InfectionResult {
         const result: InfectionResult = { city, color, defended: false, defenseType: null, legionsRemoved: 0, cubesAdded: 0, outbreak: false };
-        if (gs.gamePhase === GamePhase.GameOver) {
-            if (outbreakResults) outbreakResults.push(result);
-            return result;
-        }
+
         if (gs.gameType === 'iberia' && gs.nursePreventionTokenLocation) {
             const adjacentRegions = IBERIA_CITY_TO_REGIONS_MAP[city] || [];
             if (adjacentRegions.includes(gs.nursePreventionTokenLocation)) {
