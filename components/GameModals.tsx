@@ -6144,7 +6144,6 @@ interface GameModalsProps {
     onConfirmAcknowledgeForecast: () => void;
     onCancelAcknowledgeForecast: () => void;
     handleConfirmGovernmentMoves: (plannedMoves: any) => void;
-    onCancelEventResolution: () => void;
     sailorPassengerModalState: { isOpen: boolean; destination: CityName | null; passengers: Player[] }; 
     setSailorPassengerModalState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; destination: CityName | null; passengers: Player[] }>>;
     dispatcherTargetId: number | null; 
