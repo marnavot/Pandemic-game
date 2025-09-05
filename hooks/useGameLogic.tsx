@@ -1476,7 +1476,7 @@ export const useGameLogic = () => {
                     const cityColor = cityData.color;
                 
                     // Rule: Can't build non-standard color hospitals
-                    if (cityColor === DiseaseColor.Purple || cityColor === DiseaseColor.White || cityColor === DiseaseColor.Green || cityColor === DiseaseColor.Orange) {
+                    if (cityColor === DiseaseColor.White || cityColor === DiseaseColor.Green || cityColor === DiseaseColor.Orange) {
                         logEvent(`Cannot build a hospital in a city of color ${cityColor}.`);
                         break;
                     }
