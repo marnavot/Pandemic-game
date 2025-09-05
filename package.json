@@ -7,14 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --host --port 8080"
+    "start": "vite build && serve -s dist -l tcp://0.0.0.0:${PORT}"
   },
   "dependencies": {
     "react": "^19.1.0",
     "@google/genai": "^1.7.0",
     "react-dom": "^19.1.0",
     "firebase": "^11.10.0",
-    "vite": "^5.3.3"
+    "vite": "^5.3.3",
+    "serve": "^14.2.3"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
