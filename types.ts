@@ -1014,9 +1014,6 @@ pendingScienceTriumphChoice: {
 forts: CityName[];
 fortRelocationTargetCity: CityName | null;
 legions: CityName[];
-aleaIactaEstStatus: 'inactive' | 'normal_available' | 'corrupt_active';
-abundansCautelaStatus: 'inactive' | 'normal_active' | 'corrupt_active';
-veniVidiViciStatus: 'inactive' | 'corrupt_battle_pending';
 
 //Iberia specific state
 purificationTokens: { [key: string]: number };
