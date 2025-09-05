@@ -5489,7 +5489,7 @@ export const useGameLogic = () => {
             const currentPlayer = newState.players[newState.currentPlayerIndex];
             const nextPlayer = newState.players[(newState.currentPlayerIndex + 1) % newState.players.length];
             
-            const isActionPhase = prevState.gamePhase === GamePhase.PlayerAction;
+            const isActionPhase = prevState.phaseBeforeEvent === GamePhase.PlayerAction;
             
             let actionsToAdd = 0;
             let logMessage = `${currentPlayer.name} plays Carpe Diem. `;
