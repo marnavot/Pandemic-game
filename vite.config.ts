@@ -8,6 +8,6 @@ export default defineConfig({
     'process.env.API_KEY': `"${process.env.API_KEY}"`
   },
   preview: {
-    allowedHosts: ['.run.app']
+    allowedHosts: ['*']
   }
 })
