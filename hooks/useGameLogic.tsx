@@ -948,7 +948,7 @@ export const useGameLogic = () => {
                 
                 cityCardsInHand.forEach(card => {
                     const cityData = CITIES_DATA[card.name];
-                    if (cityData.distanceFromRoma !== undefined && cityData.distanceFromRoma > maxDistance) {
+                    if ('distanceFromRoma' in cityData && cityData.distanceFromRoma !== undefined && cityData.distanceFromRoma > maxDistance) {
                         maxDistance = cityData.distanceFromRoma;
                         playerWithFarthestCity = player.id;
                     }
