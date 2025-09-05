@@ -6,5 +6,9 @@ export default defineConfig({
   plugins: [react()],
   define: {
     'process.env.API_KEY': `"${process.env.API_KEY}"`
+  },
+  preview: {
+    host: true,
+    port: 8080
   }
 })
