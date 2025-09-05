@@ -3725,7 +3725,7 @@ export const useGameLogic = () => {
                                 newState.log.unshift(`- ${resultMessage}`);
                                 if (newlyOutbrokenCities.length > 0) {
                                     const cityNames = newlyOutbrokenCities.map(c => CITIES_DATA[c].name).join(', ');
-                                    generateOutbreakReport(cityNames, newState.useAiNarratives).then(msg => msg && setModalContent({ title: "OUTBREAK ALERT", body: msg, color: "text-red-500" }));
+                                    generateOutbreakReport(cityNames, newState.useAiNarratives, newState.gameType).then(msg => msg && setModalContent({ title: "OUTBREAK ALERT", body: msg, color: "text-red-500" }));
                                 }
                             } else {
                                 resultMessage = `The Mutation Threatens! was drawn, but it pulled another Mutation card from the bottom of the deck. No effect.`;
