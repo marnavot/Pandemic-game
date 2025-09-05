@@ -80,7 +80,7 @@ export const generateCureDiscoveredReport = async (diseaseColor: string, useAi: 
     return generateText(prompt);
 };
 
-export const generateOutbreakReport = async (cityNames: string, useAi: boolean, gameType: 'pandemic' | 'fallOfRome'): Promise<string | null> => {
+export const generateOutbreakReport = async (cityNames: string, useAi: boolean, gameType: 'pandemic' | 'fallOfRome' | 'iberia'): Promise<string | null> => {
     const isFallOfRome = gameType === 'fallOfRome';
     const isChainReaction = cityNames.includes(',');
 
@@ -124,4 +124,5 @@ export const generateGameOverReport = async (win: boolean, reason: string | null
         ? `Generate a triumphant final news report for the history books. Humanity has won! The official summary is: "${reason}". Elaborate on this glorious victory.`
         : `Generate a somber, final broadcast to the world. The pandemic has overwhelmed us. It's over. Humanity has lost. The official cause of failure is: "${reason}". Report on this catastrophic event, explaining how it happened.`;
     return generateText(prompt);
+
 };
