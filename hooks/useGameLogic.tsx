@@ -4110,7 +4110,7 @@ export const useGameLogic = () => {
             const vestalisCityData = FALLOFROME_CITIES_DATA[vestalis.location as keyof typeof FALLOFROME_CITIES_DATA];
             if (!vestalisCityData?.boardColors) return prevState;
     
-            const cityColors = new Set(vestalisCityData.boardColors);
+            const cityColors = new Set<DiseaseColor>(vestalisCityData.boardColors);
             const validDiscards = vestalis.hand.filter(c => c.type === 'city' && cityColors.has(c.color)) as (PlayerCard & { type: 'city' })[];
     
             if (validDiscards.length === 0) {
@@ -4153,7 +4153,7 @@ export const useGameLogic = () => {
             }
     
             const vestalisCityData = FALLOFROME_CITIES_DATA[vestalis.location as keyof typeof FALLOFROME_CITIES_DATA];
-            const cityColors = new Set(vestalisCityData.boardColors);
+            const cityColors = new Set<DiseaseColor>(vestalisCityData.boardColors);
             const validDiscards = vestalis.hand.filter(c => c.type === 'city' && cityColors.has(c.color)) as (PlayerCard & { type: 'city' })[];
     
             newState.gamePhase = GamePhase.ResolvingVestalisDraw;
