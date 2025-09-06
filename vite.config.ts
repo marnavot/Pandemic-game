@@ -8,7 +8,6 @@ export default defineConfig({
     'process.env.API_KEY': `"${process.env.API_KEY}"`
   },
   preview: {
-    host: true,
-    port: 8080
+    allowedHosts: ["pandemic-app-351119674329.europe-west1.run.app"]
   }
 })
