@@ -1,14 +1,26 @@
 
-
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = process.env.API_KEY;
+// Module-level variable to hold the client instance. Initialized to null.
+let ai: GoogleGenAI | null = null;
 
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. AI features will be disabled.");
-}
+// Lazily initialize and get the AI client
+const getAiClient = (): GoogleGenAI | null => {
+    if (ai) {
+        return ai;
+    }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
+    const API_KEY = process.env.API_KEY;
+
+    if (API_KEY) {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+        return ai;
+    } else {
+        console.warn("API_KEY environment variable not set. AI features will be disabled.");
+        return null;
+    }
+};
+
 
 // Helper function to introduce a delay
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -18,10 +30,11 @@ const generateText = async (
   retries = 5,
   delay = 2000
 ): Promise<string | null> => {
-  if (!API_KEY) return null;
+  const aiClient = getAiClient();
+  if (!aiClient) return null; // Gracefully exit if no client
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await aiClient.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
