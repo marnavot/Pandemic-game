@@ -1,4 +1,3 @@
-
 // Modular imports for Firebase v9+
 import * as firebase from "firebase/app";
 import { 
@@ -38,21 +37,34 @@ let app: firebase.FirebaseApp | null = null;
 let db: Firestore | null = null;
 export let isFirebaseInitialized = false;
 
-// Conditionally initialize Firebase
-if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-    try {
-        app = firebase.initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        isFirebaseInitialized = true;
-        console.log("Firebase connected successfully using modern modular SDK.");
-    } catch (e) {
-        console.error("Firebase initialization failed:", e);
+// Function to initialize Firebase on demand, preventing crashes on startup.
+const initializeFirebase = () => {
+    if (isFirebaseInitialized) {
+        return; // Already initialized, do nothing.
     }
-} else {
-    console.warn("Firebase config is missing or incomplete in services/firebase.ts. Multiplayer features will be disabled.");
-}
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+        try {
+            // Check if an app is already initialized to prevent errors in hot-reloading environments.
+            if (!firebase.getApps().length) {
+                app = firebase.initializeApp(firebaseConfig);
+            } else {
+                app = firebase.getApp(); // Get the default app if it already exists.
+            }
+            db = getFirestore(app);
+            isFirebaseInitialized = true;
+            console.log("Firebase connected successfully on-demand.");
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            isFirebaseInitialized = false; // Ensure this is false on failure.
+        }
+    } else {
+        console.warn("Firebase config is missing or incomplete in services/firebase.ts. Multiplayer features will be disabled.");
+    }
+};
+
 
 const gamesCollectionRef = () => {
+    initializeFirebase(); // Ensure initialization before use
     if (!db) throw new Error("Firebase not initialized.");
     return collection(db, 'games');
 };
@@ -63,6 +75,7 @@ const gamesCollectionRef = () => {
  * @returns The unique ID of the newly created game.
  */
 export const createGame = async (initialGameState: GameState): Promise<string> => {
+    initializeFirebase();
     if (!isFirebaseInitialized) throw new Error("Firebase is not configured. Cannot create multiplayer game.");
     try {
         // Sanitize the data before sending it to Firebase
@@ -82,6 +95,7 @@ export const createGame = async (initialGameState: GameState): Promise<string> =
  * @param gameState The new state to save.
  */
 export const updateGame = async (gameId: string, gameState: GameState): Promise<void> => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
     // Sanitize the data before sending it to Firebase
@@ -96,6 +110,7 @@ export const updateGame = async (gameId: string, gameState: GameState): Promise<
  * @returns The GameState or null if not found.
  */
 export const getGame = async (gameId: string): Promise<GameState | null> => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) return null;
     const gameDocRef = doc(db, 'games', gameId);
     const docSnap = await getDoc(gameDocRef);
@@ -115,6 +130,7 @@ export const getGame = async (gameId: string): Promise<GameState | null> => {
  * @returns An unsubscribe function to stop listening for updates.
  */
 export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) => void): Unsubscribe => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) {
         console.error("Firebase not initialized, cannot create game stream.");
         return () => {}; // Return a no-op unsubscribe function
@@ -142,6 +158,7 @@ export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) =
  * @returns The player ID assigned to the new player, or null if the lobby is full.
  */
 export const joinGame = async (gameId: string): Promise<number | null> => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) throw new Error("Firebase not configured.");
     const gameDocRef = doc(db, 'games', gameId);
     
@@ -174,6 +191,7 @@ export const joinGame = async (gameId: string): Promise<number | null> => {
  * @param name The new name for the player.
  */
 export const updatePlayerName = async (gameId: string, playerId: number, name: string): Promise<void> => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
     await updateDoc(gameDocRef, {
@@ -188,6 +206,7 @@ export const updatePlayerName = async (gameId: string, playerId: number, name: s
  * @param isOnline The online status.
  */
 export const setPlayerOnlineStatus = async (gameId: string, playerId: number, isOnline: boolean): Promise<void> => {
+    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
     try {
