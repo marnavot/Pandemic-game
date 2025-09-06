@@ -121,9 +121,11 @@ const Dashboard: React.FC<{
   onViewAllHands: () => void;
   selectedConnection: { from: CityName, to: CityName } | null;
   selectedRegion: string | null;
-  onInitiateRailwaymanDoubleBuild: () => void; 
+  onInitiateRailwaymanDoubleBuild: () => void;
+  cityNameFontSize: number;
+  onSetCityNameFontSize: (size: number) => void;
   
-}> = ({ gameState, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild }) => {
+}> = ({ gameState, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
@@ -1108,6 +1110,22 @@ const canRecruitArmy = inActionPhase &&
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
               </div>
             </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="font-size-slider" className="text-sm">City Name Font Size</label>
+              <div className="flex items-center space-x-2">
+                <input
+                  id="font-size-slider"
+                  type="range"
+                  min="8"
+                  max="20"
+                  step="1"
+                  value={cityNameFontSize}
+                  onChange={(e) => onSetCityNameFontSize(parseInt(e.target.value, 10))}
+                  className="w-24 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-sm w-8 text-center font-mono">{cityNameFontSize}px</span>
+              </div>
+            </div>
              <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm">Sound Effects</span>
               <div className="relative">
