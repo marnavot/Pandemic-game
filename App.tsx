@@ -35,6 +35,7 @@ export const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+        const [cityNameFontSize, setCityNameFontSize] = useState<number>(12);
         const saved = localStorage.getItem('soundEffectsEnabled');
         // Default to true if not set
         return saved !== 'false';
@@ -910,7 +911,8 @@ export const App: React.FC = () => {
                     selectedRegion={selectedRegion}
                     onRegionClick={handleRegionClick}
                     highlightedRegions={highlightedRegions}
-                    highlightedConnections={highlightedConnections} 
+                    highlightedConnections={highlightedConnections}
+                    cityNameFontSize={cityNameFontSize}
                     />
             </div>
             <div className="w-[380px] h-full p-2 flex-shrink-0">
@@ -1001,6 +1003,7 @@ export const App: React.FC = () => {
                     onInitiatePoliticianGiveCard={() => setPoliticianGiveModalOpen(true)}
                     onInitiatePoliticianSwapCard={() => setPoliticianSwapModalOpen(true)}
                     onInitiateRoyalAcademyScientistForecast={() => handleAction('RoyalAcademyScientistForecast', null, dispatcherTargetId)}
+                    cityNameFontSize={cityNameFontSize} 
                 />
             </div>
             
