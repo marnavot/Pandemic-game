@@ -35,11 +35,11 @@ export const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
-        const [cityNameFontSize, setCityNameFontSize] = useState<number>(12);
         const saved = localStorage.getItem('soundEffectsEnabled');
         // Default to true if not set
         return saved !== 'false';
     });
+    const [cityNameFontSize, setCityNameFontSize] = useState<number>(12);
     const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
     const [highlightedConnections, setHighlightedConnections] = useState<({ from: CityName, to: CityName })[]>([]);
     const [newRailsSelections, setNewRailsSelections] = useState<{ from: CityName, to: CityName }[]>([]);
