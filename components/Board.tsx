@@ -89,7 +89,8 @@ const CityMarker: React.FC<{
   isSelected: boolean;
   isHighlighted: boolean;
   showName: boolean;
-}> = ({ city, cityName, gameState, onCityClick, isSelected, isHighlighted, showName }) => {
+  cityNameFontSize: number;
+}> = ({ city, cityName, gameState, onCityClick, isSelected, isHighlighted, showName, cityNameFontSize }) => {
   const cubes = gameState.diseaseCubes[cityName] || {};
   const hasStation = gameState.researchStations.includes(cityName);
   const hasFort = gameState.gameType === 'fallOfRome' && gameState.forts?.includes(cityName);
@@ -121,8 +122,8 @@ const CityMarker: React.FC<{
 
         {/* City Name Label/Tooltip */}
         <span
-          className={`absolute bottom-full mb-2 w-max px-2 py-1 text-xs text-center text-white bg-black bg-opacity-70 rounded-md transition-opacity pointer-events-none ${showName ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-          style={{ textShadow: '1px 1px 2px #000' }}
+          className={`absolute bottom-full mb-2 w-max px-2 py-1 text-center text-white bg-black bg-opacity-70 rounded-md transition-opacity pointer-events-none ${showName ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+          style={{ textShadow: '1px 1px 2px #000', fontSize: `${cityNameFontSize}px` }}
         >
           {city.name}
         </span>
@@ -299,8 +300,9 @@ const Board: React.FC<{
   onConnectionClick: (from: CityName, to: CityName) => void;
   selectedRegion: string | null;
   onRegionClick: (regionName: string) => void;
-  highlightedConnections?: { from: CityName; to: CityName }[]; 
-}> = ({ gameState, onCityClick, selectedCity, showCityNames, highlightedCities = [], highlightedRegions = [], selectedConnection, onConnectionClick, selectedRegion, onRegionClick, highlightedConnections = []  }) => {
+  highlightedConnections?: { from: CityName; to: CityName }[];
+  cityNameFontSize: number;
+}> = ({ gameState, onCityClick, selectedCity, showCityNames, highlightedCities = [], highlightedRegions = [], selectedConnection, onConnectionClick, selectedRegion, onRegionClick, highlightedConnections = [], cityNameFontSize  }) => {
   const DELIMITER = '_||_'; // Using a safer delimiter to avoid issues with names containing hyphens
   
   const { citiesToRenderData, connectionsToRender, backgroundImage } = useMemo(() => {
@@ -642,6 +644,7 @@ const Board: React.FC<{
           isSelected={selectedCity === cityName}
           isHighlighted={highlightedCities.includes(cityName as CityName)}
           showName={showCityNames}
+          cityNameFontSize={cityNameFontSize}
         />
       ))}
       {gameState.players.map((player, index) => (
