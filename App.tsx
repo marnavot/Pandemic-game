@@ -1004,6 +1004,7 @@ export const App: React.FC = () => {
                     onInitiatePoliticianSwapCard={() => setPoliticianSwapModalOpen(true)}
                     onInitiateRoyalAcademyScientistForecast={() => handleAction('RoyalAcademyScientistForecast', null, dispatcherTargetId)}
                     cityNameFontSize={cityNameFontSize} 
+                    onSetCityNameFontSize={setCityNameFontSize}
                 />
             </div>
             
