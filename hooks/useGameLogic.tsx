@@ -5755,54 +5755,69 @@ export const useGameLogic = () => {
     const handleResolveTelegraphMessage = useCallback((payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => {
         setGameState(prevState => {
             if (!prevState || prevState.gamePhase !== GamePhase.ResolvingTelegraphMessage) return prevState;
-            
+    
             const newState = safeCloneGameState(prevState);
             const { fromPlayerId, toPlayerId, cardsToGive } = payload;
-            
+    
             const fromPlayer = newState.players.find(p => p.id === fromPlayerId);
             const toPlayer = newState.players.find(p => p.id === toPlayerId);
-            
+    
             if (!fromPlayer || !toPlayer) {
-                logEvent("Error: Could not find players for Telegraph Message.");
+                logEvent("Error resolving Telegraph Message: Players not found.");
                 newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
                 newState.phaseBeforeEvent = null;
                 return newState;
             }
-            
+    
+            // Move cards from sender to receiver
             const cardKeysToMove = new Set(cardsToGive.map(c => `${c.name}|${c.color}`));
             const cardsActuallyMoved: PlayerCard[] = [];
-            
-            // Remove cards from the sender's hand
             fromPlayer.hand = fromPlayer.hand.filter(card => {
                 if (card.type === 'city' && cardKeysToMove.has(`${card.name}|${card.color}`)) {
                     cardsActuallyMoved.push(card);
-                    cardKeysToMove.delete(`${card.name}|${card.color}`); // Prevent removing duplicates
+                    cardKeysToMove.delete(`${card.name}|${card.color}`);
                     return false;
                 }
                 return true;
             });
-            
-            // Add the moved cards to the receiver's hand
             toPlayer.hand.push(...cardsActuallyMoved);
-            
             const cardNames = cardsActuallyMoved.map(c => getCardDisplayName(c)).join(', ');
-            logEvent(`${fromPlayer.name} sends ${cardsActuallyMoved.length} card(s) (${cardNames}) to ${toPlayer.name} via Telegraph Message.`);
-            
-            // Restore the game phase from before the event was played
-            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-            newState.phaseBeforeEvent = null;
-            
-            // IMPORTANT: Check if the receiving player is now over their hand limit
-            const handLimit = getHandLimit(toPlayer);
-            if (toPlayer.hand.length > handLimit) {
-                newState.playerToDiscardId = toPlayer.id;
-                newState.gamePhase = GamePhase.Discarding; // This phase takes priority
-                discardTriggerRef.current = 'action'; // Treat this as an action-based discard
-                // Store the phase we would have returned to, so we can go there after discarding
-                newState.phaseBeforeEvent = prevState.phaseBeforeEvent || GamePhase.PlayerAction; 
-                logEvent(`${toPlayer.name} is now over their hand limit and must discard.`);
+            logEvent(`${fromPlayer.name} sends ${cardNames} to ${toPlayer.name} via Telegraph Message.`);
+    
+            // --- START OF NEW LOGIC ---
+            const wasTriggeredFromDiscard = prevState.phaseBeforeEvent === GamePhase.Discarding;
+    
+            // Determine what phase should come next if no more discards are needed.
+            let nextPhaseAfterEvent: GamePhase;
+            if (wasTriggeredFromDiscard) {
+                // The event interrupted a discard. Figure out what comes after that discard sequence.
+                if (discardTriggerRef.current === 'draw') {
+                    nextPhaseAfterEvent = GamePhase.PreInfectionPhase;
+                } else { // 'action' or null
+                    nextPhaseAfterEvent = prevState.actionsRemaining > 0 ? GamePhase.PlayerAction : GamePhase.PreDrawPlayerCards;
+                }
+            } else {
+                // A normal event play, just return to the phase before the event.
+                nextPhaseAfterEvent = prevState.phaseBeforeEvent || GamePhase.PlayerAction;
             }
-            
+    
+            // Now, check if the receiver needs to discard.
+            if (toPlayer.hand.length > getHandLimit(toPlayer)) {
+                newState.playerToDiscardId = toPlayer.id;
+                newState.gamePhase = GamePhase.Discarding;
+                // CRITICAL: We clear phaseBeforeEvent so handleConfirmDiscard will use the original discardTriggerRef.
+                newState.phaseBeforeEvent = null; 
+                logEvent(`${toPlayer.name} is over their hand limit and must discard.`);
+            } else {
+                // No more discards needed. The event is fully resolved.
+                newState.gamePhase = nextPhaseAfterEvent;
+                newState.phaseBeforeEvent = null;
+                if (wasTriggeredFromDiscard) {
+                    discardTriggerRef.current = null; // The whole discard sequence is done.
+                }
+            }
+            // --- END OF NEW LOGIC ---
+    
             return newState;
         });
     }, [logEvent, getHandLimit]);
