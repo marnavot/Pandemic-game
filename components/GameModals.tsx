@@ -6908,6 +6908,62 @@ const TelegraphMessageModal: React.FC<{
                                 </button>
                             ))}
                         </div>
+                        <div className="mt-4 border-t border-gray-600 pt-4">
+                            <button
+                                onClick={() => setShowAllHands(!showAllHands)}
+                                className="w-full text-sm text-cyan-400 hover:text-cyan-300 mb-2 font-semibold text-left"
+                            >
+                                {showAllHands ? '▼ Hide All Player Hands' : '▶ Show All Player Hands'}
+                            </button>
+                            {showAllHands && (
+                                <div className="space-y-3 max-h-56 overflow-y-auto pr-2 bg-black bg-opacity-25 p-2 rounded-lg">
+                                    {gameState.players.map(player => (
+                                        <div key={player.id} className="bg-gray-700 bg-opacity-50 p-2 rounded-md">
+                                            <p className="font-bold text-sm">{player.name} <span className="text-xs text-gray-400">({player.role})</span></p>
+                                            {player.hand.length > 0 ? (
+                                                <div className="grid grid-cols-5 gap-1 mt-1">
+                                                    {player.hand.map((card, index) => (
+                                                        <div key={index} className="h-24">
+                                                            <PlayerCardDisplay card={card} isLarge={false} gameType={gameState.gameType} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-gray-500 italic mt-1">No cards in hand.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="mt-4 border-t border-gray-600 pt-4">
+                            <button
+                                onClick={() => setShowAllHands(!showAllHands)}
+                                className="w-full text-sm text-cyan-400 hover:text-cyan-300 mb-2 font-semibold text-left"
+                            >
+                                {showAllHands ? '▼ Hide All Player Hands' : '▶ Show All Player Hands'}
+                            </button>
+                            {showAllHands && (
+                                <div className="space-y-3 max-h-56 overflow-y-auto pr-2 bg-black bg-opacity-25 p-2 rounded-lg">
+                                    {gameState.players.map(player => (
+                                        <div key={player.id} className="bg-gray-700 bg-opacity-50 p-2 rounded-md">
+                                            <p className="font-bold text-sm">{player.name} <span className="text-xs text-gray-400">({player.role})</span></p>
+                                            {player.hand.length > 0 ? (
+                                                <div className="grid grid-cols-5 gap-1 mt-1">
+                                                    {player.hand.map((card, index) => (
+                                                        <div key={index} className="h-24">
+                                                            <PlayerCardDisplay card={card} isLarge={false} gameType={gameState.gameType} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-gray-500 italic mt-1">No cards in hand.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 );
             case 'select_receiver':
