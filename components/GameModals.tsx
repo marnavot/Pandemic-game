@@ -6936,7 +6936,25 @@ const TelegraphMessageModal: React.FC<{
                                 </div>
                             )}
                         </div>
-                        <div className="mt-4 border-t border-gray-600 pt-4">
+                    </div>
+                );
+            case 'select_receiver':
+                return (
+                     <div>
+                        <h3 className="text-lg font-semibold mb-4 text-center">Step 2: Who is receiving the cards?</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {gameState.players.filter(p => p.id !== senderId).map(player => (
+                                <button
+                                    key={player.id}
+                                    onClick={() => { setReceiverId(player.id); setStep('select_cards'); }}
+                                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded text-left transition-colors"
+                                >
+                                    <p className="font-bold">{player.name}</p>
+                                    <p className="text-xs text-gray-400">{player.role}</p>
+                                </button>
+                            ))}
+                        </div>
+                         <div className="mt-4 border-t border-gray-600 pt-4">
                             <button
                                 onClick={() => setShowAllHands(!showAllHands)}
                                 className="w-full text-sm text-cyan-400 hover:text-cyan-300 mb-2 font-semibold text-left"
@@ -6963,24 +6981,6 @@ const TelegraphMessageModal: React.FC<{
                                     ))}
                                 </div>
                             )}
-                        </div>
-                    </div>
-                );
-            case 'select_receiver':
-                return (
-                     <div>
-                        <h3 className="text-lg font-semibold mb-4 text-center">Step 2: Who is receiving the cards?</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            {gameState.players.filter(p => p.id !== senderId).map(player => (
-                                <button
-                                    key={player.id}
-                                    onClick={() => { setReceiverId(player.id); setStep('select_cards'); }}
-                                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded text-left transition-colors"
-                                >
-                                    <p className="font-bold">{player.name}</p>
-                                    <p className="text-xs text-gray-400">{player.role}</p>
-                                </button>
-                            ))}
                         </div>
                         <button onClick={() => setStep('select_sender')} className="w-full mt-4 text-sm text-gray-400 hover:text-white">← Back</button>
                     </div>
