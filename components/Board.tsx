@@ -305,61 +305,39 @@ const Board: React.FC<{
 }> = ({ gameState, onCityClick, selectedCity, showCityNames, highlightedCities = [], highlightedRegions = [], selectedConnection, onConnectionClick, selectedRegion, onRegionClick, highlightedConnections = [], cityNameFontSize  }) => {
   const DELIMITER = '_||_'; // Using a safer delimiter to avoid issues with names containing hyphens
   
+  const { citiesToRenderData, connectionsToRender, backgroundImage } = useMemo(() => {
+    let cities;
+    let connections;
+    let bg;
 
-  const { citiesToRenderData, connectionsToRender } = useMemo(() => {
-      let cities;
-      let connections;
-  
-      switch (gameState.gameType) {
+    switch (gameState.gameType) {
       case 'fallOfRome':
-          cities = FALLOFROME_CITIES_DATA;
-          connections = FALLOFROME_CONNECTIONS;
-          break;
+        cities = FALLOFROME_CITIES_DATA;
+        connections = FALLOFROME_CONNECTIONS;
+        bg = { 
+          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+          style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[6.5] -translate-x-[8%] -translate-y-[-177%]" 
+        };
+        break;
       case 'iberia':
-          cities = IBERIA_CITIES_DATA;
-          connections = IBERIA_CONNECTIONS;
-          break;
+        cities = IBERIA_CITIES_DATA;
+        connections = IBERIA_CONNECTIONS;
+        bg = { 
+            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+            style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[16.2] -translate-x-[-66.5%] -translate-y-[-395%]" 
+        };
+        break;
       case 'pandemic':
       default:
-          cities = PANDEMIC_CITIES_DATA;
-          connections = PANDEMIC_CONNECTIONS;
-          break;
-      }
-      return { citiesToRenderData: cities, connectionsToRender: connections };
-  }, [gameState.gameType]);
-  
-  const gameMapConfig = useMemo(() => {
-      const baseStyle: React.CSSProperties = {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          transformOrigin: 'top left', // This is crucial for consistent scaling
-      };
-  
-      switch (gameState.gameType) {
-      case 'pandemic':
-          return {
-          containerStyle: { ...baseStyle, transform: 'scaleX(1.25) scaleY(1.1) translateY(13.63%)' },
-          imageClass: 'absolute top-0 left-0 w-full h-full object-fill opacity-25 filter invert'
-          };
-      case 'fallOfRome':
-          return {
-          containerStyle: { ...baseStyle, transform: 'scale(6.5) translateX(-8%) translateY(27.23%)' },
-          imageClass: 'absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert'
-          };
-      case 'iberia':
-          return {
-          containerStyle: { ...baseStyle, transform: 'scale(16.2) translateX(66.5%) translateY(24.38%)' },
-          imageClass: 'absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert'
-          };
-      default:
-          return {
-          containerStyle: baseStyle,
-          imageClass: 'absolute top-0 left-0 w-full h-full object-fill opacity-25 filter invert'
-          };
-      }
+        cities = PANDEMIC_CITIES_DATA;
+        connections = PANDEMIC_CONNECTIONS;
+        bg = { 
+          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+          style: "absolute top-0 left-0 w-full h-full object-fill opacity-25 filter invert transform scale-x-[1.25] scale-y-[1.1] translate-y-[15%]" 
+        };
+        break;
+    }
+    return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImage: bg };
   }, [gameState.gameType]);
   
   const migrationPathSegments = new Set<string>();
