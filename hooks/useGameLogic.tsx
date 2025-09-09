@@ -5730,14 +5730,21 @@ export const useGameLogic = () => {
     
             const newState = safeCloneGameState(prevState);
             const movedPawnNames: string[] = [];
+            let wasNurseMoved = false; // Flag to track if the Nurse was moved.
     
             pawnsToMoveIds.forEach(pawnId => {
                 const pawn = newState.players.find(p => p.id === pawnId);
                 if (pawn) {
                     pawn.location = destination;
                     movedPawnNames.push(pawn.name);
+                    
+                    // Standard post-move effects for all pawns.
                     _handlePostMoveEffects(newState, pawn, 'Other');
-                    _handleNursePostMove(newState, pawn);
+                    
+                    // Check if the moved pawn is the Nurse.
+                    if (pawn.role === PlayerRole.Nurse) {
+                        wasNurseMoved = true;
+                    }
                 }
             });
     
@@ -5746,8 +5753,17 @@ export const useGameLogic = () => {
                 playSound('sail');
             }
     
-            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-            newState.phaseBeforeEvent = null;
+            // After all moves are done, check our flag.
+            if (wasNurseMoved) {
+                // If the Nurse moved, transition to her special phase.
+                const nurse = newState.players.find(p => p.role === PlayerRole.Nurse)!;
+                _handleNursePostMove(newState, nurse); // This sets gamePhase to NursePlacingPreventionToken.
+            } else {
+                // If Nurse was not moved, simply return to the previous game state.
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+            }
+            
             return newState;
         });
     };
