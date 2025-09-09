@@ -314,18 +314,27 @@ const Board: React.FC<{
       case 'fallOfRome':
         cities = FALLOFROME_CITIES_DATA;
         connections = FALLOFROME_CONNECTIONS;
-        bg = "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') -8% 27.23% / 650% auto no-repeat";
+        bg = { 
+          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+          style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[6.5] -translate-x-[8%] -translate-y-[-177%]" 
+        };
         break;
       case 'iberia':
         cities = IBERIA_CITIES_DATA;
         connections = IBERIA_CONNECTIONS;
-        bg = "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') 66.5% 24.38% / 1620% auto no-repeat";
+        bg = { 
+            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+            style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[16.2] -translate-x-[-66.5%] -translate-y-[-395%]" 
+        };
         break;
       case 'pandemic':
       default:
         cities = PANDEMIC_CITIES_DATA;
         connections = PANDEMIC_CONNECTIONS;
-        bg = "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') 0% 13.63% / 125% 110% no-repeat";
+        bg = { 
+          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
+          style: "absolute top-0 left-0 w-full h-full object-fill opacity-25 filter invert transform scale-x-[1.25] scale-y-[1.1] translate-y-[15%]" 
+        };
         break;
     }
     return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImage: bg };
@@ -609,42 +618,38 @@ const Board: React.FC<{
   };
 
   return (
-    <div
-        className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden"
-        style={{
-            background: backgroundImage, // Use the new string here
-            backgroundBlendMode: 'multiply',
-            filter: 'invert(1)',
-            opacity: 0.8, // Adjust opacity on the container
-        }}
-    >
-        {/* The <img> tag is gone! */}
-        <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {renderIberiaRegionsAndTokens()}
-            {renderNursePreventionToken()}
-            {renderRailroads()}
-            {renderMigrationPaths()}
-            {renderConnections()}
-        </svg>
-        {gameState.gameType === 'fallOfRome' && Object.values(FALLOFROME_BARBARIAN_SUPPLY_DATA).map(supply => (
-            <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
-        ))}
-        {Object.entries(citiesToRenderData).map(([cityName, city]) => (
-            <CityMarker
-                key={cityName}
-                city={city}
-                cityName={cityName as CityName}
-                gameState={gameState}
-                onCityClick={onCityClick}
-                isSelected={selectedCity === cityName}
-                isHighlighted={highlightedCities.includes(cityName as CityName)}
-                showName={showCityNames}
-                cityNameFontSize={cityNameFontSize}
-            />
-        ))}
-        {gameState.players.map((player, index) => (
-            <PlayerPawn key={player.id} player={player} index={index} />
-        ))}
+    <div className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden">
+      <img
+        src={backgroundImage.url}
+        alt="Game map background"
+        className={backgroundImage.style}
+      />
+      <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {renderIberiaRegionsAndTokens()}
+        {renderNursePreventionToken()}
+        {renderRailroads()}
+        {renderMigrationPaths()}
+        {renderConnections()}
+      </svg>
+      {gameState.gameType === 'fallOfRome' && Object.values(FALLOFROME_BARBARIAN_SUPPLY_DATA).map(supply => (
+        <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
+      ))}
+      {Object.entries(citiesToRenderData).map(([cityName, city]) => (
+        <CityMarker
+          key={cityName}
+          city={city}
+          cityName={cityName as CityName}
+          gameState={gameState}
+          onCityClick={onCityClick}
+          isSelected={selectedCity === cityName}
+          isHighlighted={highlightedCities.includes(cityName as CityName)}
+          showName={showCityNames}
+          cityNameFontSize={cityNameFontSize}
+        />
+      ))}
+      {gameState.players.map((player, index) => (
+        <PlayerPawn key={player.id} player={player} index={index} />
+      ))}
     </div>
   );
 };
