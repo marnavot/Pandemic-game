@@ -5817,6 +5817,7 @@ const ShipsArriveModal: React.FC<{
     const handleConfirmClick = () => {
         if (selectedCity && selectedPawnIds.length > 0) {
             onConfirm(selectedCity, selectedPawnIds);
+            onClose();
         }
     };
 
