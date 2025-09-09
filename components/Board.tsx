@@ -307,7 +307,7 @@ const Board: React.FC<{
   
 
   const { citiesToRenderData, connectionsToRender } = useMemo(() => {
-      let cities;
+      let cities: Record<string, City>; 
       let connections;
   
       switch (gameState.gameType) {
