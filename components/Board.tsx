@@ -667,6 +667,7 @@ const Board: React.FC<{
                 isSelected={selectedCity === cityName}
                 isHighlighted={highlightedCities.includes(cityName as CityName)}
                 showName={showCityNames}
+                cityNameFontSize={cityNameFontSize}
                 />
             ))}
             {gameState.players.map((player, index) => (
