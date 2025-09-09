@@ -18,7 +18,7 @@ export const FALLOFROME_DISEASE_COLORS: FallOfRomeDiseaseColor[] = [DiseaseColor
 export interface City {
 name: string;
 color: DiseaseColor;
-boardColors?: DiseaseColor[];
+boardColors?: readonly DiseaseColor[];
 coords: { x: number; y: number };
 population: number;
 distanceFromRoma?: number;
