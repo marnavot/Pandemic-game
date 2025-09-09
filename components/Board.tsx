@@ -40,7 +40,7 @@ const BarbarianSupplyMarker: React.FC<{
 };
 
 const CityVisual: React.FC<{
-  colors: DiseaseColor[];
+  colors: readonly DiseaseColor[];
   sizeClass: string;
   pulseClass: string;
 }> = ({ colors, sizeClass, pulseClass }) => {
@@ -82,7 +82,7 @@ const CityVisual: React.FC<{
 
 
 const CityMarker: React.FC<{
-  city: { name: string; color: DiseaseColor; boardColors?: DiseaseColor[]; coords: { x: number; y: number } };
+  city: { name: string; color: DiseaseColor; boardColors?: readonly DiseaseColor[]; coords: { x: number; y: number } }; 
   cityName: CityName;
   gameState: GameState;
   onCityClick: (city: CityName) => void;
