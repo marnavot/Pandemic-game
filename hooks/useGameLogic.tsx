@@ -56,7 +56,10 @@ export const useGameLogic = () => {
 
     const _handleNursePostMove = (gs: GameState, movedPawn: Player): void => {
         if (movedPawn.role === PlayerRole.Nurse) {
-            gs.phaseBeforeEvent = gs.gamePhase;
+            // Only set the phase to return to if one isn't already set by a parent event.
+            if (!gs.phaseBeforeEvent) {
+                gs.phaseBeforeEvent = gs.gamePhase;
+            }
             gs.gamePhase = GamePhase.NursePlacingPreventionToken;
         }
     };
