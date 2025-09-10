@@ -322,7 +322,7 @@ const Board: React.FC<{
         cities = IBERIA_CITIES_DATA;
         connections = IBERIA_CONNECTIONS;
         bgStyle = {
-            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 66.5% 24.38% / 1620% auto",
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 46.45% 24.1% / 1963% 1639%",
         };
         break;
       case 'pandemic':
