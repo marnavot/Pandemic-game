@@ -305,30 +305,45 @@ const Board: React.FC<{
 }> = ({ gameState, onCityClick, selectedCity, showCityNames, highlightedCities = [], highlightedRegions = [], selectedConnection, onConnectionClick, selectedRegion, onRegionClick, highlightedConnections = [], cityNameFontSize  }) => {
   const DELIMITER = '_||_'; // Using a safer delimiter to avoid issues with names containing hyphens
   
-  const { citiesToRenderData, connectionsToRender, backgroundImage } = useMemo(() => {
+  const { citiesToRenderData, connectionsToRender, backgroundImageStyle } = useMemo(() => {
     let cities;
     let connections;
-    let bg;
+    let bgStyle;
 
     switch (gameState.gameType) {
       case 'fallOfRome':
         cities = FALLOFROME_CITIES_DATA;
         connections = FALLOFROME_CONNECTIONS;
-        bg = { transform: 'scale(6.5) translateX(-8%) translateY(27.23%)', objectFit: 'cover' };
+        bgStyle = {
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
+            backgroundSize: '650% auto',
+            backgroundPosition: '-8% 27.23%',
+            backgroundRepeat: 'no-repeat',
+        };
         break;
       case 'iberia':
         cities = IBERIA_CITIES_DATA;
         connections = IBERIA_CONNECTIONS;
-        bg = { transform: 'scale(16.2) translateX(66.5%) translateY(24.38%)', objectFit: 'cover' };
+        bgStyle = {
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
+            backgroundSize: '1620% auto',
+            backgroundPosition: '66.5% 24.38%',
+            backgroundRepeat: 'no-repeat',
+        };
         break;
       case 'pandemic':
       default:
         cities = PANDEMIC_CITIES_DATA;
         connections = PANDEMIC_CONNECTIONS;
-        bg = { transform: 'scaleX(1.25) scaleY(1.1) translateY(13.63%)', objectFit: 'fill' };
+        bgStyle = {
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
+            backgroundSize: '125% 110%',
+            backgroundPosition: '0% 13.63%',
+            backgroundRepeat: 'no-repeat',
+        };
         break;
     }
-    return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImage: bg };
+    return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImageStyle: bgStyle };
   }, [gameState.gameType]);
   
   const migrationPathSegments = new Set<string>();
@@ -610,16 +625,13 @@ const Board: React.FC<{
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden">
-        <img
-            src="https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg"
-            alt="Game map background"
-            className="absolute top-0 left-0 w-full h-full opacity-25 filter invert"
-            style={{
-                transform: backgroundImage.transform,
-                objectFit: backgroundImage.objectFit as 'fill' | 'cover',
-                transformOrigin: 'top left',
-            }}
+        {/* The old <img> tag is replaced by this styled <div> for robust synchronization */}
+        <div
+            className="absolute top-0 left-0 w-full h-full opacity-25 filter invert pointer-events-none"
+            style={backgroundImageStyle}
         />
+
+        {/* The SVG overlay and all markers remain exactly as they were, ensuring the grid is correct */}
         <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             {renderIberiaRegionsAndTokens()}
             {renderNursePreventionToken()}
