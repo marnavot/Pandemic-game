@@ -619,37 +619,39 @@ const Board: React.FC<{
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden">
-      <img
-        src={backgroundImage.url}
-        alt="Game map background"
-        className={backgroundImage.style}
-      />
-      <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {renderIberiaRegionsAndTokens()}
-        {renderNursePreventionToken()}
-        {renderRailroads()}
-        {renderMigrationPaths()}
-        {renderConnections()}
-      </svg>
-      {gameState.gameType === 'fallOfRome' && Object.values(FALLOFROME_BARBARIAN_SUPPLY_DATA).map(supply => (
-        <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
-      ))}
-      {Object.entries(citiesToRenderData).map(([cityName, city]) => (
-        <CityMarker
-          key={cityName}
-          city={city}
-          cityName={cityName as CityName}
-          gameState={gameState}
-          onCityClick={onCityClick}
-          isSelected={selectedCity === cityName}
-          isHighlighted={highlightedCities.includes(cityName as CityName)}
-          showName={showCityNames}
-          cityNameFontSize={cityNameFontSize}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '1052 / 531' }}>
+        <img
+          src={backgroundImage.url}
+          alt="Game map background"
+          className={backgroundImage.style}
         />
-      ))}
-      {gameState.players.map((player, index) => (
-        <PlayerPawn key={player.id} player={player} index={index} />
-      ))}
+        <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {renderIberiaRegionsAndTokens()}
+          {renderNursePreventionToken()}
+          {renderRailroads()}
+          {renderMigrationPaths()}
+          {renderConnections()}
+        </svg>
+        {gameState.gameType === 'fallOfRome' && Object.values(FALLOFROME_BARBARIAN_SUPPLY_DATA).map(supply => (
+          <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
+        ))}
+        {Object.entries(citiesToRenderData).map(([cityName, city]) => (
+          <CityMarker
+            key={cityName}
+            city={city}
+            cityName={cityName as CityName}
+            gameState={gameState}
+            onCityClick={onCityClick}
+            isSelected={selectedCity === cityName}
+            isHighlighted={highlightedCities.includes(cityName as CityName)}
+            showName={showCityNames}
+            cityNameFontSize={cityNameFontSize}
+          />
+        ))}
+        {gameState.players.map((player, index) => (
+          <PlayerPawn key={player.id} player={player} index={index} />
+        ))}
+      </div>
     </div>
   );
 };
