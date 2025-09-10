@@ -314,27 +314,18 @@ const Board: React.FC<{
       case 'fallOfRome':
         cities = FALLOFROME_CITIES_DATA;
         connections = FALLOFROME_CONNECTIONS;
-        bg = { 
-          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
-          style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[6.5] -translate-x-[8%] -translate-y-[-177%]" 
-        };
+        bg = { transform: 'scale(6.5) translateX(-8%) translateY(27.23%)', objectFit: 'cover' };
         break;
       case 'iberia':
         cities = IBERIA_CITIES_DATA;
         connections = IBERIA_CONNECTIONS;
-        bg = { 
-            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
-            style: "absolute top-0 left-0 w-full h-full object-cover opacity-25 filter invert transform scale-[16.2] -translate-x-[-66.5%] -translate-y-[-395%]" 
-        };
+        bg = { transform: 'scale(16.2) translateX(66.5%) translateY(24.38%)', objectFit: 'cover' };
         break;
       case 'pandemic':
       default:
         cities = PANDEMIC_CITIES_DATA;
         connections = PANDEMIC_CONNECTIONS;
-        bg = { 
-          url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg", 
-          style: "absolute top-0 left-0 w-full h-full object-fill opacity-25 filter invert transform scale-x-[1.25] scale-y-[1.1] translate-y-[15%]" 
-        };
+        bg = { transform: 'scaleX(1.25) scaleY(1.1) translateY(13.63%)', objectFit: 'fill' };
         break;
     }
     return { citiesToRenderData: cities as Record<string, City>, connectionsToRender: connections, backgroundImage: bg };
@@ -621,9 +612,14 @@ const Board: React.FC<{
     <div className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden">
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1052 / 531' }}>
         <img
-          src={backgroundImage.url}
+          src="https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg"
           alt="Game map background"
-          className={backgroundImage.style}
+          className="absolute top-0 left-0 w-full h-full opacity-25 filter invert"
+          style={{
+              transform: backgroundImage.transform,
+              objectFit: backgroundImage.objectFit as 'fill' | 'cover',
+              transformOrigin: 'top left',
+          }}
         />
         <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           {renderIberiaRegionsAndTokens()}
