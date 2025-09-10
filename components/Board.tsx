@@ -315,20 +315,14 @@ const Board: React.FC<{
         cities = FALLOFROME_CITIES_DATA;
         connections = FALLOFROME_CONNECTIONS;
         bgStyle = {
-            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
-            backgroundSize: '650% auto',
-            backgroundPosition: '-8% 27.23%',
-            backgroundRepeat: 'no-repeat',
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat -8% 27.23% / 650% auto",
         };
         break;
       case 'iberia':
         cities = IBERIA_CITIES_DATA;
         connections = IBERIA_CONNECTIONS;
         bgStyle = {
-            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
-            backgroundSize: '1620% auto',
-            backgroundPosition: '66.5% 24.38%',
-            backgroundRepeat: 'no-repeat',
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 66.5% 24.38% / 1620% auto",
         };
         break;
       case 'pandemic':
@@ -336,10 +330,7 @@ const Board: React.FC<{
         cities = PANDEMIC_CITIES_DATA;
         connections = PANDEMIC_CONNECTIONS;
         bgStyle = {
-            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')",
-            backgroundSize: '125% 110%',
-            backgroundPosition: '0% 13.63%',
-            backgroundRepeat: 'no-repeat',
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 0% 13.63% / 125% 110%",
         };
         break;
     }
