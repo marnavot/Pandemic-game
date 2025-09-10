@@ -315,7 +315,7 @@ const Board: React.FC<{
         cities = FALLOFROME_CITIES_DATA;
         connections = FALLOFROME_CONNECTIONS;
         bgStyle = {
-            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat -8% 27.23% / 650% auto",
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 51% 18.6% / 835% 742",
         };
         break;
       case 'iberia':
