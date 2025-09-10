@@ -610,39 +610,28 @@ const Board: React.FC<{
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-lg shadow-2xl overflow-hidden">
-      {/* This new div is the single "transform container" for the entire board. */}
-      <div
-        className="absolute top-0 left-0 w-full h-full"
-        style={{
-          transform: backgroundImage.transform,
-          transformOrigin: 'top left',
-        }}
-      >
-        {/* The image now lives inside the container and has NO transform of its own. */}
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg"
-          alt="Game map background"
-          className="absolute top-0 left-0 w-full h-full opacity-25 filter invert"
-          style={{
-            objectFit: backgroundImage.objectFit as 'fill' | 'cover',
-          }}
+            src="https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg"
+            alt="Game map background"
+            className="absolute top-0 left-0 w-full h-full opacity-25 filter invert"
+            style={{
+                transform: backgroundImage.transform,
+                objectFit: backgroundImage.objectFit as 'fill' | 'cover',
+                transformOrigin: 'top left',
+            }}
         />
-        
-        {/* The SVG also lives inside the container. */}
         <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {renderIberiaRegionsAndTokens()}
-          {renderNursePreventionToken()}
-          {renderRailroads()}
-          {renderMigrationPaths()}
-          {renderConnections()}
+            {renderIberiaRegionsAndTokens()}
+            {renderNursePreventionToken()}
+            {renderRailroads()}
+            {renderMigrationPaths()}
+            {renderConnections()}
         </svg>
-        
-        {/* All markers are now children of the container, so they transform with it. */}
         {gameState.gameType === 'fallOfRome' && Object.values(FALLOFROME_BARBARIAN_SUPPLY_DATA).map(supply => (
-          <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
+            <BarbarianSupplyMarker key={supply.name} supplySpace={supply} gameState={gameState} />
         ))}
         {Object.entries(citiesToRenderData).map(([cityName, city]) => (
-          <CityMarker
+            <CityMarker
             key={cityName}
             city={city}
             cityName={cityName as CityName}
@@ -652,12 +641,11 @@ const Board: React.FC<{
             isHighlighted={highlightedCities.includes(cityName as CityName)}
             showName={showCityNames}
             cityNameFontSize={cityNameFontSize}
-          />
+            />
         ))}
         {gameState.players.map((player, index) => (
-          <PlayerPawn key={player.id} player={player} index={index} />
+            <PlayerPawn key={player.id} player={player} index={index} />
         ))}
-      </div>
     </div>
   );
 };
