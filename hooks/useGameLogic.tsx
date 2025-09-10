@@ -73,11 +73,11 @@ export const useGameLogic = () => {
             [EventCardName.OneQuietNight]: () => { gs.oneQuietNightActive = true; },
             [EventCardName.GoodSeasons]: () => { gs.goodSeasonsActive = true; },
             [EventCardName.BorrowedTime]: () => { 
-                if (gs.gamePhase === GamePhase.PlayerAction) gs.actionsRemaining += 2;
+                if (gs.phaseBeforeEvent === GamePhase.PlayerAction) gs.actionsRemaining += 2;
                 else gs.extraActionsForNextTurn += 2;
             },
             [EventCardName.OneMoreDay]: () => {
-                if (gs.gamePhase === GamePhase.PlayerAction) gs.actionsRemaining += 2;
+                if (gs.phaseBeforeEvent === GamePhase.PlayerAction) gs.actionsRemaining += 2;
                 else gs.extraActionsForNextTurn += 2;
             },
             [EventCardName.MobileHospital]: () => { gs.mobileHospitalActiveThisTurn = true; },
