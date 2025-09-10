@@ -330,7 +330,7 @@ const Board: React.FC<{
         cities = PANDEMIC_CITIES_DATA;
         connections = PANDEMIC_CONNECTIONS;
         bgStyle = {
-            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 0% 13.63% / 125% 110%",
+            background: "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat 53% -20.37% / 117% 118%",
         };
         break;
     }
