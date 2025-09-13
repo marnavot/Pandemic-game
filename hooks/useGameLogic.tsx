@@ -2886,7 +2886,11 @@ export const useGameLogic = () => {
                 newState.log.unshift(`- ${epidemicCard.type === 'virulent_strain_epidemic' ? 'VIRULENT STRAIN ' : ''}EPIDEMIC drawn!`);
                 newState.gamePhase = GamePhase.Epidemic;
             } else {
-                const cardsToDiscardCount = player.hand.length - getHandLimit(player);
+                // Calculate the new hand size PREDICTABLY instead of reading it after mutation.
+                const newHandSize = player.hand.length; // This now correctly reflects the hand size with the newly added cards.
+                const handLimit = getHandLimit(player);
+                const cardsToDiscardCount = newHandSize - handLimit;
+            
                 if (cardsToDiscardCount > 0) {
                     newState.gamePhase = GamePhase.Discarding;
                     newState.playerToDiscardId = player.id;
