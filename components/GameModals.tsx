@@ -5301,7 +5301,8 @@ const RuralDoctorTreatModal: React.FC<{
     onClose: () => void;
     onConfirm: (choice: { city: CityName; color: DiseaseColor }) => void;
     options: { city: CityName; color: DiseaseColor }[];
-}> = ({ show, onClose, onConfirm, options }) => {
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, options, gameState }) => {
     const optionsByCity = useMemo(() => {
         // Get a unique list of cities from the options
         const uniqueCities = [...new Set(options.map(o => o.city))];
