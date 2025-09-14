@@ -5323,7 +5323,7 @@ const RuralDoctorTreatModal: React.FC<{
                     <div key={city} className="p-3 bg-gray-700 rounded-lg">
                         <h4 className="font-bold text-lg mb-2">{CITIES_DATA[city].name}</h4>
                         <div className="flex flex-wrap gap-2">
-                            {Object.entries(cubes).filter(([, count]) => count && count > 0).map(([color, count]) => (
+                            {Object.entries(cubes).filter(([, count]) => count !== undefined && count > 0).map(([color, count]) => (
                                 <button
                                     key={color}
                                     onClick={() => onConfirm({ city, color: color as DiseaseColor })}
