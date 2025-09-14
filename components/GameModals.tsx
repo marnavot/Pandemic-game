@@ -7344,6 +7344,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onClose={props.onCancelEventResolution} // Using a generic cancel works here
                 onConfirm={props.onConfirmRuralDoctorTreat}
                 options={gameState.pendingRuralDoctorChoice || []}
+                gameState={gameState}
             />
             <RoyalAcademyScientistConfirmationModal
                 show={gameState.gamePhase === GamePhase.ConfirmingRoyalAcademyScientistForecast}
