@@ -442,7 +442,7 @@ export const IBERIA_REGIONS: IberiaRegion[] = [
 export const IBERIA_CITY_TO_REGIONS_MAP: Partial<Record<CityName, string[]>> = {
   ACoruña: ["R1"],
   Gijón: ["R1", "R9"],
-  León: ["R1", "R9"],
+  León: ["R1", "R9", "R3"],
   Ourense: ["R1", "R2", "R3"],
   SangiagoDeCompostela: ["R1", "R2"],
   Vigo: ["R2", "R3", "R4"],
