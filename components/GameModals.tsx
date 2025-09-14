@@ -5302,22 +5302,38 @@ const RuralDoctorTreatModal: React.FC<{
     onConfirm: (choice: { city: CityName; color: DiseaseColor }) => void;
     options: { city: CityName; color: DiseaseColor }[];
 }> = ({ show, onClose, onConfirm, options }) => {
+    const optionsByCity = useMemo(() => {
+        // Get a unique list of cities from the options
+        const uniqueCities = [...new Set(options.map(o => o.city))];
+    
+        // For each unique city, get its full cube data from the gameState
+        return uniqueCities
+            .map(city => ({
+                city,
+                cubes: gameState.diseaseCubes[city] || {}
+            }))
+            .sort((a, b) => CITIES_DATA[a.city].name.localeCompare(CITIES_DATA[b.city].name));
+    }, [options, gameState.diseaseCubes]);
     return (
         <Modal title="Rural Doctor: Second Treat" show={show} onClose={onClose}>
             <p className="mb-4">You have removed one cube from your city. Select where to remove the second cube from the available targets below.</p>
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
-                {options.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => onConfirm(option)}
-                        className="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-left flex items-center space-x-4 transition-colors"
-                    >
-                        <div className={`w-6 h-6 rounded-md flex-shrink-0 ${CITY_COLOR_CLASSES[option.color]}`}></div>
-                        <div>
-                            <p className="font-bold">{CITIES_DATA[option.city].name}</p>
-                            <p className="text-sm text-gray-400 capitalize">{option.color} Disease</p>
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                {optionsByCity.map(({ city, cubes }) => (
+                    <div key={city} className="p-3 bg-gray-700 rounded-lg">
+                        <h4 className="font-bold text-lg mb-2">{CITIES_DATA[city].name}</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {Object.entries(cubes).filter(([, count]) => count && count > 0).map(([color, count]) => (
+                                <button
+                                    key={color}
+                                    onClick={() => onConfirm({ city, color: color as DiseaseColor })}
+                                    className={`px-4 py-2 rounded text-white font-bold capitalize flex items-center space-x-2 transition-colors hover:opacity-90 ${CITY_COLOR_CLASSES[color as DiseaseColor]}`}
+                                >
+                                    <span>Remove {color}</span>
+                                    <span className="text-xs bg-black bg-opacity-30 px-2 py-1 rounded-full">{count}</span>
+                                </button>
+                            ))}
                         </div>
-                    </button>
+                    </div>
                 ))}
             </div>
         </Modal>
