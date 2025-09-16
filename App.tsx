@@ -197,7 +197,20 @@ export const App: React.FC = () => {
                  setError(`Error joining game: ${(err as Error).message}. Redirecting to home.`);
                  setTimeout(() => window.location.pathname = '/', 4000);
             }).finally(() => { setIsLoading(false); });
-        } else { setIsLoading(false); }
+        } else {
+            try {
+                const savedGame = localStorage.getItem('solitaireGameState');
+                if (savedGame) {
+                    const loadedState: GameState = JSON.parse(savedGame);
+                    setGameState(loadedState);
+                }
+            } catch (e) {
+                console.error("Failed to load saved game:", e);
+                localStorage.removeItem('solitaireGameState');
+            } finally {
+                setIsLoading(false);
+            }
+        }
     }, []);
 
      // Effect for subscribing to multiplayer game updates
@@ -229,7 +242,11 @@ export const App: React.FC = () => {
     
     // Effect to update Firebase when local state changes
     useEffect(() => {
-        if (gameState?.gameId && gameState.gameMode === 'multiplayer' && localPlayerId === gameState.hostId) {
+        if (!gameState) return; // Add this guard clause
+    
+        if (gameState.gameMode === 'solitaire') {
+            localStorage.setItem('solitaireGameState', JSON.stringify(gameState));
+        } else if (gameState.gameMode === 'multiplayer' && localPlayerId === gameState.hostId) {
             updateGame(gameState.gameId, gameState);
         }
     }, [gameState, localPlayerId]);
@@ -360,6 +377,7 @@ export const App: React.FC = () => {
             } catch (err) { setError(`Failed to create game: ${(err as Error).message}`); }
             finally { setIsLoading(false); }
         } else {
+            window.history.pushState(null, '', '/');
             setGameState(finalizeGameSetup(handleStartGame(config, null)));
         }
     };
