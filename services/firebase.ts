@@ -25,8 +25,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyB3-1Tzh_NPLrQZB5lSYdZNZfL8QOMrfNo",
   authDomain: "pandemic-464616.firebaseapp.com",
   projectId: "pandemic-464616",
-  // Corrected storageBucket URL
-  storageBucket: "pandemic-464616.appspot.com", 
+  storageBucket: "pandemic-464616.firebasestorage.app",
   messagingSenderId: "351119674329",
   appId: "1:351119674329:web:bc60220f0e0ef82d2a27c8",
   measurementId: "G-HV5NF2RJ09"
@@ -218,3 +217,4 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId} in game ${gameId}. This might be expected on page unload.`);
     }
 };
+
