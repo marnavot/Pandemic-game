@@ -39,6 +39,19 @@ export const App: React.FC = () => {
         // Default to true if not set
         return saved !== 'false';
     });
+
+    const handleNewGameClick = () => {
+        // Clear the saved solitaire game from the browser's storage
+        localStorage.removeItem('solitaireGameState');
+        // Clear the saved multiplayer player ID
+        localStorage.removeItem('pandemicPlayerId');
+        // Clear any game ID from the URL bar
+        window.history.pushState({}, '', '/');
+        // Reset the main game state in the app, which will trigger a re-render
+        setGameState(null);
+        // Clear any old game over reports
+        setGameOverReport(null);
+    };
     const [cityNameFontSize, setCityNameFontSize] = useState<number>(12);
     const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
     const [highlightedConnections, setHighlightedConnections] = useState<({ from: CityName, to: CityName })[]>([]);
@@ -935,6 +948,7 @@ export const App: React.FC = () => {
             </div>
             <div className="w-[380px] h-full p-2 flex-shrink-0">
                 <Dashboard
+                    onNewGame={handleNewGameClick}
                     gameState={gameState}
                     localPlayerId={localPlayerId}
                     onAction={(action, payload) => {
