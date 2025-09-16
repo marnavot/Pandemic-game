@@ -129,7 +129,7 @@ const Dashboard: React.FC<{
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
-  const isMyTurn = gameState.players[gameState.currentPlayerIndex].id === viewedPlayerId;
+  const isMyTurn = gameState.players[gameState.currentPlayerIndex].id === localPlayerId;
   const inActionPhase = gameState.gamePhase === GamePhase.PlayerAction;
   const isSpecialOrdersActive = gameState.specialOrdersControlledPawnId !== null;
 
