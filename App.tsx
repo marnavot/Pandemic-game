@@ -936,6 +936,7 @@ export const App: React.FC = () => {
             <div className="w-[380px] h-full p-2 flex-shrink-0">
                 <Dashboard
                     gameState={gameState}
+                    localPlayerId={localPlayerId}
                     onAction={(action, payload) => {
                         if (action === 'Train' && gameState.selectedCity) {
                             onInitiateTrainMove(gameState.selectedCity);
