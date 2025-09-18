@@ -564,21 +564,32 @@ export const useGameLogic = () => {
     }, []);
     
     const _checkForEradication = (gs: GameState, color: DiseaseColor) => {
-        if (gs.gameType === 'fallOfRome' || gs.gameType === 'iberia') {
-            return; // Eradication does not apply in Fall of Rome
+        // Eradication is a mechanic specific to the Pandemic base game and its challenges.
+        if (gs.gameType !== 'pandemic') {
+            return;
         }
-        const totalCubes = color === DiseaseColor.Purple ? 12 : 24;
-        if (gs.curedDiseases[color] && !gs.eradicatedDiseases[color] && gs.remainingCubes[color] === totalCubes) {
-            gs.eradicatedDiseases[color] = true;
-            const message = `The ${color} disease has been ERADICATED!`;
-            gs.log.unshift(`- ${message}`);
-            generateEradicationReport(color, gs.useAiNarratives).then(report => {
-                setModalContent({
-                    title: "DISEASE ERADICATED!",
-                    body: report || message,
-                    color: "text-cyan-300"
+    
+        // A disease can only be eradicated if it's cured and not already marked as eradicated.
+        if (gs.curedDiseases[color] && !gs.eradicatedDiseases[color]) {
+            // New Logic: Directly check the board for any remaining cubes of this color.
+            const cubesOnBoard = Object.values(gs.diseaseCubes).some(
+                cityCubes => cityCubes[color] && cityCubes[color] > 0
+            );
+    
+            // If no cubes are found on the board, the disease is eradicated.
+            if (!cubesOnBoard) {
+                gs.eradicatedDiseases[color] = true;
+                const message = `The ${color} disease has been ERADICATED!`;
+                gs.log.unshift(`- ${message}`);
+                // The AI narrative generation will be called automatically from here.
+                generateEradicationReport(color, gs.useAiNarratives).then(report => {
+                    setModalContent({
+                        title: "DISEASE ERADICATED!",
+                        body: report || message,
+                        color: "text-cyan-300"
+                    });
                 });
-            });
+            }
         }
     };
 
