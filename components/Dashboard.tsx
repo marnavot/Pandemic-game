@@ -285,7 +285,7 @@ const Dashboard: React.FC<{
           return acc;
       }, {} as Record<DiseaseColor, number>);
 
-      const isBreakthroughActive = gameState.sequencingBreakthroughPlayerId !== null;
+      const isBreakthroughActive = gameState.sequencingBreakthroughActive;
       
       const isFallOfRome = gameState.gameType === 'fallOfRome';
 
