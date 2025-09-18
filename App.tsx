@@ -12,6 +12,8 @@ import { useGameLogic } from './hooks/useGameLogic.tsx';
 import { GameModals } from './components/GameModals';
 import { createGame, getGameStream, updateGame, getGame, isFirebaseInitialized, joinGame, setPlayerOnlineStatus, updatePlayerName } from './services/firebase';
 import { getCityDataForGame } from './utils';
+import DevTools from './components/DevTools';
+import { handleDevAction } from './hooks/useGameLogic.tsx';
 
 const getLocalPlayerId = (): number | null => {
     const id = localStorage.getItem('pandemicPlayerId');
@@ -34,6 +36,7 @@ export const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
+    const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
         const saved = localStorage.getItem('soundEffectsEnabled');
         // Default to true if not set
@@ -52,6 +55,13 @@ export const App: React.FC = () => {
         // Clear any old game over reports
         setGameOverReport(null);
     };
+
+    const handleDevActionWrapper = (action: string, payload: any) => {
+        if (!gameState) return;
+        const newState = handleDevAction(gameState, action, payload);
+        setGameState(newState);
+    };
+
     const [cityNameFontSize, setCityNameFontSize] = useState<number>(12);
     const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
     const [highlightedConnections, setHighlightedConnections] = useState<({ from: CityName, to: CityName })[]>([]);
@@ -958,6 +968,7 @@ export const App: React.FC = () => {
                             handleDashboardAction(action, payload);
                         }
                     }}
+                    onToggleDevTools={() => setIsDevToolsOpen(prev => !prev)}
                     onUndoAction={handleUndoAction}
                     onEndTurn={handleEndTurn}
                     onInitiateShareKnowledge={handleInitiateShareKnowledge}
@@ -1188,6 +1199,15 @@ export const App: React.FC = () => {
                     <p className="mb-4">{gameOverReport || gameState.gameOverReason}</p>
                     <button onClick={handleNewGameClick} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold">Play Again</button>
                 </Modal>
+            )}
+            {isDevToolsOpen && (
+                <DevTools
+                    isOpen={isDevToolsOpen}
+                    onClose={() => setIsDevToolsOpen(false)}
+                    gameState={gameState}
+                    onDevAction={handleDevActionWrapper}
+                    selectedCity={gameState.selectedCity}
+                />
             )}
         </div>
     );
