@@ -669,7 +669,7 @@ export const App: React.FC = () => {
         const isScientist = player.role === PlayerRole.Scientist;
         const isVirologist = player.role === PlayerRole.Virologist;
         const isOperative = player.role === PlayerRole.FieldOperative;
-        const isBreakthrough = gameState.sequencingBreakthroughPlayerId !== null;
+        const isBreakthrough = gameState.sequencingBreakthroughActive;
         const isVSComplex = gameState.activeVirulentStrainCards.includes(VirulentStrainEpidemicCardName.ComplexMolecularStructure);
         const options: CureOptionForModal[] = [];
 
