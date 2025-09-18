@@ -608,7 +608,7 @@ const canRecruitArmy = inActionPhase &&
         {gameState.oneQuietNightActive && <div className="text-center font-bold text-cyan-300 animate-pulse mb-1">One Quiet Night Active</div>}
         {gameState.infectionZoneBanPlayerId !== null && <div className="text-center font-bold text-orange-400 mb-1">Infection Zone Ban Active</div>}
         {gameState.improvedSanitationPlayerId !== null && <div className="text-center font-bold text-green-400 mb-1">Improved Sanitation Active</div>}
-        {gameState.sequencingBreakthroughPlayerId !== null && <div className="text-center font-bold text-yellow-400 mb-1">Sequencing Breakthrough Active</div>}
+        {gameState.sequencingBreakthroughActive && <div className="text-center font-bold text-yellow-400 mb-1">Sequencing Breakthrough Active</div>}
         
         {gameState.virulentStrainColor && (
             <div className="text-center font-bold text-purple-400 mb-1 capitalize animate-pulse">
