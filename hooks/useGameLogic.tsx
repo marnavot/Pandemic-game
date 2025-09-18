@@ -5979,3 +5979,90 @@ export const useGameLogic = () => {
         handleResolveWhenThePlansWereGood,
     };
 };
+
+export const handleDevAction = (gs: GameState, action: string, payload: any): GameState => {
+    const newState = safeCloneGameState(gs);
+    const currentPlayer = newState.players[newState.currentPlayerIndex];
+
+    switch (action) {
+        case 'addCube': {
+            const { city, color } = payload;
+            if (newState.remainingCubes[color] > 0) {
+                newState.diseaseCubes[city] = newState.diseaseCubes[city] || {};
+                newState.diseaseCubes[city]![color] = (newState.diseaseCubes[city]![color] || 0) + 1;
+                newState.remainingCubes[color]--;
+            }
+            break;
+        }
+        case 'removeCube': {
+            const { city, color } = payload;
+            const currentCubes = newState.diseaseCubes[city]?.[color] || 0;
+            if (currentCubes > 0) {
+                newState.diseaseCubes[city]![color] = currentCubes - 1;
+                newState.remainingCubes[color]++;
+            }
+            break;
+        }
+        case 'movePawn': {
+            const { playerId, destination } = payload;
+            const pawn = newState.players.find(p => p.id === playerId);
+            if (pawn) {
+                pawn.location = destination;
+            }
+            break;
+        }
+        case 'toggleCure': {
+            const { color } = payload;
+            newState.curedDiseases[color] = !newState.curedDiseases[color];
+            break;
+        }
+        case 'addAP': {
+            newState.actionsRemaining++;
+            break;
+        }
+        case 'removeAP': {
+            newState.actionsRemaining = Math.max(0, newState.actionsRemaining - 1);
+            break;
+        }
+        case 'moveCard': {
+            const { sourceKey, destinationKey } = payload;
+            if (!sourceKey || !destinationKey) break;
+
+            const [sourceType, sourceIdStr, cardName, cardColor] = sourceKey.split('_');
+            const [destType, destIdStr] = destinationKey.split('_');
+
+            let cardToMove: PlayerCard | undefined;
+            let found = false;
+
+            // Find and remove card from source
+            if (sourceType === 'player') {
+                const sourcePlayer = newState.players.find(p => p.id === parseInt(sourceIdStr, 10));
+                if (sourcePlayer) {
+                    const cardIndex = sourcePlayer.hand.findIndex(c => c.type === 'city' && c.name === cardName && c.color === cardColor);
+                    if (cardIndex > -1) {
+                        [cardToMove] = sourcePlayer.hand.splice(cardIndex, 1);
+                        found = true;
+                    }
+                }
+            } else if (sourceType === 'discard') {
+                const cardIndex = newState.playerDiscard.findIndex(c => c.type === 'city' && c.name === cardName && c.color === cardColor);
+                if (cardIndex > -1) {
+                    [cardToMove] = newState.playerDiscard.splice(cardIndex, 1);
+                    found = true;
+                }
+            }
+
+            // Add card to destination
+            if (found && cardToMove) {
+                if (destType === 'player') {
+                    const destPlayer = newState.players.find(p => p.id === parseInt(destIdStr, 10));
+                    destPlayer?.hand.push(cardToMove);
+                } else if (destType === 'discard') {
+                    newState.playerDiscard.push(cardToMove);
+                }
+            }
+            break;
+        }
+    }
+    return newState;
+};
