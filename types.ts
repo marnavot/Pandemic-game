@@ -987,7 +987,7 @@ commercialTravelBanPlayerId: number | null;
 pilotFlightDestination: CityName | null;
 infectionZoneBanPlayerId: number | null;
 improvedSanitationPlayerId: number | null;
-sequencingBreakthroughPlayerId: number | null;
+sequencingBreakthroughActive: boolean;
 stationRelocationTargetCity: CityName | null;
 stationRelocationTrigger: 'action' | 'event' | null;
 pendingEventCardForModal: EventCardName | null;
