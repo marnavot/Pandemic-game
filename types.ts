@@ -371,7 +371,18 @@ export const FALLOFROME_MIGRATION_PATHS: MigrationPath[] = [
 { tribe: DiseaseColor.Orange, path: ['Anglo-Saxons & Franks', 'Gesoriacum', 'Londinium', 'Eburacum'] },
 ];
 
-export const CONNECTIONS: Record<CityName, CityName[]> = { ...PANDEMIC_CONNECTIONS, ...FALLOFROME_CONNECTIONS, ...IBERIA_CONNECTIONS };
+export const CONNECTIONS: Record<CityName, CityName[]> = {
+  ...PANDEMIC_CONNECTIONS,
+  ...FALLOFROME_CONNECTIONS,
+  ...IBERIA_CONNECTIONS,
+  // Manually merge connections for Madrid, which exists on two maps.
+  // This ensures that its connections from both games are available,
+  // preventing the Iberia data from overwriting the Pandemic data.
+  Madrid: [
+    ...(PANDEMIC_CONNECTIONS.Madrid || []),
+    ...(IBERIA_CONNECTIONS.Madrid || []),
+  ],
+};
 
 export const FALLOFROME_PORT_CITIES: Set<CityName> = new Set([
 'Chersonesus', 'Sinope', 'Tyras', 'Constantinopolis', 'Athenae', 'Patrae', 
