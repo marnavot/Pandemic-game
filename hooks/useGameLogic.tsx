@@ -84,7 +84,7 @@ export const useGameLogic = () => {
             [EventCardName.CommercialTravelBan]: () => { gs.commercialTravelBanPlayerId = gs.players[gs.currentPlayerIndex].id; },
             [EventCardName.InfectionZoneBan]: () => { gs.infectionZoneBanPlayerId = gs.players[gs.currentPlayerIndex].id; },
             [EventCardName.ImprovedSanitation]: () => { gs.improvedSanitationPlayerId = gs.players[gs.currentPlayerIndex].id; },
-            [EventCardName.SequencingBreakthrough]: () => { gs.sequencingBreakthroughPlayerId = gs.players[gs.currentPlayerIndex].id; },
+            [EventCardName.SequencingBreakthrough]: () => { gs.sequencingBreakthroughActive = true; },
             [EventCardName.SecondChance]: () => {
                 const cardIndex = gs.playerDiscard.findIndex(c => c.type === 'city' && c.name === owner.location);
                 if (cardIndex > -1) {
@@ -513,10 +513,6 @@ export const useGameLogic = () => {
             currentGs.improvedSanitationPlayerId = null;
             currentGs.log.unshift(`- Improved Sanitation expires.`);
         }
-        if (currentGs.sequencingBreakthroughPlayerId === nextPlayer.id) {
-            currentGs.sequencingBreakthroughPlayerId = null;
-            currentGs.log.unshift(`- Sequencing Breakthrough expires.`);
-        }
 
         let newActions = nextPlayer.role === PlayerRole.Generalist ? 5 : 4;
     
@@ -732,7 +728,7 @@ export const useGameLogic = () => {
             pilotFlightDestination: null,
             infectionZoneBanPlayerId: null,
             improvedSanitationPlayerId: null,
-            sequencingBreakthroughPlayerId: null,
+            sequencingBreakthroughActive: false,
             stationRelocationTargetCity: null,
             stationRelocationTrigger: null,
             pendingEventCardForModal: null,
@@ -1819,12 +1815,12 @@ export const useGameLogic = () => {
                         }
                         const isVSComplex = newState.activeVirulentStrainCards.includes(VirulentStrainEpidemicCardName.ComplexMolecularStructure);
                         if (color === DiseaseColor.Purple) {
-                            let requiredCards = (player.role === PlayerRole.Scientist ? 4 : 5) - (newState.sequencingBreakthroughPlayerId !== null ? 1 : 0);
+                            let requiredCards = (player.role === PlayerRole.Scientist ? 4 : 5) - (newState.sequencingBreakthroughActive ? 1 : 0);
                              if (cardsToDiscard.length >= requiredCards) {
                                 isValidCure = true;
                             }
                         } else if (player.role === PlayerRole.Virologist) {
-                            let requiredValue = 5 - (newState.sequencingBreakthroughPlayerId !== null ? 1 : 0);
+                            let requiredValue = 5 - (newState.sequencingBreakthroughActive ? 1 : 0);
                             if (isVSComplex && color === newState.virulentStrainColor) requiredValue++;
                             const cardGroups = cardsToDiscard.reduce((acc, card) => {
                                 const cardColor = card.color;
@@ -1841,7 +1837,7 @@ export const useGameLogic = () => {
                             });
                             if (mainCardsCount + replacementValue >= requiredValue) isValidCure = true;
                         } else if (method === 'samples' && player.role === PlayerRole.FieldOperative) {
-                            let requiredSampleCards = (5 - 2) - (newState.sequencingBreakthroughPlayerId !== null ? 1 : 0);
+                            let requiredSampleCards = (5 - 2) - (newState.sequencingBreakthroughActive ? 1 : 0);
                             if (isVSComplex && color === newState.virulentStrainColor) requiredSampleCards++;
                             if (cardsToDiscard.length >= requiredSampleCards && (player.samples[color] || 0) >= 3) {
                                  player.samples[color]! -= 3;
@@ -1850,7 +1846,7 @@ export const useGameLogic = () => {
                                  isValidCure = true;
                             }
                         } else { // Standard card cure
-                            let requiredCards = (player.role === PlayerRole.Scientist ? 4 : 5) - (newState.sequencingBreakthroughPlayerId !== null ? 1 : 0);
+                            let requiredCards = (player.role === PlayerRole.Scientist ? 4 : 5) - (newState.sequencingBreakthroughActive ? 1 : 0);
                             if (isVSComplex && color === newState.virulentStrainColor) requiredCards++;
                             if (cardsToDiscard.length >= requiredCards) isValidCure = true;
                         }
@@ -1868,9 +1864,9 @@ export const useGameLogic = () => {
 
                         // Pandemic-specific effects
                         if (newState.gameType !== 'fallOfRome') {
-                            if (newState.sequencingBreakthroughPlayerId !== null) {
+                            if (newState.sequencingBreakthroughActive) {
                                 newState.log.unshift(`- Sequencing Breakthrough was used to aid the cure.`);
-                                newState.sequencingBreakthroughPlayerId = null;
+                                newState.sequencingBreakthroughActive = false;
                             }
                             const isVSResistant = newState.activeVirulentStrainCards.includes(VirulentStrainEpidemicCardName.ResistantToTreatment);
                             if (isVSResistant && color === newState.virulentStrainColor) {
