@@ -1186,7 +1186,7 @@ export const App: React.FC = () => {
             {gameState.gamePhase === GamePhase.GameOver && (
                 <Modal title={gameOverReport ? (hasWon(gameState) ? "VICTORY" : "DEFEAT") : "Game Over"} show={true} titleColor={gameOverReport ? (hasWon(gameState) ? 'text-green-400' : 'text-red-400') : 'text-white'}>
                     <p className="mb-4">{gameOverReport || gameState.gameOverReason}</p>
-                    <button onClick={() => { window.location.href = '/'; }} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold">Play Again</button>
+                    <button onClick={handleNewGameClick} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold">Play Again</button>
                 </Modal>
             )}
         </div>
