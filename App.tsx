@@ -201,7 +201,7 @@ export const App: React.FC = () => {
         if (match && match[1]) {
             const gameId = match[1];
             setIsLoading(true);
-            if (!isFirebaseInitialized) {
+            if (!isFirebaseConfigured) {
                 setError("Multiplayer is not configured. Redirecting to home.");
                 setTimeout(() => window.location.pathname = '/', 4000);
                 return;
@@ -242,7 +242,7 @@ export const App: React.FC = () => {
         const match = path.match(/\/game\/([a-zA-Z0-9]+)/);
         const gameId = match?.[1];
 
-        if (gameId && isFirebaseInitialized) {
+        if (gameId && isFirebaseConfigured) {
             setIsLoading(true);
             const unsubscribe = getGameStream(gameId, (newState) => {
                 setGameState(newState);
