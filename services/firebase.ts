@@ -30,6 +30,7 @@ const firebaseConfig = {
   appId: "1:351119674329:web:bc60220f0e0ef82d2a27c8",
   measurementId: "G-HV5NF2RJ09"
 };
+export const isFirebaseConfigured = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId);
 // ====================================================================================
 
 let app: firebase.FirebaseApp | null = null;
@@ -217,4 +218,5 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId} in game ${gameId}. This might be expected on page unload.`);
     }
 };
+
 
