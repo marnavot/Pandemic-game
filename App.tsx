@@ -200,7 +200,9 @@ export const App: React.FC = () => {
         const match = path.match(/\/game\/([a-zA-Z0-9]+)/);
         if (match && match[1]) {
             const gameId = match[1];
-            setIsLoading(true);
+            if (!gameState) {
+                setIsLoading(true);
+            }
             if (!isFirebaseConfigured) {
                 setError("Multiplayer is not configured. Redirecting to home.");
                 setTimeout(() => window.location.pathname = '/', 4000);
@@ -234,7 +236,7 @@ export const App: React.FC = () => {
                 setIsLoading(false);
             }
         }
-    }, []);
+    }, [localPlayerId, setGameState, gameState]);
 
      // Effect for subscribing to multiplayer game updates
     useEffect(() => {
@@ -396,9 +398,11 @@ export const App: React.FC = () => {
                 setLpId(0);
                 setLocalPlayerId(0);
                 window.history.pushState(null, '', `/game/${gameId}`);
+                setGameState(newGsWithId);
+                setIsLoading(false);
                 // The stream listener will now take over.
             } catch (err) { setError(`Failed to create game: ${(err as Error).message}`); }
-            finally { setIsLoading(false); }
+            setIsLoading(false);
         } else {
             window.history.pushState(null, '', '/');
             setGameState(finalizeGameSetup(handleStartGame(config, null)));
