@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Modal from './Modal';
-import { GameState, Player, CityName, PlayerCard, DiseaseColor, CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS } from '../types';
+import { GameState, Player, CityName, PlayerCard, DiseaseColor, CITIES_DATA, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, IBERIA_CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS } from '../types';
 import { getCardDisplayName } from '../hooks/ui';
 import { getTerminology } from '../services/terminology';
 
@@ -75,7 +75,22 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
     ? FALLOFROME_DISEASE_COLORS 
     : [DiseaseColor.Blue, DiseaseColor.Yellow, DiseaseColor.Black, DiseaseColor.Red];
 
-  const cityKeys = Object.keys(CITIES_DATA) as CityName[];
+  const citiesForCurrentGame = useMemo(() => {
+    let cityData;
+    switch (gameState.gameType) {
+        case 'fallOfRome':
+            cityData = FALLOFROME_CITIES_DATA;
+            break;
+        case 'iberia':
+            cityData = IBERIA_CITIES_DATA;
+            break;
+        case 'pandemic':
+        default:
+            cityData = PANDEMIC_CITIES_DATA;
+            break;
+    }
+    return Object.keys(cityData) as CityName[];
+  }, [gameState.gameType]);
 
   return (
     <Modal title="Developer Options" show={isOpen} onClose={onClose} isSidePanel={true} zIndex="z-[70]">
@@ -111,7 +126,7 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
               {gameState.players.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
             </select>
             <select value={pawnDestination} onChange={e => setPawnDestination(e.target.value as CityName)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
-              {cityKeys.sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => <option key={city} value={city}>{CITIES_DATA[city].name}</option>)}
+              {citiesForCurrentGame.sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => <option key={city} value={city}>{CITIES_DATA[city].name}</option>)}
             </select>
             <button onClick={() => onDevAction('movePawn', { playerId: parseInt(pawnToMove), destination: pawnDestination })} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded">Move Pawn</button>
           </div>
