@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PlayerRole, GameSetupConfig, EventCardName, ALL_EVENT_CARDS, PLAYER_ROLE_INFO, EVENT_CARD_INFO, ON_THE_BRINK_ROLES, ON_THE_BRINK_EVENTS, IN_THE_LAB_ROLES, IN_THE_LAB_EVENTS, BASE_GAME_ROLES, FALLOFROME_ROLES, PANDEMIC_ROLES, PANDEMIC_EVENTS, FALLOFROME_EVENTS, IBERIA_ROLES, IBERIA_EVENTS } from '../types';
 import Modal from './Modal';
-import { isFirebaseInitialized } from '../services/firebase';
+import { isFirebaseConfigured } from '../services/firebase';
+
 
 interface SetupScreenProps {
   onStartGame: (config: GameSetupConfig) => void;
@@ -367,12 +368,12 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                     <label className="flex-1 p-3 bg-gray-700 rounded-md text-center cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:ring-2 ring-blue-400 transition-all">
                         <input type="radio" name="gameMode" value="solitaire" checked={gameMode === 'solitaire'} onChange={() => setGameMode('solitaire')} className="sr-only"/> Solitaire
                     </label>
-                    <label className={`flex-1 p-3 bg-gray-700 rounded-md text-center transition-all ${isFirebaseInitialized ? 'cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:ring-2 ring-blue-400' : 'cursor-not-allowed opacity-50'}`} title={!isFirebaseInitialized ? "Multiplayer is disabled. Add your Firebase configuration to services/firebase.ts to enable it." : ""}>
-                        <input type="radio" name="gameMode" value="multiplayer" checked={gameMode === 'multiplayer'} onChange={() => setGameMode('multiplayer')} className="sr-only" disabled={!isFirebaseInitialized}/> Multiplayer
+                    <label className={`flex-1 p-3 bg-gray-700 rounded-md text-center transition-all ${isFirebaseConfigured ? 'cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:ring-2 ring-blue-400' : 'cursor-not-allowed opacity-50'}`} title={!isFirebaseConfigured ? "Multiplayer is disabled. Add your Firebase configuration to services/firebase.ts to enable it." : ""}>
+                        <input type="radio" name="gameMode" value="multiplayer" checked={gameMode === 'multiplayer'} onChange={() => setGameMode('multiplayer')} className="sr-only" disabled={!isFirebaseConfigured}/> Multiplayer
                     </label>
                 </div>
-                 {gameMode === 'multiplayer' && isFirebaseInitialized && <p className="text-xs text-blue-300 mt-2 text-center">Multiplayer mode will generate a shareable link after you start the game.</p>}
-                 {!isFirebaseInitialized && <p className="text-xs text-yellow-400 mt-2 text-center">Multiplayer disabled. Add Firebase config to <code>services/firebase.ts</code>.</p>}
+                 {gameMode === 'multiplayer' && isFirebaseConfigured && <p className="text-xs text-blue-300 mt-2 text-center">Multiplayer mode will generate a shareable link after you start the game.</p>}
+                 {!isFirebaseConfigured && <p className="text-xs text-yellow-400 mt-2 text-center">Multiplayer disabled. Add Firebase config to <code>services/firebase.ts</code>.</p>}
             </div>
 
             {/* Player Setup */}
