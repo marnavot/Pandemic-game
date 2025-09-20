@@ -6186,6 +6186,8 @@ interface GameModalsProps {
     handleResolveShipsArrive: (destination: CityName, pawnsToMoveIds: number[]) => void;
     handleResolveTelegraphMessage: (payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => void;
     handleResolveWhenThePlansWereGood: (cardName: EventCardName) => void;
+    onConfirmQuarantineMove: (cityToRemove: CityName) => void;
+    onCancelQuarantineMove: () => void;
 }
 
 const VaeVictisModal: React.FC<{
@@ -7115,6 +7117,41 @@ const TelegraphMessageModal: React.FC<{
     );
 };
 
+const QuarantineMoveModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    onConfirm: (cityToRemove: CityName) => void;
+    gameState: GameState;
+}> = ({ show, onClose, onConfirm, gameState }) => {
+    // Filter out any potential empty entries in the quarantines object.
+    const citiesWithMarkers = Object.keys(gameState.quarantines || {}).filter(
+        city => gameState.quarantines?.[city as CityName]
+    ) as CityName[];
+
+    const player = gameState.players[gameState.currentPlayerIndex];
+    
+    return (
+        <Modal
+            title="Move Quarantine Marker"
+            show={show}
+            onClose={onClose}
+        >
+            <p className="mb-4">The quarantine marker supply is empty. Select an existing marker to move to your current city, {CITIES_DATA[player.location].name}.</p>
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                {citiesWithMarkers.map(city => (
+                    <button
+                        key={city}
+                        onClick={() => onConfirm(city)}
+                        className="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded text-left transition-colors"
+                    >
+                        Move from <span className="font-bold">{CITIES_DATA[city].name}</span> (Strength: {gameState.quarantines?.[city]})
+                    </button>
+                ))}
+            </div>
+        </Modal>
+    );
+};
+
 export const GameModals: React.FC<GameModalsProps> = (props) => {
     const { 
         gameState, handleAction, setShareModalState, setDispatchSummonModalState, setTakeEventModalState, 
@@ -7144,7 +7181,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
         onConfirmRuralDoctorTreat, onConfirmRoyalAcademyScientistForecast, onConfirmAcknowledgeForecast, onCancelAcknowledgeForecast,
         handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
         handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections, handleResolveTelegraphMessage,
-        handleResolveWhenThePlansWereGood,
+        handleResolveWhenThePlansWereGood, onConfirmQuarantineMove, onCancelQuarantineMove,
     } = props;
     
     const T = getTerminology(gameState)
@@ -7840,6 +7877,12 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 destination={props.sailorPassengerModalState.destination}
                 passengers={props.sailorPassengerModalState.passengers}
             />
+            <QuarantineMoveModal
+                show={gameState.gamePhase === GamePhase.ResolvingQuarantineMove}
+                onClose={onCancelQuarantineMove}
+                onConfirm={onConfirmQuarantineMove}
+                gameState={gameState}
+              />
         </>
     );
 };
