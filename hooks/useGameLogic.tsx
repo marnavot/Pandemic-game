@@ -305,6 +305,19 @@ export const useGameLogic = () => {
             if (outbreakResults) outbreakResults.push(result);
             return result; 
         }
+        if ((gs.quarantines[city] || 0) > 0) {
+            gs.quarantines[city]!--;
+            logEvent(`A quarantine marker in ${CITIES_DATA[city].name} prevents the infection!`);
+            if (gs.quarantines[city] === 0) {
+                delete gs.quarantines[city];
+                gs.quarantineMarkerSupply++;
+                logEvent(`The quarantine marker in ${CITIES_DATA[city].name} has been removed.`);
+            } else {
+                logEvent(`The quarantine marker in ${CITIES_DATA[city].name} is now at strength ${gs.quarantines[city]}.`);
+            }
+            if (outbreakResults) outbreakResults.push(result);
+            return result; // IMPORTANT: End the function here
+        }
         if (gs.curedDiseases[color] && gs.players.some(p => p.role === PlayerRole.Medic && p.location === city)) { 
             gs.log.unshift(`- Medic in ${CITIES_DATA[city].name} prevents infection.`); 
             if (outbreakResults) outbreakResults.push(result);
@@ -593,7 +606,10 @@ export const useGameLogic = () => {
     
     const _canMoveFrom = (gs: GameState, pawn: Player): boolean => {
         if (!gs.activeVirulentStrainCards.includes(VirulentStrainEpidemicCardName.GovernmentInterference)) return true;
-        
+
+        if ((gs.quarantines[pawn.location] || 0) > 0) {
+            return true; // Quarantine marker bypasses the movement restriction.
+        }
         const cityCubes = gs.diseaseCubes[pawn.location];
         if (!cityCubes || !gs.virulentStrainColor || (cityCubes[gs.virulentStrainColor] || 0) === 0) {
             return true;
@@ -792,6 +808,12 @@ export const useGameLogic = () => {
             default:
                 availableRoles = PANDEMIC_ROLES;
                 break;
+        }
+        
+        if (config.useQuarantineChallenge) {
+          newState.quarantineMarkerSupply = config.numQuarantineMarkers;
+          newState.quarantines = {};
+          newState.log.unshift(`- QUARANTINE challenge is active with ${config.numQuarantineMarkers} ${config.quarantineMarkerType}-sided markers.`);
         }
 
         if (config.roleSelection === 'random') {
@@ -2506,6 +2528,28 @@ export const useGameLogic = () => {
                 
                     if (newState.actionsRemaining <= 0) {
                         newState.gamePhase = GamePhase.PreDrawPlayerCards;
+                    }
+                    break;
+                }
+                
+                case 'ImposeQuarantine': {
+                    const city = player.location;
+                    if (newState.quarantines[city]) {
+                        logEvent(`Cannot place a quarantine marker in ${CITIES_DATA[city].name} as one is already there.`);
+                        break;
+                    }
+                
+                    if (newState.quarantineMarkerSupply > 0) {
+                        newState.quarantineMarkerSupply--;
+                        newState.quarantines[city] = newState.setupConfig.quarantineMarkerType === 'double' ? 2 : 1;
+                        logEvent(`${player.name} places a quarantine marker in ${CITIES_DATA[city].name}.`);
+                        actionTaken = true;
+                    } else {
+                        // Supply is empty, must move a marker
+                        newState.phaseBeforeEvent = GamePhase.PlayerAction;
+                        newState.gamePhase = GamePhase.ResolvingQuarantineMove;
+                        logEvent(`Quarantine marker supply is empty. ${player.name} must move an existing marker.`);
+                        // Note: action is NOT consumed yet. It will be consumed when the move is confirmed.
                     }
                     break;
                 }
