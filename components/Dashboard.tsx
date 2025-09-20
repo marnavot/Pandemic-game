@@ -129,7 +129,7 @@ const Dashboard: React.FC<{
   onSetCityNameFontSize: (size: number) => void;
   onImposeQuarantine: () => void;
   
-}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize }) => {
+}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
@@ -150,6 +150,12 @@ const Dashboard: React.FC<{
       }
       return isReachableByTrain(currentPlayer.location, selectedCity, gameState.railroads);
   }, [gameState, inActionPhase, selectedCity, currentPlayer.location]);
+  
+  const canImposeQuarantine = useMemo(() => {
+    if (!inActionPhase || !gameState.setupConfig.useQuarantineChallenge) return false;
+    // You can't quarantine a city that already has a marker
+    return !gameState.quarantines[currentPlayer.location];
+  }, [inActionPhase, gameState.setupConfig.useQuarantineChallenge, gameState.quarantines, currentPlayer.location]);
 
   const canAgronomistPlaceToken = useMemo(() => {
       if (gameState.gameType !== 'iberia' || !inActionPhase || currentPlayer.role !== PlayerRole.Agronomist || !selectedRegion || gameState.purificationTokenSupply < 1) {
@@ -1006,6 +1012,13 @@ const canRecruitArmy = inActionPhase &&
               className="bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold"
             >
               {T.discoverCure}
+            </button>
+            <button
+                disabled={!canImposeQuarantine}
+                onClick={onImposeQuarantine}
+                className="bg-cyan-700 hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold"
+            >
+                Impose Quarantine
             </button>
             {isContingencyPlanner && <button disabled={!inActionPhase || !canTakeEvent || pawnToMove.id !== currentPlayer.id} onClick={onInitiateTakeEventCard} className="bg-lime-600 hover:bg-lime-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Take Event</button>}
             {currentPlayer.role === PlayerRole.OperationsExpert && <button disabled={!canExpertFlight || pawnToMove.id !== currentPlayer.id} onClick={onInitiateExpertFlight} className="bg-pink-600 hover:bg-pink-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Expert Flight</button>}
