@@ -40,7 +40,7 @@ const BarbarianSupplyMarker: React.FC<{
 };
 
 const CityVisual: React.FC<{
-  colors: DiseaseColor[];
+  colors: readonly DiseaseColor[];
   sizeClass: string;
   pulseClass: string;
 }> = ({ colors, sizeClass, pulseClass }) => {
