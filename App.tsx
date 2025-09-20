@@ -1050,6 +1050,7 @@ export const App: React.FC = () => {
                     onInitiateRoyalAcademyScientistForecast={() => handleAction('RoyalAcademyScientistForecast', null, dispatcherTargetId)}
                     cityNameFontSize={cityNameFontSize} 
                     onSetCityNameFontSize={setCityNameFontSize}
+                    onImposeQuarantine={() => handleAction('ImposeQuarantine', null, dispatcherTargetId)}
                 />
             </div>
             
