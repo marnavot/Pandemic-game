@@ -2553,6 +2553,38 @@ export const useGameLogic = () => {
                     }
                     break;
                 }
+
+                case 'ConfirmQuarantineMove': {
+                    // 1. Verify we are in the correct game phase.
+                    if (newState.gamePhase !== GamePhase.ResolvingQuarantineMove) break;
+                    
+                    // 2. Get the necessary data from the payload and game state.
+                    const { cityToRemove } = payload;
+                    const player = newState.players[newState.currentPlayerIndex];
+                    const newCity = player.location;
+                
+                    if (!newState.quarantines[cityToRemove]) {
+                        logEvent(`Error: Tried to move a quarantine marker from ${CITIES_DATA[cityToRemove].name}, but none was found.`);
+                        break;
+                    }
+                
+                    // 3. Update the game state according to the rules.
+                    // Remove marker from the old city.
+                    delete newState.quarantines[cityToRemove];
+                    
+                    // Place the marker on the new city. The supply count remains 0 because we're moving, not taking from the supply.
+                    newState.quarantines[newCity] = newState.setupConfig.quarantineMarkerType === 'double' ? 2 : 1;
+                
+                    logEvent(`${player.name} moves the quarantine marker from ${CITIES_DATA[cityToRemove].name} to ${CITIES_DATA[newCity].name}.`);
+                
+                    // 4. Consume the player's action that initiated this whole process.
+                    actionTaken = true; 
+                    
+                    // 5. Return to the previous game phase (which was PlayerAction).
+                    newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                    newState.phaseBeforeEvent = null;
+                    break;
+                }
                 
             }
 
