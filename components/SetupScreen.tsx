@@ -27,6 +27,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
   const [useAiNarratives, setUseAiNarratives] = useState(true);
   const [useVirulentStrainChallenge, setUseVirulentStrainChallenge] = useState(false);
   const [useMutationChallenge, setUseMutationChallenge] = useState(false);
+  const [useQuarantineChallenge, setUseQuarantineChallenge] = useState(false);
+  const [quarantineMarkerType, setQuarantineMarkerType] = useState<'single' | 'double'>('double');
+  const [numQuarantineMarkers, setNumQuarantineMarkers] = useState(4);
 
   const [modalContent, setModalContent] = useState<{title: string, content: React.ReactNode} | null>(null);
 
@@ -337,6 +340,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
         useAiNarratives,
         useVirulentStrainChallenge,
         useMutationChallenge,
+        useQuarantineChallenge,
+        quarantineMarkerType,
+        numQuarantineMarkers,
     });
   };
   
@@ -523,12 +529,12 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
             {/* Challenges Setup */}
             {gameType === 'pandemic' && (
                 <div className="p-4 border border-gray-700 rounded-lg">
-                    <h2 className="text-xl font-orbitron text-purple-400 mb-4">Challenges (On the Brink)</h2>
+                    <h2 className="text-xl font-orbitron text-purple-400 mb-4">Challenges</h2>
                     <div className="space-y-3">
                         <div className="flex items-center justify-between p-3 bg-gray-700 rounded-md has-[:checked]:bg-purple-800">
                             <label className="flex flex-1 items-center cursor-pointer">
                                 <div className="flex-1">
-                                    <span className="text-lg font-semibold">Virulent Strain</span>
+                                    <span className="text-lg font-semibold">Virulent Strain (On the Brink)</span>
                                     <p className="text-xs text-gray-400">Replace Epidemic cards with more dangerous ones, and one disease becomes a greater threat.</p>
                                 </div>
                                 <div className="relative ml-4">
@@ -542,7 +548,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                         <div className="flex justify-between items-center p-3 bg-gray-700 rounded-md has-[:checked]:bg-indigo-800">
                             <label className="flex flex-1 items-center cursor-pointer">
                                 <div className="flex-1">
-                                    <span className="text-lg font-semibold">Mutation Challenge</span>
+                                    <span className="text-lg font-semibold">Mutation Challenge (On the Brink)</span>
                                     <p className="text-xs text-gray-400">Adds a 5th (purple) disease that spreads in unique ways.</p>
                                 </div>
                                 <div className="relative ml-4">
@@ -553,6 +559,44 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                             </label>
                             <button onClick={() => setModalContent({title: "Mutation Challenge Rules", content: MutationChallengeRulesContent})} className="ml-4 flex-shrink-0 text-xs bg-indigo-800 hover:bg-indigo-700 px-3 py-1 rounded transition-colors">Rules</button>
                         </div>
+                        <div className="flex justify-between items-center p-3 bg-gray-700 rounded-md has-[:checked]:bg-cyan-800">
+                          <label className="flex flex-1 items-center cursor-pointer">
+                            <div className="flex-1">
+                              <span className="text-lg font-semibold">Quarantines</span>
+                              <p className="text-xs text-gray-400">Add quarantine markers to slow disease spread.</p>
+                            </div>
+                            <div className="relative ml-4">
+                              <input type="checkbox" checked={useQuarantineChallenge} onChange={(e) => setUseQuarantineChallenge(e.target.checked)} className="sr-only peer" />
+                              <div className="w-14 h-8 bg-gray-600 rounded-full peer peer-checked:bg-cyan-500"></div>
+                              <div className="absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-full"></div>
+                            </div>
+                          </label>
+                        </div>
+                    
+                        {useQuarantineChallenge && (
+                          <div className="p-3 bg-gray-900 rounded-lg space-y-4">
+                            <div>
+                              <span className="block text-lg mb-2">Marker Type</span>
+                              <div className="flex space-x-4">
+                                <label className="flex-1 p-3 bg-gray-700 rounded-md text-center cursor-pointer has-[:checked]:bg-cyan-600">
+                                  <input type="radio" name="quarantineType" value="double" checked={quarantineMarkerType === 'double'} onChange={() => { setQuarantineMarkerType('double'); setNumQuarantineMarkers(4); }} className="sr-only" /> Double-Sided
+                                </label>
+                                <label className="flex-1 p-3 bg-gray-700 rounded-md text-center cursor-pointer has-[:checked]:bg-cyan-600">
+                                  <input type="radio" name="quarantineType" value="single" checked={quarantineMarkerType === 'single'} onChange={() => { setQuarantineMarkerType('single'); setNumQuarantineMarkers(12); }} className="sr-only" /> Single-Sided
+                                </label>
+                              </div>
+                            </div>
+                            <div>
+                              <label htmlFor="numQuarantines" className="block text-lg mb-1">Number of Markers</label>
+                              <select id="numQuarantines" value={numQuarantineMarkers} onChange={(e) => setNumQuarantineMarkers(parseInt(e.target.value, 10))} className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md">
+                                {quarantineMarkerType === 'double'
+                                  ? [<option key={4} value={4}>4 (Default)</option>, <option key={5} value={5}>5</option>, <option key={6} value={6}>6</option>]
+                                  : [<option key={8} value={8}>8</option>, <option key={9} value={9}>9</option>, <option key={10} value={10}>10</option>, <option key={11} value={11}>11</option>, <option key={12} value={12}>12 (Default)</option>]
+                                }
+                              </select>
+                            </div>
+                          </div>
+                        )}
                     </div>
                 </div>
             )}
