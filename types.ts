@@ -915,6 +915,7 @@ ResolvingAgronomistPurifyChoice,
 ConfirmingRoyalAcademyScientistForecast,
 ResolvingRoyalAcademyScientistForecast,
 ResolvingRuralDoctorTreat,
+ResolvingQuarantineMove,
 NursePlacingPreventionToken,
 }
 
@@ -1073,6 +1074,8 @@ activeVirulentStrainCards: VirulentStrainEpidemicCardName[];
 treatedVSCitiesThisTurn: CityName[];
 pendingMutationEvents: MutationEventCardName[];
 mutationEventResult: string | null;
+quarantines: { [key in CityName]?: number }; // 2 or 1 for double-sided, 1 for single-sided
+quarantineMarkerSupply: number;
 
 
 log: string[];
@@ -1108,6 +1111,9 @@ firstPlayerRule: 'random' | 'highestPopulation' | 'player1' | 'farthestFromRoma'
 useAiNarratives: boolean;
 useVirulentStrainChallenge: boolean;
 useMutationChallenge: boolean;
+useQuarantineChallenge: boolean;
+quarantineMarkerType: 'single' | 'double';
+numQuarantineMarkers: number;
 }
 
 // App-level type definitions, moved here to break circular dependencies
