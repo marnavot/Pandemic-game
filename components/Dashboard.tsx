@@ -127,6 +127,7 @@ const Dashboard: React.FC<{
   onInitiateRailwaymanDoubleBuild: () => void;
   cityNameFontSize: number;
   onSetCityNameFontSize: (size: number) => void;
+  onImposeQuarantine: () => void;
   
 }> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
