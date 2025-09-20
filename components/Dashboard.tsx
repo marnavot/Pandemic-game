@@ -673,6 +673,12 @@ const canRecruitArmy = inActionPhase &&
         {gameState.gameType === 'fallOfRome' && (
             <div className="flex items-center justify-between"><span>Legions Supply:</span> <span className="font-bold text-xl">{Math.max(0, 16 - (gameState.legions?.length || 0))} / 16</span></div>
         )}
+        {gameState.setupConfig.useQuarantineChallenge && (
+            <div className="flex items-center justify-between">
+                <span>Quarantines Left:</span>
+                <span className="font-bold text-xl">{gameState.quarantineMarkerSupply} / {gameState.setupConfig.numQuarantineMarkers}</span>
+            </div>
+        )}
         
         {gameState.gameType === 'fallOfRome' && (
             <div className="flex items-center justify-between">
