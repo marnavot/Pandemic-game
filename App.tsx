@@ -57,6 +57,10 @@ export const App: React.FC = () => {
         setGameOverReport(null);
     };
 
+    const handleConfirmQuarantineMove = (cityToRemove: CityName) => {
+        handleAction('ConfirmQuarantineMove', { cityToRemove });
+    };
+
     const handleDevActionWrapper = (action: string, payload: any) => {
         if (!gameState) return;
         const newState = handleDevAction(gameState, action, payload);
@@ -1192,6 +1196,8 @@ export const App: React.FC = () => {
                 sailorPassengerModalState={sailorPassengerModalState}
                 setSailorPassengerModalState={setSailorPassengerModalState}
                 dispatcherTargetId={dispatcherTargetId}
+                onConfirmQuarantineMove={handleConfirmQuarantineMove}
+                onCancelQuarantineMove={handleSimpleCancel}
                 
             />
 
