@@ -58,7 +58,7 @@ export const App: React.FC = () => {
     };
 
     const handleConfirmQuarantineMove = (cityToRemove: CityName) => {
-        handleAction('ConfirmQuarantineMove', { cityToRemove });
+        handleAction('ConfirmQuarantineMove', { cityToRemove }, null);
     };
 
     const handleDevActionWrapper = (action: string, payload: any) => {
