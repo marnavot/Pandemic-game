@@ -781,6 +781,8 @@ export const useGameLogic = () => {
             treatedVSCitiesThisTurn: [],
             pendingMutationEvents: [],
             mutationEventResult: null,
+            quarantines: {},
+            quarantineMarkerSupply: 0,
             actionHistory: [], useAiNarratives: config.useAiNarratives, selectedCity: initialLocation,
             lastInfectionResult: null,
             epidemicInfectionResults: [],
