@@ -9,32 +9,6 @@ import { safeCloneGameState, isReachableByTrain, getCityDataForGame } from '../u
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
-const QuarantineMoveModal: React.FC<{
-    show: boolean;
-    onClose: () => void; // A cancel action
-    onConfirm: (cityToRemove: CityName) => void;
-    gameState: GameState;
-}> = ({ show, onClose, onConfirm, gameState }) => {
-    const citiesWithMarkers = Object.keys(gameState.quarantines) as CityName[];
-    
-    return (
-        <Modal title="Move Quarantine Marker" show={show} onClose={onClose}>
-            <p className="mb-4">The supply is empty. Select an existing quarantine marker to move to your current city.</p>
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                {citiesWithMarkers.map(city => (
-                    <button
-                        key={city}
-                        onClick={() => onConfirm(city)}
-                        className="w-full p-2 bg-gray-700 hover:bg-gray-600 rounded text-left"
-                    >
-                        Move from {CITIES_DATA[city].name} (Strength: {gameState.quarantines[city]})
-                    </button>
-                ))}
-            </div>
-        </Modal>
-    );
-};
-
 
 const EventCardImage: React.FC<{ cardName: EventCardName }> = ({ cardName }) => {
     const extensionsToTry = useMemo(() => ['jpg', 'png', 'jpeg', 'webp'], []);
