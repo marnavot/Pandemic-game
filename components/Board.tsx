@@ -110,6 +110,7 @@ const CityMarker: React.FC<{
   const sizeClass = markerSizeClasses[Math.min(totalCubes, 3) as keyof typeof markerSizeClasses];
   const pulseClass = totalCubes >= 3 ? 'animate-pulse-danger' : '';
   const selectionClass = isSelected ? 'bg-yellow-400' : isHighlighted ? 'bg-green-400' : '';
+  const quarantineStrength = gameState.quarantines?.[cityName]; // Get quarantine strength
 
   return (
     <div
@@ -132,6 +133,15 @@ const CityMarker: React.FC<{
         <div className={`p-1 rounded-full transition-all duration-200 ${selectionClass}`}>
           <CityVisual colors={colorsToShow} sizeClass={sizeClass} pulseClass={pulseClass} />
         </div>
+
+        {quarantineStrength && (
+          <div
+            className="absolute -top-1 -left-1 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-cyan-500 rounded-full border-2 border-white flex items-center justify-center text-black text-xs font-bold shadow-lg z-10"
+            title={`Quarantine Strength: ${quarantineStrength}`}
+          >
+            {quarantineStrength}
+          </div>
+        )}
 
         {/* Port City Anchor Icon */}
         {isPortCity && (
