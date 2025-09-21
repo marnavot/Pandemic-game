@@ -30,6 +30,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
   const [useQuarantineChallenge, setUseQuarantineChallenge] = useState(false);
   const [quarantineMarkerType, setQuarantineMarkerType] = useState<'single' | 'double'>('double');
   const [numQuarantineMarkers, setNumQuarantineMarkers] = useState(4);
+  const [useHistoricalDiseasesChallenge, setUseHistoricalDiseasesChallenge] = useState(false);
+  const [numHistoricalDiseases, setNumHistoricalDiseases] = useState(1);
 
   const [modalContent, setModalContent] = useState<{title: string, content: React.ReactNode} | null>(null);
 
@@ -343,6 +345,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
         useQuarantineChallenge,
         quarantineMarkerType,
         numQuarantineMarkers,
+        useHistoricalDiseasesChallenge,
+        numHistoricalDiseases, 
     });
   };
   
@@ -525,6 +529,42 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame }) => {
                     </select>
                 </div>
             </div>
+
+            {/* Challenges Setup (Iberia) */}
+            {gameType === 'iberia' && (
+                <div className="p-4 border border-gray-700 rounded-lg">
+                    <h2 className="text-xl font-orbitron text-purple-400 mb-4">Challenges (Iberia)</h2>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-700 rounded-md has-[:checked]:bg-purple-800">
+                            <label className="flex flex-1 items-center cursor-pointer">
+                                <div className="flex-1">
+                                    <span className="text-lg font-semibold">Historical Diseases</span>
+                                    <p className="text-xs text-gray-400">Play against diseases with unique, dangerous effects.</p>
+                                </div>
+                                <div className="relative ml-4">
+                                    <input type="checkbox" checked={useHistoricalDiseasesChallenge} onChange={(e) => setUseHistoricalDiseasesChallenge(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-14 h-8 bg-gray-600 rounded-full peer peer-checked:bg-purple-500"></div>
+                                    <div className="absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-full"></div>
+                                </div>
+                            </label>
+                        </div>
+                        {useHistoricalDiseasesChallenge && (
+                            <div className="p-3 bg-gray-900 rounded-md">
+                                <label htmlFor="numHistoricalDiseases" className="block text-lg mb-2">Number of Historical Diseases: <span className="font-bold text-xl">{numHistoricalDiseases}</span></label>
+                                <input
+                                    id="numHistoricalDiseases"
+                                    type="range"
+                                    min="1"
+                                    max="4"
+                                    value={numHistoricalDiseases}
+                                    onChange={(e) => setNumHistoricalDiseases(parseInt(e.target.value, 10))}
+                                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Challenges Setup */}
             {gameType === 'pandemic' && (
