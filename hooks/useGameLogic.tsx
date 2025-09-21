@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, GamePhase, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, PlayerRole, CITIES_DATA, CONNECTIONS, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, GameSetupConfig, EventCardName, ALL_EVENT_CARDS, VirulentStrainEpidemicCardName, VIRULENT_STRAIN_EPIDEMIC_INFO, MutationEventCardName, MUTATION_EVENT_CARD_INFO, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, FALLOFROME_MIGRATION_PATHS, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, InfectionResult, FALLOFROME_INITIAL_CUBE_COUNTS, BattleModalState, BattleDieResult, ShareOption, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, PANDEMIC_ROLES, FALLOFROME_ROLES, IBERIA_ROLES, IBERIA_EVENTS, IBERIA_CITIES_DATA, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP } from '../types';
+import { GameState, GamePhase, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, PlayerRole, CITIES_DATA, CONNECTIONS, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, GameSetupConfig, EventCardName, ALL_EVENT_CARDS, VirulentStrainEpidemicCardName, VIRULENT_STRAIN_EPIDEMIC_INFO, MutationEventCardName, MUTATION_EVENT_CARD_INFO, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, FALLOFROME_MIGRATION_PATHS, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, InfectionResult, FALLOFROME_INITIAL_CUBE_COUNTS, BattleModalState, BattleDieResult, ShareOption, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, PANDEMIC_ROLES, FALLOFROME_ROLES, IBERIA_ROLES, IBERIA_EVENTS, IBERIA_CITIES_DATA, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, HistoricalDiseaseEffect } from '../types';
 import { shuffle, deepClone, safeCloneGameState, isReachableByTrain } from '../utils';
 import { generateEpidemicReport, generateCureDiscoveredReport, generateOutbreakReport, generateGameOverReport, generateEradicationReport } from '../services/geminiService';
 import { getCardDisplayName, InfectionResultList } from './ui';
@@ -282,6 +282,16 @@ export const useGameLogic = () => {
 
     function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[]): InfectionResult {
         const result: InfectionResult = { city, color, defended: false, defenseType: null, legionsRemoved: 0, cubesAdded: 0, outbreak: false };
+        let cubesToPlace = cubesToAdd; // Start with the base number of cubes to add
+
+        if (color === DiseaseColor.Black && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Malaria)) {
+            const cityCubes = gs.diseaseCubes[city] || {};
+            if ((cityCubes[DiseaseColor.Black] || 0) === 0) {
+                cubesToPlace = 2;
+                gs.log.unshift(`- MALARIA effect: 2 black cubes placed in ${CITIES_DATA[city].name}.`);
+            }
+        }
+
         if (gs.gamePhase === GamePhase.GameOver) {
             if (outbreakResults) outbreakResults.push(result);
             return result;
@@ -381,7 +391,7 @@ export const useGameLogic = () => {
             }
         }
     
-        if (gs.remainingCubes[color] < cubesToAdd) {
+        if (gs.remainingCubes[color] < cubesToPlace) {
             gs.gamePhase = GamePhase.GameOver;
             gs.gameOverReason = `Ran out of ${color} disease cubes. Not enough cubes in the supply to infect ${CITIES_DATA[city].name}.`;
             gs.log.unshift(`- GAME OVER: Ran out of ${color} cubes.`);
@@ -391,14 +401,14 @@ export const useGameLogic = () => {
     
         const currentCubes = gs.diseaseCubes[city]?.[color] || 0;
         
-        if (currentCubes + cubesToAdd < 4) {
-            gs.remainingCubes[color] -= cubesToAdd;
+        if (currentCubes + cubesToPlace < 4) {
+            gs.remainingCubes[color] -= cubesToPlace;
             if (!gs.diseaseCubes[city]) gs.diseaseCubes[city] = {};
-            gs.diseaseCubes[city]![color] = currentCubes + cubesToAdd;
-            result.cubesAdded = cubesToAdd;
+            gs.diseaseCubes[city]![color] = currentCubes + cubesToPlace;
+            result.cubesAdded = cubesToPlace;
         } else { 
             const cubesToReachThree = 3 - currentCubes;
-            const overflow = cubesToAdd - cubesToReachThree;
+            const overflow = cubesToPlace - cubesToReachThree;
             gs.remainingCubes[color] -= cubesToReachThree;
             if (!gs.diseaseCubes[city]) gs.diseaseCubes[city] = {};
             gs.diseaseCubes[city]![color] = 3;
@@ -788,6 +798,7 @@ export const useGameLogic = () => {
             epidemicInfectionResults: [],
             outbreakResults: [],
             firstPlayerIndex: 0,
+            activeHistoricalDiseases: [],
         };
         // We return the pre-game state. Final setup happens in `finalizeGameSetup`.
         return initialGameState;
@@ -816,6 +827,14 @@ export const useGameLogic = () => {
           newState.quarantineMarkerSupply = config.numQuarantineMarkers;
           newState.quarantines = {};
           newState.log.unshift(`- QUARANTINE challenge is active with ${config.numQuarantineMarkers} ${config.quarantineMarkerType}-sided markers.`);
+        }
+
+        if (config.useHistoricalDiseasesChallenge && config.gameType === 'iberia') {
+            const allHistoricalDiseases = Object.values(HistoricalDiseaseEffect) as HistoricalDiseaseEffect[];
+            newState.activeHistoricalDiseases = shuffle(allHistoricalDiseases).slice(0, config.numHistoricalDiseases);
+            newState.log.unshift(`- HISTORICAL DISEASES challenge is active with ${config.numHistoricalDiseases} diseases!`);
+        } else {
+            newState.activeHistoricalDiseases = [];
         }
 
         if (config.roleSelection === 'random') {
@@ -1657,6 +1676,14 @@ export const useGameLogic = () => {
                 }
                 case 'TreatDisease': {
                     const { city, color } = payload;
+                    
+                    const isTyphus = color === DiseaseColor.Red && newState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
+                    const hasMoreThanOneRedCube = newState.diseaseCubes[city] && (newState.diseaseCubes[city]![DiseaseColor.Red] || 0) > 1;
+                
+                    if (isTyphus && hasMoreThanOneRedCube && newState.curedDiseases[DiseaseColor.Red] === false && newState.actionsRemaining < 2) {
+                        logEvent(`Typhus effect: 2 actions are required to treat red disease when more than 1 cube is present.`);
+                        return prevState; // Abort action
+                    }
                     
                     if (player.role === PlayerRole.RuralDoctor) {
                         const cityCubes = newState.diseaseCubes[city];
@@ -2599,6 +2626,10 @@ export const useGameLogic = () => {
                 
                 if (!isFreeAction) {
                     newState.actionsRemaining--;
+                }
+                if (isTyphus && hasMoreThanOneRedCube && newState.curedDiseases[DiseaseColor.Red] === false) {
+                    newState.actionsRemaining--; // Consume one extra action
+                    logEvent(`Typhus consumes an extra action.`);
                 }
             }
 
