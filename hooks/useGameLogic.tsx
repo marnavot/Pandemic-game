@@ -1204,6 +1204,9 @@ export const useGameLogic = () => {
             let actionTaken = false;
             let isFreeAction = false;
 
+            let isTyphus = false;
+            let hasMoreThanOneRedCube = false;
+
             const checkHandLimit = (gs: GameState, p: Player) => {
                 if (p.hand.length > getHandLimit(p)) {
                     gs.playerToDiscardId = p.id;
@@ -1677,8 +1680,8 @@ export const useGameLogic = () => {
                 case 'TreatDisease': {
                     const { city, color } = payload;
                     
-                    const isTyphus = color === DiseaseColor.Red && newState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
-                    const hasMoreThanOneRedCube = newState.diseaseCubes[city] && (newState.diseaseCubes[city]![DiseaseColor.Red] || 0) > 1;
+                    isTyphus = color === DiseaseColor.Red && newState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
+                    hasMoreThanOneRedCube = newState.diseaseCubes[city] && (newState.diseaseCubes[city]![DiseaseColor.Red] || 0) > 1;
                 
                     if (isTyphus && hasMoreThanOneRedCube && newState.curedDiseases[DiseaseColor.Red] === false && newState.actionsRemaining < 2) {
                         logEvent(`Typhus effect: 2 actions are required to treat red disease when more than 1 cube is present.`);
@@ -1787,10 +1790,6 @@ export const useGameLogic = () => {
                             playSound('treatdisease');
                             actionTaken = true;
                             
-                            if (isVS && isResistant && !newState.curedDiseases[color]) {
-                                newState.actionsRemaining--; // Consume one extra action
-                                logEvent(`Resistant to Treatment consumes an extra action.`);
-                            }
                         }
                     }
                     break;
