@@ -1,16 +1,3 @@
-export enum HistoricalDiseaseEffect {
-    Malaria = "Malaria",       // Black
-    Typhus = "Typhus",         // Red
-    Cholera = "Cholera",       // Blue
-    YellowFever = "Yellow Fever", // Yellow
-}
-
-export const HISTORICAL_DISEASE_INFO: Record<HistoricalDiseaseEffect, { color: DiseaseColor, description: string }> = {
-    [HistoricalDiseaseEffect.Malaria]: { color: DiseaseColor.Black, description: "When infecting with black, whenever you would put 1 black cube into a city that has no black cubes in it, add 2 black cubes instead." },
-    [HistoricalDiseaseEffect.Typhus]: { color: DiseaseColor.Red, description: "If there is more than 1 red cube in a city, you must spend 2 actions to remove a red cube from it." },
-    [HistoricalDiseaseEffect.Cholera]: { color: DiseaseColor.Blue, description: "When blue outbreaks, in addition to placing a blue cube in each city 1 connection away, place a blue cube in each city that is 2 connections away if there are no cubes (of any color) in it." },
-    [HistoricalDiseaseEffect.YellowFever]: { color: DiseaseColor.Yellow, description: "When a yellow cube is placed in a port city, you must place a yellow cube in all adjacent port cities as well." }
-};
 
 export enum DiseaseColor {
 Blue = "blue",
@@ -26,6 +13,20 @@ Orange = "orange",
 export type FallOfRomeDiseaseColor = DiseaseColor.Blue | DiseaseColor.Orange | DiseaseColor.Green | DiseaseColor.White | DiseaseColor.Black;
 
 export const FALLOFROME_DISEASE_COLORS: FallOfRomeDiseaseColor[] = [DiseaseColor.Blue, DiseaseColor.Orange, DiseaseColor.Green, DiseaseColor.White, DiseaseColor.Black];
+
+export enum HistoricalDiseaseEffect {
+    Malaria = "Malaria",       // Black
+    Typhus = "Typhus",         // Red
+    Cholera = "Cholera",       // Blue
+    YellowFever = "Yellow Fever", // Yellow
+}
+
+export const HISTORICAL_DISEASE_INFO: Record<HistoricalDiseaseEffect, { color: DiseaseColor, description: string }> = {
+    [HistoricalDiseaseEffect.Malaria]: { color: DiseaseColor.Black, description: "When infecting with black, whenever you would put 1 black cube into a city that has no black cubes in it, add 2 black cubes instead." },
+    [HistoricalDiseaseEffect.Typhus]: { color: DiseaseColor.Red, description: "If there is more than 1 red cube in a city, you must spend 2 actions to remove a red cube from it." },
+    [HistoricalDiseaseEffect.Cholera]: { color: DiseaseColor.Blue, description: "When blue outbreaks, in addition to placing a blue cube in each city 1 connection away, place a blue cube in each city that is 2 connections away if there are no cubes (of any color) in it." },
+    [HistoricalDiseaseEffect.YellowFever]: { color: DiseaseColor.Yellow, description: "When a yellow cube is placed in a port city, you must place a yellow cube in all adjacent port cities as well." }
+};
 
 export interface City {
 name: string;
