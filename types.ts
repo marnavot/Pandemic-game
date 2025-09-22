@@ -1101,6 +1101,7 @@ actionHistory: GameState[];
 useAiNarratives: boolean;
 selectedCity: CityName | null;
 lastInfectionResult: InfectionResult | null;
+infectionStepResults?: InfectionResult[]; 
 epidemicInfectionResults: InfectionResult[];
 outbreakResults: InfectionResult[];
 }
