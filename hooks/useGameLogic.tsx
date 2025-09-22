@@ -457,7 +457,7 @@ export const useGameLogic = () => {
             }
         }
         if (outbreakResults) outbreakResults.push(result);
-        if (result.cubesAdded > 0 && color === DiseaseColor.Yellow && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.YellowFever) && IBERIA_PORT_CITIES.has(city)) {
+        if (result.cubesAdded > 0 && color === DiseaseColor.Yellow && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.YellowFever) && IBERIA_PORT_CITIES.has(city) && yellowFeverChain === null) {
             const currentChain = yellowFeverChain || new Set<CityName>();
             if (!currentChain.has(city)) {
                 currentChain.add(city); // Mark current city as processed in this chain
@@ -466,7 +466,7 @@ export const useGameLogic = () => {
                 
                 for (const adjacentPort of adjacentPorts) {
                     // Create a new set for this sub-chain to avoid conflicts with the main infection result
-                    _performInfection(gs, adjacentPort, DiseaseColor.Yellow, new Set(outbreaksInTurn), newlyOutbrokenCities, 1, outbreakResults, currentChain);
+                    _performInfection(gs, adjacentPort, DiseaseColor.Yellow, outbreaksInTurn, newlyOutbrokenCities, 1, outbreakResults, currentChain);
                 }
             }
         }
