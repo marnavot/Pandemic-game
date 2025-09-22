@@ -382,6 +382,9 @@ export const InfectionResultList: React.FC<{ title: string; results: InfectionRe
                     return (
                         <p key={index} className="pl-2 border-l-2 border-gray-600">
                             <strong>{CITIES_DATA[result.city].name} ({result.color}):</strong> {resultText}
+                            {result.triggeredEffect === HistoricalDiseaseEffect.Malaria && <span className="text-xs text-yellow-300 block pl-2">↳ (Malaria effect: 2 cubes placed on an uninfected city)</span>}
+                            {result.triggeredBy?.effect === HistoricalDiseaseEffect.YellowFever && <span className="text-xs text-yellow-300 block pl-2">↳ (Caused by Yellow Fever from {CITIES_DATA[result.triggeredBy.sourceCity].name})</span>}
+                            {result.triggeredBy?.effect === HistoricalDiseaseEffect.Cholera && <span className="text-xs text-yellow-300 block pl-2">↳ (Caused by Cholera outbreak in {CITIES_DATA[result.triggeredBy.sourceCity].name})</span>}
                         </p>
                     )
                 })}
