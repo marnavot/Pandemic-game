@@ -126,6 +126,7 @@ export const App: React.FC = () => {
     const [politicianGiveModalOpen, setPoliticianGiveModalOpen] = useState(false);
     const [politicianSwapModalOpen, setPoliticianSwapModalOpen] = useState(false);
     const [sailorPassengerModalState, setSailorPassengerModalState] = useState<{ isOpen: boolean; destination: CityName | null; passengers: Player[] }>({ isOpen: false, destination: null, passengers: [] });
+    const [historicalDiseasesModalOpen, setHistoricalDiseasesModalOpen] = useState(false);
 
     const handleInitiateRailwaymanDoubleBuild = () => {
         if (!gameState || !selectedConnection) return;
