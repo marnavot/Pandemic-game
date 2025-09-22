@@ -8,6 +8,18 @@ import { getCitiesWithinRange, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
+const canTreatDisease = useMemo(() => {
+    if (!inActionPhase || pawnToMove.id !== currentPlayer.id) return false;
+    const cityCubes = gameState.diseaseCubes[pawnToMove.location];
+    if (!cityCubes || Object.values(cityCubes).every(c => c === 0)) return false;
+
+    const isTyphus = gameState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
+    if (isTyphus && (cityCubes[DiseaseColor.Red] || 0) > 1 && !gameState.curedDiseases[DiseaseColor.Red]) {
+        return gameState.actionsRemaining >= 2;
+    }
+    return true;
+}, [gameState, inActionPhase, pawnToMove, currentPlayer]);
+
 const CURE_STATUS_COLORS: Record<DiseaseColor, string> = {
   [DiseaseColor.Blue]: 'bg-blue-500',
   [DiseaseColor.Yellow]: 'bg-yellow-400',
@@ -128,6 +140,7 @@ const Dashboard: React.FC<{
   cityNameFontSize: number;
   onSetCityNameFontSize: (size: number) => void;
   onImposeQuarantine: () => void;
+  onViewHistoricalDiseases: () => void;
   
 }> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -617,6 +630,7 @@ const canRecruitArmy = inActionPhase &&
         {gameState.infectionZoneBanPlayerId !== null && <div className="text-center font-bold text-orange-400 mb-1">Infection Zone Ban Active</div>}
         {gameState.improvedSanitationPlayerId !== null && <div className="text-center font-bold text-green-400 mb-1">Improved Sanitation Active</div>}
         {gameState.sequencingBreakthroughActive && <div className="text-center font-bold text-yellow-400 mb-1">Sequencing Breakthrough Active</div>}
+        <button onClick={onViewHistoricalDiseases} className="w-full mt-2 text-xs bg-purple-800 hover:bg-purple-700 px-3 py-1 rounded transition-colors">View Historical Diseases</button>
         
         {gameState.virulentStrainColor && (
             <div className="text-center font-bold text-purple-400 mb-1 capitalize animate-pulse">
@@ -782,6 +796,7 @@ const canRecruitArmy = inActionPhase &&
                 const isEradicated = gameState.eradicatedDiseases[color];
                 const isVirulent = gameState.virulentStrainColor === color;
                 const titleText = isEradicated ? 'Eradicated' : cured ? 'Cured' : 'Not Cured';
+                const historicalDiseaseEffect = gameState.activeHistoricalDiseases.find(hd => HISTORICAL_DISEASE_INFO[hd].color === color);
 
                 return (
                     <div key={color} title={titleText} className={`w-8 h-8 rounded-full ${CURE_STATUS_COLORS[color]} ${cured ? 'opacity-100 shadow-lg' : 'opacity-30'} relative flex items-center justify-center transition-all duration-300`}>
@@ -792,6 +807,11 @@ const canRecruitArmy = inActionPhase &&
                         )}
                         {cured && !isEradicated && <span className="text-white text-lg font-bold">✓</span>}
                         {isEradicated && <div className="w-full h-full flex items-center justify-center animate-pulse"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3-3 1.343 3 3 3z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.092 19.908A9.954 9.954 0 013 12c0-2.28-.78-4.383 2.092-6.092m12.816 12.184A9.954 9.954 0 0121 12c0-2.28-.78-4.383-2.092-6.092M12 21a9.954 9.954 0 01-7.908-4.092M12 3a9.954 9.954 0 017.908 4.092" /></svg></div>}
+                        {historicalDiseaseEffect && (
+                          <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-purple-600 border-2 border-white flex items-center justify-center animate-pulse" title={`Historical Disease: ${historicalDiseaseEffect}`}>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </div>
+                      )}
                     </div>
                 )
             })
@@ -1008,7 +1028,7 @@ const canRecruitArmy = inActionPhase &&
               </button>
             )}
             {gameState.gameType === 'fallOfRome' && <button disabled={!canEnlistBarbarians || pawnToMove.id !== currentPlayer.id} onClick={onInitiateEnlistBarbarians} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Enlist Barbarians</button>}
-            {gameState.gameType !== 'fallOfRome' && <button disabled={!inActionPhase || pawnToMove.id !== currentPlayer.id} onClick={onInitiateTreatDisease} className="bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Treat Disease</button>}
+            {gameState.gameType !== 'fallOfRome' && <button disabled={!canTreatDisease} onClick={onInitiateTreatDisease} className="bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Treat Disease</button>}
             <button disabled={!inActionPhase || pawnToMove.id !== currentPlayer.id} onClick={onInitiateShareKnowledge} className="bg-indigo-500 hover:bg-indigo-400 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">
               {gameState.gameType === 'fallOfRome' ? 'Plot' : 'Share'}
             </button>
