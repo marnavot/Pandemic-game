@@ -278,9 +278,41 @@ export const useGameLogic = () => {
                 }
             }
         }
+
+        if (color === DiseaseColor.Blue && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Cholera)) {
+            gs.log.unshift(`- CHOLERA outbreak spreads further!`);
+            const neighborsOfNeighbors = new Set<CityName>();
+            // Find all unique cities 2 connections away
+            CONNECTIONS[city].forEach(neighbor => {
+                CONNECTIONS[neighbor].forEach(twoAway => {
+                    // Ensure it's not the original city or an immediate neighbor
+                    if (twoAway !== city && !CONNECTIONS[city].includes(twoAway)) {
+                        neighborsOfNeighbors.add(twoAway);
+                    }
+                });
+            });
+        
+            for (const twoAwayCity of Array.from(neighborsOfNeighbors)) {
+                const totalCubesInCity = Object.values(gs.diseaseCubes[twoAwayCity] || {}).reduce((a, b) => a + (b || 0), 0);
+                if (totalCubesInCity === 0) {
+                    gs.log.unshift(`- Cholera places 1 blue cube on distant, empty city ${CITIES_DATA[twoAwayCity].name}.`);
+                    // This special infection does not cause further outbreaks. We add the cube directly.
+                    if (gs.remainingCubes[DiseaseColor.Blue] > 0) {
+                        if (!gs.diseaseCubes[twoAwayCity]) gs.diseaseCubes[twoAwayCity] = {};
+                        gs.diseaseCubes[twoAwayCity]![DiseaseColor.Blue] = (gs.diseaseCubes[twoAwayCity]![DiseaseColor.Blue] || 0) + 1;
+                        gs.remainingCubes[DiseaseColor.Blue]--;
+                    } else {
+                        gs.gamePhase = GamePhase.GameOver;
+                        gs.gameOverReason = 'Ran out of blue disease cubes.';
+                        gs.log.unshift(`- GAME OVER: Ran out of blue cubes.`);
+                        return; // Exit immediately
+                    }
+                }
+            }
+        }
     }
 
-    function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[]): InfectionResult {
+    function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[], yellowFeverChain: Set<CityName> | null = null): InfectionResult {
         const result: InfectionResult = { city, color, defended: false, defenseType: null, legionsRemoved: 0, cubesAdded: 0, outbreak: false };
         let cubesToPlace = cubesToAdd; // Start with the base number of cubes to add
 
@@ -425,6 +457,19 @@ export const useGameLogic = () => {
             }
         }
         if (outbreakResults) outbreakResults.push(result);
+        if (result.cubesAdded > 0 && color === DiseaseColor.Yellow && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.YellowFever) && IBERIA_PORT_CITIES.has(city)) {
+            const currentChain = yellowFeverChain || new Set<CityName>();
+            if (!currentChain.has(city)) {
+                currentChain.add(city); // Mark current city as processed in this chain
+                gs.log.unshift(`- YELLOW FEVER spreads from port city ${CITIES_DATA[city].name}!`);
+                const adjacentPorts = (CONNECTIONS[city] || []).filter(neighbor => IBERIA_PORT_CITIES.has(neighbor));
+                
+                for (const adjacentPort of adjacentPorts) {
+                    // Create a new set for this sub-chain to avoid conflicts with the main infection result
+                    _performInfection(gs, adjacentPort, DiseaseColor.Yellow, new Set(outbreaksInTurn), newlyOutbrokenCities, 1, outbreakResults, currentChain);
+                }
+            }
+        }
         return result;
     }
 
