@@ -161,6 +161,10 @@ const Dashboard: React.FC<{
     return !gameState.quarantines[currentPlayer.location];
   }, [gameState.gameType, inActionPhase, gameState.setupConfig.useQuarantineChallenge, gameState.quarantines, currentPlayer.location]);
 
+  const showHistoricalDiseasesButton = useMemo(() => {
+    return gameState.gameType === 'iberia' && gameState.setupConfig.useHistoricalDiseasesChallenge;
+  }, [gameState.gameType, gameState.setupConfig.useHistoricalDiseasesChallenge]);
+
   const canAgronomistPlaceToken = useMemo(() => {
       if (gameState.gameType !== 'iberia' || !inActionPhase || currentPlayer.role !== PlayerRole.Agronomist || !selectedRegion || gameState.purificationTokenSupply < 1) {
           return false;
@@ -632,8 +636,9 @@ const canRecruitArmy = inActionPhase &&
         {gameState.infectionZoneBanPlayerId !== null && <div className="text-center font-bold text-orange-400 mb-1">Infection Zone Ban Active</div>}
         {gameState.improvedSanitationPlayerId !== null && <div className="text-center font-bold text-green-400 mb-1">Improved Sanitation Active</div>}
         {gameState.sequencingBreakthroughActive && <div className="text-center font-bold text-yellow-400 mb-1">Sequencing Breakthrough Active</div>}
-        <button onClick={onViewHistoricalDiseases} className="w-full mt-2 text-xs bg-purple-800 hover:bg-purple-700 px-3 py-1 rounded transition-colors">View Historical Diseases</button>
-        
+        {showHistoricalDiseasesButton && (
+            <button onClick={onViewHistoricalDiseases} className="w-full mt-2 text-xs bg-purple-800 hover:bg-purple-700 px-3 py-1 rounded transition-colors">View Historical Diseases</button>
+        )}
         {gameState.virulentStrainColor && (
             <div className="text-center font-bold text-purple-400 mb-1 capitalize animate-pulse">
                 Virulent Strain: {gameState.virulentStrainColor}
@@ -1041,13 +1046,14 @@ const canRecruitArmy = inActionPhase &&
             >
               {T.discoverCure}
             </button>
-            <button
-                disabled={!canImposeQuarantine}
-                onClick={onImposeQuarantine}
-                className="bg-cyan-700 hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold"
-            >
-                Impose Quarantine
-            </button>
+            {canImposeQuarantine && (
+                <button
+                    onClick={onImposeQuarantine}
+                    className="bg-cyan-700 hover:bg-cyan-600 p-2 rounded text-white font-semibold"
+                >
+                    Impose Quarantine
+                </button>
+            )}
             {isContingencyPlanner && <button disabled={!inActionPhase || !canTakeEvent || pawnToMove.id !== currentPlayer.id} onClick={onInitiateTakeEventCard} className="bg-lime-600 hover:bg-lime-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Take Event</button>}
             {currentPlayer.role === PlayerRole.OperationsExpert && <button disabled={!canExpertFlight || pawnToMove.id !== currentPlayer.id} onClick={onInitiateExpertFlight} className="bg-pink-600 hover:bg-pink-500 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Expert Flight</button>}
             {currentPlayer.role === PlayerRole.Pilot && <button disabled={!inActionPhase || !canPilotFlight} onClick={() => onAction('PilotFlight', { destination: selectedCity })} className="bg-slate-500 hover:bg-slate-400 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded text-white font-semibold">Pilot Flight</button>}
