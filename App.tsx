@@ -1056,6 +1056,7 @@ export const App: React.FC = () => {
                     cityNameFontSize={cityNameFontSize} 
                     onSetCityNameFontSize={setCityNameFontSize}
                     onImposeQuarantine={() => handleAction('ImposeQuarantine', null, dispatcherTargetId)}
+                    onViewHistoricalDiseases={() => setHistoricalDiseasesModalOpen(true)}
                 />
             </div>
             
