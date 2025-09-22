@@ -4593,6 +4593,7 @@ export const useGameLogic = () => {
                 const newlyOutbrokenCities: CityName[] = [];
                 newState.lastInfectionResult = null;
                 newState.outbreakResults = []; // Clear previous outbreak results at start of new infection card
+                newState.infectionStepResults = [];
                 
                 let invadedCity: CityName | null = null;
                 if (card.type === 'city') {
@@ -4632,7 +4633,7 @@ export const useGameLogic = () => {
                                 cubesToAdd = 2;
                                 logEvent(`Chronic Effect: Placing 2 cubes on ${CITIES_DATA[invadedCity].name}.`);
                             }
-                            newState.lastInfectionResult = _performInfection(newState, invadedCity, color, outbreaksInTurn, newlyOutbrokenCities, cubesToAdd);
+                            newState.lastInfectionResult = _performInfection(newState, invadedCity, color, outbreaksInTurn, newlyOutbrokenCities, cubesToAdd, newState.infectionStepResults);
                         }
                     }
                     newState.infectionDiscard.push(card);
