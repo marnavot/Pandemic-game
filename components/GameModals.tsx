@@ -9,6 +9,29 @@ import { safeCloneGameState, isReachableByTrain, getCityDataForGame } from '../u
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
+const HistoricalDiseasesModal: React.FC<{
+    show: boolean;
+    onClose: () => void;
+    activeDiseases: HistoricalDiseaseEffect[];
+}> = ({ show, onClose, activeDiseases }) => {
+    if (activeDiseases.length === 0) return null;
+    return (
+        <Modal title="Historical Diseases in Play" show={show} onClose={onClose} titleColor="text-purple-400">
+            <div className="space-y-4">
+                {activeDiseases.map(disease => {
+                    const info = HISTORICAL_DISEASE_INFO[disease];
+                    return (
+                        <div key={disease} className="p-3 bg-gray-900 rounded-lg">
+                            <h3 className={`font-bold text-lg capitalize ${DISEASE_TEXT_COLOR_MAP[info.color]}`}>{disease} ({info.color})</h3>
+                            <p className="text-sm text-gray-300 mt-1">{info.description}</p>
+                        </div>
+                    );
+                })}
+            </div>
+        </Modal>
+    );
+};
+
 
 const EventCardImage: React.FC<{ cardName: EventCardName }> = ({ cardName }) => {
     const extensionsToTry = useMemo(() => ['jpg', 'png', 'jpeg', 'webp'], []);
@@ -6162,6 +6185,8 @@ interface GameModalsProps {
     handleResolveWhenThePlansWereGood: (cardName: EventCardName) => void;
     onConfirmQuarantineMove: (cityToRemove: CityName) => void;
     onCancelQuarantineMove: () => void;
+    historicalDiseasesModalOpen: boolean;
+    setHistoricalDiseasesModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const VaeVictisModal: React.FC<{
