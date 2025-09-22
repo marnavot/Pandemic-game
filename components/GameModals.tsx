@@ -3911,6 +3911,7 @@ const InfectionStepModal: React.FC<{
 
     const modalTitle = `${T.infection} Phase`;
     const result = gameState.lastInfectionResult;
+    const allResults = gameState.infectionStepResults;
 
     const renderInvasionResult = () => {
         if (!result) return null;
@@ -3986,14 +3987,18 @@ const InfectionStepModal: React.FC<{
                                 <MigrationPathMap path={migrationSubPath.path} tribe={migrationSubPath.tribe} />
                             )}
                             
-                             {result && (
+                             {allResults && allResults.length > 1 ? (
+                                <div className="w-full border-t border-gray-700 pt-4 mt-2">
+                                    <InfectionResultList title={`${T.infection} Results`} results={allResults} />
+                                </div>
+                            ) : result && (
                                 <div className="w-full border-t border-gray-700 pt-4 mt-2">
                                     <h4 className="text-center font-bold mb-2 text-yellow-400">{T.infection} Result</h4>
                                     <InfectionResultDisplay result={result} gameType={gameState.gameType} T={T} />
                                 </div>
                             )}
                             
-                            {result?.outbreak && <InfectionResultList title={`Chain Reaction ${T.outbreak}`} results={gameState.outbreakResults} />}
+                            {allResults?.some(r => r.outbreak) && <InfectionResultList title={`Chain Reaction ${T.outbreak}`} results={gameState.outbreakResults} />}
 
                             <div className="w-full border-t border-gray-700 pt-4 mt-2">
                                 {outOfTurnActionsComponent}
