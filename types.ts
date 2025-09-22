@@ -408,7 +408,7 @@ export const IBERIA_PORT_CITIES: Set<CityName> = new Set([
     'ACoruña', 'Vigo', 'Porto', 'Lisboa', 'Albufeira', 'Gijón', 
     'Santander', 'SanSebastiánDonostia', 'Huelva', 'Cádiz', 'Gibraltar', 
     'Málaga', 'Almería', 'Cartagena', 'Valencia', 'PalmaDeMallorca', 
-    'Tarragona', 'Barcelona'
+    'Tarragona', 'Barcelona', 'Alicante'
 ]);
 
 export const IBERIA_SEA_CONNECTIONS: ReadonlyArray<Readonly<[CityName, CityName]>> = [
