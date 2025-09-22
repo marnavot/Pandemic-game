@@ -944,6 +944,8 @@ cubesAdded: number;
 outbreak: boolean;
 purificationDefense?: { region: string };
 nurseDefense?: { region: string };
+triggeredEffect?: HistoricalDiseaseEffect;
+triggeredBy?: { effect: HistoricalDiseaseEffect;
 }
 
 export interface GameState {
