@@ -7180,7 +7180,7 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
         onConfirmRuralDoctorTreat, onConfirmRoyalAcademyScientistForecast, onConfirmAcknowledgeForecast, onCancelAcknowledgeForecast,
         handleConfirmGovernmentMoves, onCancelEventResolution, sailorPassengerModalState, setSailorPassengerModalState, dispatcherTargetId,
         handleHospitalFounding, handleResolveMailCorrespondence, handleResolveNewRails, newRailsSelections, handleResolveTelegraphMessage,
-        handleResolveWhenThePlansWereGood, onConfirmQuarantineMove, onCancelQuarantineMove,
+        handleResolveWhenThePlansWereGood, onConfirmQuarantineMove, onCancelQuarantineMove, historicalDiseasesModalOpen, setHistoricalDiseasesModalOpen
     } = props;
     
     const T = getTerminology(gameState)
@@ -7882,6 +7882,11 @@ export const GameModals: React.FC<GameModalsProps> = (props) => {
                 onConfirm={onConfirmQuarantineMove}
                 gameState={gameState}
               />
+            <HistoricalDiseasesModal
+                show={historicalDiseasesModalOpen}
+                onClose={() => setHistoricalDiseasesModalOpen(false)}
+                activeDiseases={gameState.activeHistoricalDiseases}
+            />
         </>
     );
 };
