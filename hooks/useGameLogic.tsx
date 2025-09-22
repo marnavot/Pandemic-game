@@ -295,6 +295,17 @@ export const useGameLogic = () => {
             for (const twoAwayCity of Array.from(neighborsOfNeighbors)) {
                 const totalCubesInCity = Object.values(gs.diseaseCubes[twoAwayCity] || {}).reduce((a, b) => a + (b || 0), 0);
                 if (totalCubesInCity === 0) {
+                    const choleraResult: InfectionResult = {
+                        city: twoAwayCity,
+                        color: DiseaseColor.Blue,
+                        defended: false,
+                        defenseType: null,
+                        legionsRemoved: 0,
+                        cubesAdded: 1,
+                        outbreak: false,
+                        triggeredBy: { effect: HistoricalDiseaseEffect.Cholera, sourceCity: city }
+                    };
+                    outbreakResults.push(choleraResult);
                     gs.log.unshift(`- Cholera places 1 blue cube on distant, empty city ${CITIES_DATA[twoAwayCity].name}.`);
                     // This special infection does not cause further outbreaks. We add the cube directly.
                     if (gs.remainingCubes[DiseaseColor.Blue] > 0) {
@@ -312,14 +323,15 @@ export const useGameLogic = () => {
         }
     }
 
-    function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[], yellowFeverChain: Set<CityName> | null = null): InfectionResult {
-        const result: InfectionResult = { city, color, defended: false, defenseType: null, legionsRemoved: 0, cubesAdded: 0, outbreak: false };
+    function _performInfection(gs: GameState, city: CityName, color: DiseaseColor, outbreaksInTurn: Set<CityName>, newlyOutbrokenCities: CityName[], cubesToAdd: number = 1, outbreakResults?: InfectionResult[], yellowFeverChain: Set<CityName> | null = null, triggeredBy?: { effect: HistoricalDiseaseEffect; sourceCity: CityName }): InfectionResult {
+        const result: InfectionResult = { city, color, defended: false, defenseType: null, legionsRemoved: 0, cubesAdded: 0, outbreak: false, , triggeredBy: triggeredBy };
         let cubesToPlace = cubesToAdd; // Start with the base number of cubes to add
 
         if (color === DiseaseColor.Black && gs.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Malaria)) {
             const cityCubes = gs.diseaseCubes[city] || {};
             if ((cityCubes[DiseaseColor.Black] || 0) === 0) {
                 cubesToPlace = 2;
+                result.triggeredEffect = HistoricalDiseaseEffect.Malaria;
                 gs.log.unshift(`- MALARIA effect: 2 black cubes placed in ${CITIES_DATA[city].name}.`);
             }
         }
@@ -466,7 +478,7 @@ export const useGameLogic = () => {
                 
                 for (const adjacentPort of adjacentPorts) {
                     // Create a new set for this sub-chain to avoid conflicts with the main infection result
-                    _performInfection(gs, adjacentPort, DiseaseColor.Yellow, outbreaksInTurn, newlyOutbrokenCities, 1, outbreakResults, currentChain);
+                    _performInfection(gs, adjacentPort, DiseaseColor.Yellow, outbreaksInTurn, newlyOutbrokenCities, 1, outbreakResults, currentChain, { effect: HistoricalDiseaseEffect.YellowFever, sourceCity: city });
                 }
             }
         }
