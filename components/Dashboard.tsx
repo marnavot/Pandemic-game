@@ -2,23 +2,12 @@
 
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { GameState, Player, DiseaseColor, CityName, PlayerCard, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, PlayerRole, CITIES_DATA, CONNECTIONS, GamePhase, EventCardName, PLAYER_ROLE_INFO, VIRULENT_STRAIN_EPIDEMIC_INFO, VirulentStrainEpidemicCardName, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, FALLOFROME_INITIAL_CUBE_COUNTS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, City } from '../types';
+import { GameState, Player, DiseaseColor, CityName, PlayerCard, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, PlayerRole, CITIES_DATA, CONNECTIONS, GamePhase, EventCardName, PLAYER_ROLE_INFO, VIRULENT_STRAIN_EPIDEMIC_INFO, VirulentStrainEpidemicCardName, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, FALLOFROME_INITIAL_CUBE_COUNTS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, City, HistoricalDiseaseEffect, HISTORICAL_DISEASE_INFO } from '../types';
 import { PlayerCardDisplay, PlayableEvents, FieldOperativeActions, PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS } from '../hooks/ui';
 import { getCitiesWithinRange, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
 
-const canTreatDisease = useMemo(() => {
-    if (!inActionPhase || pawnToMove.id !== currentPlayer.id) return false;
-    const cityCubes = gameState.diseaseCubes[pawnToMove.location];
-    if (!cityCubes || Object.values(cityCubes).every(c => c === 0)) return false;
-
-    const isTyphus = gameState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
-    if (isTyphus && (cityCubes[DiseaseColor.Red] || 0) > 1 && !gameState.curedDiseases[DiseaseColor.Red]) {
-        return gameState.actionsRemaining >= 2;
-    }
-    return true;
-}, [gameState, inActionPhase, pawnToMove, currentPlayer]);
 
 const CURE_STATUS_COLORS: Record<DiseaseColor, string> = {
   [DiseaseColor.Blue]: 'bg-blue-500',
@@ -142,13 +131,15 @@ const Dashboard: React.FC<{
   onImposeQuarantine: () => void;
   onViewHistoricalDiseases: () => void;
   
-}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine }) => {
+}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
   const isMyTurn = gameState.players[gameState.currentPlayerIndex].id === localPlayerId;
   const inActionPhase = gameState.gamePhase === GamePhase.PlayerAction;
   const isSpecialOrdersActive = gameState.specialOrdersControlledPawnId !== null;
+  
+  
 
   const handleCardAction = (card: PlayerCard) => {  };
 
@@ -296,6 +287,17 @@ const Dashboard: React.FC<{
   const canPilotFlight = isPilotControllingSelf && selectedCity && citiesInPilotRange.includes(selectedCity);
 
   const canBuildStation = !gameState.researchStations.includes(currentPlayer.location) && (currentPlayer.role === PlayerRole.OperationsExpert || currentPlayer.hand.some(c => c.type === 'city' && c.name === currentPlayer.location));
+  const canTreatDisease = useMemo(() => {
+        if (!inActionPhase || pawnToMove.id !== currentPlayer.id) return false;
+        const cityCubes = gameState.diseaseCubes[pawnToMove.location];
+        if (!cityCubes || Object.values(cityCubes).every(c => c === 0)) return false;
+    
+        const isTyphus = gameState.activeHistoricalDiseases.includes(HistoricalDiseaseEffect.Typhus);
+        if (isTyphus && (cityCubes[DiseaseColor.Red] || 0) > 1 && !gameState.curedDiseases[DiseaseColor.Red]) {
+            return gameState.actionsRemaining >= 2;
+        }
+        return true;
+    }, [gameState, inActionPhase, pawnToMove, currentPlayer]);
   
   const canCureDisease = () => {
       const cityCardsInHand = currentPlayer.hand.filter(c => c.type === 'city') as (PlayerCard & { type: 'city' })[];
