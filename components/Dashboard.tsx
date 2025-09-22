@@ -156,10 +156,10 @@ const Dashboard: React.FC<{
   }, [gameState, inActionPhase, selectedCity, currentPlayer.location]);
   
   const canImposeQuarantine = useMemo(() => {
-    if (!inActionPhase || !gameState.setupConfig.useQuarantineChallenge) return false;
+    if (gameState.gameType !== 'pandemic' || !inActionPhase || !gameState.setupConfig.useQuarantineChallenge) return false;
     // You can't quarantine a city that already has a marker
     return !gameState.quarantines[currentPlayer.location];
-  }, [inActionPhase, gameState.setupConfig.useQuarantineChallenge, gameState.quarantines, currentPlayer.location]);
+  }, [gameState.gameType, inActionPhase, gameState.setupConfig.useQuarantineChallenge, gameState.quarantines, currentPlayer.location]);
 
   const canAgronomistPlaceToken = useMemo(() => {
       if (gameState.gameType !== 'iberia' || !inActionPhase || currentPlayer.role !== PlayerRole.Agronomist || !selectedRegion || gameState.purificationTokenSupply < 1) {
