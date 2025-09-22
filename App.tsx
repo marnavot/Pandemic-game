@@ -1200,6 +1200,8 @@ export const App: React.FC = () => {
                 dispatcherTargetId={dispatcherTargetId}
                 onConfirmQuarantineMove={handleConfirmQuarantineMove}
                 onCancelQuarantineMove={handleSimpleCancel}
+                historicalDiseasesModalOpen={historicalDiseasesModalOpen}
+                setHistoricalDiseasesModalOpen={setHistoricalDiseasesModalOpen}
                 
             />
 
