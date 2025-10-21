@@ -78,6 +78,7 @@ const RoleImage: React.FC<{ role: PlayerRole }> = ({ role }) => {
 const Dashboard: React.FC<{
   onNewGame: () => void;
   gameState: GameState;
+  onToggleDevTools: () => void;
   localPlayerId: number | null;
   onAction: (action: string, payload?: any) => void;
   onUndoAction: () => void;
@@ -129,12 +130,8 @@ const Dashboard: React.FC<{
   onSetCityNameFontSize: (size: number) => void;
   onImposeQuarantine: () => void;
   onViewHistoricalDiseases: () => void;
-  onForcePlayerTurn: (playerId: number) => void;
-  onSetPurificationTokens: (regionName: string, change: number) => void;
-  onSetLegions: (cityName: CityName, change: number) => void;
   
-}> = ({ gameState, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases, onForcePlayerTurn, onSetPurificationTokens, onSetLegions }) => {
-  const [devToolsOpen, setDevToolsOpen] = useState(false);
+}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
@@ -1194,6 +1191,12 @@ const canRecruitArmy = inActionPhase &&
               </div>
             </label>
           <button
+            onClick={onToggleDevTools}
+            className="w-full mt-2 p-2 bg-slate-600 hover:bg-slate-500 rounded text-white font-bold transition-colors"
+          >
+            Developer Options
+          </button>
+          <button
             onClick={onNewGame}
             className="w-full mt-4 p-2 bg-rose-700 hover:bg-rose-600 rounded text-white font-bold transition-colors"
           >
@@ -1205,64 +1208,6 @@ const canRecruitArmy = inActionPhase &&
           <h3 className="font-orbitron text-cyan-400 mb-2">Event Log</h3>
           <div className="flex-grow h-24 overflow-y-auto bg-black bg-opacity-20 p-2 rounded">{gameState.log.map((entry, index) => <p key={index} className="text-xs text-gray-300 leading-tight">{entry}</p>)}</div>
       </div>
-      <div className="bg-gray-900 p-3 rounded-lg">
-        <button
-            onClick={() => setDevToolsOpen(!devToolsOpen)}
-            className="w-full text-left font-orbitron text-gray-400 mb-2 flex justify-between items-center"
-        >
-            Developer Options
-            <span className={`transform transition-transform ${devToolsOpen ? 'rotate-180' : ''}`}>▼</span>
-        </button>
-        {devToolsOpen && (
-            <div className="space-y-4 pt-2 border-t border-gray-700">
-                {/* Force Turn */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Force Player Turn</label>
-                    <select
-                        onChange={(e) => onForcePlayerTurn(parseInt(e.target.value))}
-                        value={gameState.currentPlayerIndex}
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md"
-                    >
-                        {gameState.players.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                    </select>
-                </div>
-                {/* Iberia: Purification Tokens */}
-                {gameState.gameType === 'iberia' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Purification Tokens</label>
-                        <div className="flex space-x-2">
-                            <select id="dev-region-select" className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md">
-                                {IBERIA_REGIONS.map(r => (
-                                    <option key={r.name} value={r.name}>{r.name} ({gameState.purificationTokens[r.name] || 0})</option>
-                                ))}
-                            </select>
-                            <button onClick={() => onSetPurificationTokens((document.getElementById('dev-region-select') as HTMLSelectElement).value, -1)} className="px-3 bg-red-600 rounded-md">-</button>
-                            <button onClick={() => onSetPurificationTokens((document.getElementById('dev-region-select') as HTMLSelectElement).value, 1)} className="px-3 bg-green-600 rounded-md">+</button>
-                        </div>
-                    </div>
-                )}
-                {/* Fall of Rome: Legions */}
-                {gameState.gameType === 'fallOfRome' && (
-                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Legions</label>
-                        <div className="flex space-x-2">
-                            <select id="dev-legion-city-select" className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md">
-                                {(Object.keys(FALLOFROME_CITIES_DATA) as CityName[]).sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => (
-                                    <option key={city} value={city}>
-                                        {CITIES_DATA[city].name} ({(gameState.legions || []).filter(l => l === city).length})
-                                    </option>
-                                ))}
-                            </select>
-                            <button onClick={() => onSetLegions((document.getElementById('dev-legion-city-select') as HTMLSelectElement).value as CityName, -1)} className="px-3 bg-red-600 rounded-md">-</button>
-                            <button onClick={() => onSetLegions((document.getElementById('dev-legion-city-select') as HTMLSelectElement).value as CityName, 1)} className="px-3 bg-green-600 rounded-md">+</button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        )}
-    </div>
     </div>
   );
 };
