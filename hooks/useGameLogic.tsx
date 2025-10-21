@@ -527,6 +527,7 @@ export const useGameLogic = () => {
             newState.gamePhase = newState.phaseBeforePurificationChoice || GamePhase.PlayerAction;
             newState.phaseBeforePurificationChoice = null;
             newState.pendingPurificationChoice = null;
+            newState.infectionContinuation = null;
     
             const outbreaksInTurn = new Set(outbreaksInTurnAsArray);
     
@@ -564,7 +565,6 @@ export const useGameLogic = () => {
                         // Outbreak continuation finished. The game logic will naturally proceed.
                         break;
                 }
-                newState.infectionContinuation = null;
             }
             
             // If it was a regular infection ('infectionContinuation' is null), the useEffect for InfectionStep will automatically handle the next card.
@@ -2711,81 +2711,6 @@ export const useGameLogic = () => {
             return newState;
         });
     }, [logEvent, getHandLimit, _startNextTurn]);
-
-    const handleForcePlayerTurn = useCallback((playerId: number) => {
-        setGameState(prevState => {
-            if (!prevState) return null;
-            const newState = safeCloneGameState(prevState);
-            const newPlayer = newState.players.find(p => p.id === playerId);
-            if (!newPlayer) return prevState;
-    
-            newState.currentPlayerIndex = playerId;
-            newState.actionsRemaining = newPlayer.role === PlayerRole.Generalist ? 5 : 4;
-            // Reset turn-specific flags
-            newState.hasUsedOperationsExpertFlight = false;
-            newState.hasUsedArchivistRetrieve = false;
-            // ... add any other turn-specific flags you have
-            newState.gamePhase = GamePhase.PlayerAction;
-    
-            logEvent(`DEV: Forced turn to ${newPlayer.name}.`);
-            return newState;
-        });
-    }, [logEvent]);
-    
-    const handleSetPurificationTokens = useCallback((regionName: string, change: number) => {
-        setGameState(prevState => {
-            if (!prevState || prevState.gameType !== 'iberia') return null;
-            const newState = safeCloneGameState(prevState);
-            const currentTokens = newState.purificationTokens[regionName] || 0;
-            const newTokens = Math.max(0, currentTokens + change);
-            
-            const supplyChange = currentTokens - newTokens; // If we add tokens, supply decreases. If we remove, it increases.
-            const newSupply = newState.purificationTokenSupply + supplyChange;
-    
-            if (newSupply < 0 || newSupply > 14) {
-                 logEvent(`DEV: Cannot change tokens. Supply would be out of bounds.`);
-                 return prevState;
-            }
-    
-            newState.purificationTokens[regionName] = newTokens;
-            newState.purificationTokenSupply = newSupply;
-            logEvent(`DEV: Set region ${regionName} tokens to ${newTokens}.`);
-            return newState;
-        });
-    }, [logEvent]);
-    
-    const handleSetLegions = useCallback((cityName: CityName, change: number) => {
-        setGameState(prevState => {
-            if (!prevState || prevState.gameType !== 'fallOfRome') return null;
-            const newState = safeCloneGameState(prevState);
-            
-            if (change > 0) { // Adding legions
-                const availableInSupply = 16 - (newState.legions?.length || 0);
-                if (availableInSupply < change) {
-                    logEvent(`DEV: Cannot add ${change} legions, only ${availableInSupply} available in supply.`);
-                    return prevState;
-                }
-                for (let i = 0; i < change; i++) {
-                    newState.legions.push(cityName);
-                }
-                 logEvent(`DEV: Added ${change} legion(s) to ${CITIES_DATA[cityName].name}.`);
-            } else { // Removing legions
-                const legionsInCity = (newState.legions || []).filter(l => l === cityName).length;
-                const toRemove = Math.min(Math.abs(change), legionsInCity);
-                let removedCount = 0;
-                newState.legions = newState.legions.filter(l => {
-                    if (l === cityName && removedCount < toRemove) {
-                        removedCount++;
-                        return false;
-                    }
-                    return true;
-                });
-                logEvent(`DEV: Removed ${toRemove} legion(s) from ${CITIES_DATA[cityName].name}.`);
-            }
-    
-            return newState;
-        });
-    }, [logEvent]);
 
     const handleAgronomistPurifyChoice = (tokensToPlace: 2 | 3) => {
         setGameState(prevState => {
@@ -6218,9 +6143,6 @@ export const useGameLogic = () => {
         handleResolveShipsArrive,
         handleResolveTelegraphMessage,
         handleResolveWhenThePlansWereGood,
-        handleForcePlayerTurn,
-        handleSetPurificationTokens,
-        handleSetLegions,
     };
 };
 
