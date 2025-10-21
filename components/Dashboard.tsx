@@ -78,7 +78,6 @@ const RoleImage: React.FC<{ role: PlayerRole }> = ({ role }) => {
 const Dashboard: React.FC<{
   onNewGame: () => void;
   gameState: GameState;
-  onToggleDevTools: () => void;
   localPlayerId: number | null;
   onAction: (action: string, payload?: any) => void;
   onUndoAction: () => void;
@@ -135,7 +134,7 @@ const Dashboard: React.FC<{
   onSetPurificationTokens: (regionName: string, change: number) => void;
   onSetLegions: (cityName: CityName, change: number) => void;
   
-}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases, onInitiateRailwaymanDoubleBuild, onForcePlayerTurn, onSetPurificationTokens, onSetLegions }) => {
+}> = ({ gameState, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases, onInitiateRailwaymanDoubleBuild, onForcePlayerTurn, onSetPurificationTokens, onSetLegions }) => {
   const [devToolsOpen, setDevToolsOpen] = useState(false);
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
@@ -1195,12 +1194,6 @@ const canRecruitArmy = inActionPhase &&
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
               </div>
             </label>
-          <button
-            onClick={onToggleDevTools}
-            className="w-full mt-2 p-2 bg-slate-600 hover:bg-slate-500 rounded text-white font-bold transition-colors"
-          >
-            Developer Options
-          </button>
           <button
             onClick={onNewGame}
             className="w-full mt-4 p-2 bg-rose-700 hover:bg-rose-600 rounded text-white font-bold transition-colors"
