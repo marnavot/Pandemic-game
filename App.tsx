@@ -37,7 +37,6 @@ export const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
-    const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
         const saved = localStorage.getItem('soundEffectsEnabled');
         // Default to true if not set
@@ -974,7 +973,6 @@ export const App: React.FC = () => {
                             handleDashboardAction(action, payload);
                         }
                     }}
-                    onToggleDevTools={() => setIsDevToolsOpen(prev => !prev)}
                     onUndoAction={handleUndoAction}
                     onEndTurn={handleEndTurn}
                     onInitiateShareKnowledge={handleInitiateShareKnowledge}
