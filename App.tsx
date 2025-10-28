@@ -42,19 +42,25 @@ export const App: React.FC = () => {
         const saved = localStorage.getItem('soundEffectsEnabled');
         // Default to true if not set
         return saved !== 'false';
+    const [showNewGameConfirmModal, setShowNewGameConfirmModal] = useState(false);
     });
 
-    const handleNewGameClick = () => {
-        // Clear the saved solitaire game from the browser's storage
+    const handleConfirmNewGame = () => {
+        // This is the original logic from handleNewGameClick
         localStorage.removeItem('solitaireGameState');
-        // Clear the saved multiplayer player ID
         localStorage.removeItem('pandemicPlayerId');
-        // Clear any game ID from the URL bar
         window.history.pushState({}, '', '/');
-        // Reset the main game state in the app, which will trigger a re-render
         setGameState(null);
-        // Clear any old game over reports
         setGameOverReport(null);
+        setShowNewGameConfirmModal(false); // Also close the modal on confirm
+    };
+    
+    const handleCancelNewGame = () => {
+        setShowNewGameConfirmModal(false);
+    };
+
+    const handleNewGameClick = () => {
+        setShowNewGameConfirmModal(true);
     };
 
     const handleConfirmQuarantineMove = (cityToRemove: CityName) => {
@@ -1221,6 +1227,28 @@ export const App: React.FC = () => {
                     selectedCity={gameState.selectedCity}
                 />
             )}
+        <Modal
+            title="Start New Game?"
+            show={showNewGameConfirmModal}
+            onClose={handleCancelNewGame}
+            titleColor="text-yellow-400"
+        >
+            <p className="mb-6">Are you sure you want to start a new game? Your current game progress will be lost.</p>
+            <div className="flex justify-end space-x-4">
+                <button
+                    onClick={handleCancelNewGame}
+                    className="px-6 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white font-bold"
+                >
+                    No, Return to Game
+                </button>
+                <button
+                    onClick={handleConfirmNewGame}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-500 rounded text-white font-bold"
+                >
+                    Yes, Start New
+                </button>
+            </div>
+        </Modal>
         </div>
     );
 };
