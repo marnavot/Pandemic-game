@@ -1204,6 +1204,15 @@ const canRecruitArmy = inActionPhase &&
           </button>
         </div>
       </div>
+      <div className="bg-gray-900 p-3 rounded-lg">
+    <h3 className="font-orbitron text-red-400 mb-2">Game Controls</h3>
+          <button
+              onClick={onNewGame}
+              className="w-full p-2 bg-red-700 hover:bg-red-600 rounded text-white font-bold"
+          >
+              Start New Game
+          </button>
+      </div>
       <div className="bg-gray-900 p-3 rounded-lg flex-grow flex flex-col">
           <h3 className="font-orbitron text-cyan-400 mb-2">Event Log</h3>
           <div className="flex-grow h-24 overflow-y-auto bg-black bg-opacity-20 p-2 rounded">{gameState.log.map((entry, index) => <p key={index} className="text-xs text-gray-300 leading-tight">{entry}</p>)}</div>
