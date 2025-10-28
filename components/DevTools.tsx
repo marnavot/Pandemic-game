@@ -22,13 +22,18 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
   const T = getTerminology(gameState);
 
   const renderIberiaTools = () => (
+    const excludedRailroadCities: Set<CityName> = new Set(['PalmaDeMallorca', 'AndorraLaVella', 'Gibraltar']);
     <div className="space-y-4">
       {/* Purification Tokens */}
       <div>
         <h4 className="font-bold text-lg mb-2 text-cyan-300">Purification Tokens</h4>
         <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-2">
           {IBERIA_REGIONS.map(region => (
-            <div key={region.name} className="p-2 bg-gray-700 rounded-md text-center">
+            <div
+              key={region.name}
+              className="p-2 bg-gray-700 rounded-md text-center"
+              title={region.vertices.map(v => CITIES_DATA[v].name).join(', ')}
+            >
               <p className="text-sm font-semibold">Region {region.name}</p>
               <div className="flex items-center justify-center space-x-2 mt-1">
                 <button onClick={() => onDevAction('setPurificationTokens', { regionName: region.name, change: -1 })} className="w-6 h-6 rounded-full bg-red-600 font-bold">-</button>
@@ -50,6 +55,7 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
             })
           )
           .filter((value, index, self) => self.findIndex(v => v.key === value.key) === index)
+          .filter(({ from, to }) => !excludedRailroadCities.has(from) && !excludedRailroadCities.has(to))
           .sort((a,b) => CITIES_DATA[a.from].name.localeCompare(CITIES_DATA[b.from].name))
           .map(({ from, to }) => {
             const hasRailroad = gameState.railroads.some(r => (r.from === from && r.to === to) || (r.from === to && r.to === from));
