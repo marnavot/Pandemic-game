@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Modal from './Modal';
-import { GameState, Player, CityName, PlayerCard, DiseaseColor, CITIES_DATA, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, IBERIA_CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS } from '../types';
+import { GameState, Player, CityName, PlayerCard, DiseaseColor, CITIES_DATA, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, IBERIA_CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS, IBERIA_REGIONS, IBERIA_CONNECTIONS } from '../types';
 import { getCardDisplayName } from '../hooks/ui';
 import { getTerminology } from '../services/terminology';
 
@@ -20,6 +20,100 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
   const [cardDestination, setCardDestination] = useState<string>(''); // format: "locationType_locationId"
 
   const T = getTerminology(gameState);
+
+  const renderIberiaTools = () => (
+    <div className="space-y-4">
+      {/* Purification Tokens */}
+      <div>
+        <h4 className="font-bold text-lg mb-2 text-cyan-300">Purification Tokens</h4>
+        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-2">
+          {IBERIA_REGIONS.map(region => (
+            <div key={region.name} className="p-2 bg-gray-700 rounded-md text-center">
+              <p className="text-sm font-semibold">Region {region.name}</p>
+              <div className="flex items-center justify-center space-x-2 mt-1">
+                <button onClick={() => onDevAction('setPurificationTokens', { regionName: region.name, change: -1 })} className="w-6 h-6 rounded-full bg-red-600 font-bold">-</button>
+                <span className="font-bold text-lg">{gameState.purificationTokens?.[region.name] || 0}</span>
+                <button onClick={() => onDevAction('setPurificationTokens', { regionName: region.name, change: 1 })} className="w-6 h-6 rounded-full bg-green-600 font-bold">+</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Railroads */}
+      <div>
+        <h4 className="font-bold text-lg mb-2 text-yellow-700">Railroads</h4>
+        <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+          {Object.keys(IBERIA_CONNECTIONS).flatMap(fromCity =>
+            (IBERIA_CONNECTIONS[fromCity as keyof typeof IBERIA_CONNECTIONS] as CityName[]).map(toCity => {
+              const key = [fromCity, toCity].sort().join('-');
+              return { key, from: fromCity as CityName, to: toCity as CityName };
+            })
+          )
+          .filter((value, index, self) => self.findIndex(v => v.key === value.key) === index)
+          .sort((a,b) => CITIES_DATA[a.from].name.localeCompare(CITIES_DATA[b.from].name))
+          .map(({ from, to }) => {
+            const hasRailroad = gameState.railroads.some(r => (r.from === from && r.to === to) || (r.from === to && r.to === from));
+            return (
+              <button key={`${from}-${to}`} onClick={() => onDevAction('toggleRailroad', { from, to })}
+                      className={`w-full p-1 text-xs text-left rounded ${hasRailroad ? 'bg-yellow-800' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                {CITIES_DATA[from].name} ↔ {CITIES_DATA[to].name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderFallOfRomeTools = () => (
+    <div className="space-y-4">
+      {/* Legions */}
+      <div>
+        <h4 className="font-bold text-lg mb-2 text-red-400">Legions</h4>
+        <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2">
+          {Object.keys(FALLOFROME_CITIES_DATA).sort((a,b) => CITIES_DATA[a as CityName].name.localeCompare(CITIES_DATA[b as CityName].name)).map(city => {
+            const legionCount = gameState.legions?.filter(l => l === city).length || 0;
+            return (
+              <div key={city} className="p-2 bg-gray-700 rounded-md">
+                <p className="text-sm font-semibold truncate">{CITIES_DATA[city as CityName].name}</p>
+                <div className="flex items-center justify-center space-x-2 mt-1">
+                  <button onClick={() => onDevAction('setLegions', { city, change: -1 })} className="w-6 h-6 rounded-full bg-red-600 font-bold">-</button>
+                  <span className="font-bold text-lg">{legionCount}</span>
+                  <button onClick={() => onDevAction('setLegions', { city, change: 1 })} className="w-6 h-6 rounded-full bg-green-600 font-bold">+</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      {/* Forts */}
+      <div>
+        <h4 className="font-bold text-lg mb-2 text-yellow-600">Forts</h4>
+        <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2">
+          {Object.keys(FALLOFROME_CITIES_DATA).sort((a,b) => CITIES_DATA[a as CityName].name.localeCompare(CITIES_DATA[b as CityName].name)).map(city => {
+            const hasFort = gameState.forts?.includes(city as CityName);
+            return (
+              <button key={city} onClick={() => onDevAction('toggleFort', { city })}
+                      className={`w-full p-1 text-xs text-left rounded ${hasFort ? 'bg-yellow-800' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                {CITIES_DATA[city as CityName].name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderGameSpecificTools = () => {
+    switch (gameState.gameType) {
+      case 'iberia':
+        return renderIberiaTools();
+      case 'fallOfRome':
+        return renderFallOfRomeTools();
+      default:
+        return null; // Return nothing if it's the base Pandemic game
+    }
+  };
 
   // Memoize all city cards currently in play (hands or discard)
   const allCityCardsInPlay = useMemo(() => {
@@ -117,6 +211,16 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
             <p className="text-gray-400 text-center">Select a city on the board to manage its cubes.</p>
           )}
         </div>
+
+        {/* Game-Specific Tools */}
+        {renderGameSpecificTools() && (
+            <div className="p-3 bg-gray-900 rounded-lg">
+                <h3 className="font-bold text-lg text-fuchsia-400 mb-2">
+                    {gameState.gameType === 'iberia' ? 'Iberia' : 'Fall of Rome'} Options
+                </h3>
+                {renderGameSpecificTools()}
+            </div>
+        )}
 
         {/* Pawn Relocation */}
         <div className="p-3 bg-gray-900 rounded-lg">
