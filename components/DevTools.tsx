@@ -20,9 +20,9 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
   const [cardDestination, setCardDestination] = useState<string>(''); // format: "locationType_locationId"
 
   const T = getTerminology(gameState);
-
+  const excludedRailroadCities: Set<CityName> = new Set(['PalmaDeMallorca', 'AndorraLaVella', 'Gibraltar']);
+  
   const renderIberiaTools = () => (
-    const excludedRailroadCities: Set<CityName> = new Set(['PalmaDeMallorca', 'AndorraLaVella', 'Gibraltar']);
     <div className="space-y-4">
       {/* Purification Tokens */}
       <div>
