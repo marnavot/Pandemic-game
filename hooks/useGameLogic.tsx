@@ -6229,6 +6229,75 @@ export const handleDevAction = (gs: GameState, action: string, payload: any): Ga
             }
             break;
         }
+        // Iberia Actions
+        case 'setPurificationTokens': {
+          if (newState.gameType !== 'iberia') return newState;
+          const { regionName, change } = payload;
+          const currentTokens = newState.purificationTokens[regionName] || 0;
+          const newTokens = Math.max(0, currentTokens + change);
+          
+          const supplyChange = currentTokens - newTokens;
+          const newSupply = newState.purificationTokenSupply + supplyChange;
+        
+          if (newSupply < 0 || newSupply > 14) return newState; // Don't exceed supply limits
+        
+          newState.purificationTokens[regionName] = newTokens;
+          newState.purificationTokenSupply = newSupply;
+          return newState;
+        }
+        
+        case 'toggleRailroad': {
+          if (newState.gameType !== 'iberia') return newState;
+          const { from, to } = payload;
+          const existingIndex = newState.railroads.findIndex(r =>
+            (r.from === from && r.to === to) || (r.from === to && r.to === from)
+          );
+        
+          if (existingIndex > -1) {
+            newState.railroads.splice(existingIndex, 1);
+          } else {
+            if (newState.railroads.length < 20) {
+                newState.railroads.push({ from, to });
+            }
+          }
+          return newState;
+        }
+        
+        // Fall of Rome Actions
+        case 'setLegions': {
+          if (newState.gameType !== 'fallOfRome') return newState;
+          const { city, change } = payload;
+          const currentLegions = newState.legions.filter(l => l === city).length;
+          const newLegionCount = Math.max(0, currentLegions + change);
+          const totalLegions = newState.legions.length;
+          const maxLegions = 16;
+          
+          if (change > 0 && totalLegions >= maxLegions) return newState; // Can't add from empty supply
+        
+          // Remove all legions from the city first
+          newState.legions = newState.legions.filter(l => l !== city);
+          // Then add the new amount
+          for (let i = 0; i < newLegionCount; i++) {
+            if(newState.legions.length < maxLegions) {
+                newState.legions.push(city);
+            }
+          }
+          return newState;
+        }
+        
+        case 'toggleFort': {
+          if (newState.gameType !== 'fallOfRome') return newState;
+          const { city } = payload;
+          const fortIndex = newState.forts.indexOf(city);
+          if (fortIndex > -1) {
+            newState.forts.splice(fortIndex, 1);
+          } else {
+            if (newState.forts.length < 6) {
+              newState.forts.push(city);
+            }
+          }
+          return newState;
+        }
     }
     return newState;
 };
