@@ -120,6 +120,8 @@ const Dashboard: React.FC<{
   onInitiatePlayResilientPopulation: (ownerId: number, from: 'hand' | 'contingency') => void;
   showCityNames: boolean;
   onToggleShowCityNames: (show: boolean) => void;
+  showEpidemicHelper: boolean;
+  onToggleShowEpidemicHelper: (show: boolean) => void; 
   isSoundEnabled: boolean;
   onToggleSoundEffects: (enabled: boolean) => void;
   onViewAllHands: () => void;
@@ -131,7 +133,7 @@ const Dashboard: React.FC<{
   onImposeQuarantine: () => void;
   onViewHistoricalDiseases: () => void;
   
-}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
+}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, showEpidemicHelper, onToggleShowEpidemicHelper,isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
@@ -628,6 +630,47 @@ const canRecruitArmy = inActionPhase &&
     PlayerRole.PraefectusFabrum,
   ]), []);
 
+  const epidemicForecast = useMemo(() => {
+    if (!showEpidemicHelper || !gameState || gameState.playerDeckPileSizes.length === 0) {
+        return null;
+    }
+
+    const { playerDeck, playerDeckPileSizes, infectionRateIndex, players, setupConfig } = gameState;
+
+    const epidemicsDrawn = infectionRateIndex;
+    const totalPiles = setupConfig.numEpidemics;
+
+    if (epidemicsDrawn >= totalPiles) {
+        return { minCards: 'N/A', maxCards: 'N/A', minTurns: 'N/A', maxTurns: 'N/A', message: "All Epidemic cards have been drawn." };
+    }
+
+    const initialDeckSize = playerDeckPileSizes.reduce((sum, size) => sum + size, 0) + totalPiles;
+
+    let cardsInPassedPiles = 0;
+    for (let i = 0; i < epidemicsDrawn; i++) {
+        cardsInPassedPiles += playerDeckPileSizes[i] + 1;
+    }
+
+    const totalCardsDrawn = initialDeckSize - playerDeck.length;
+    const cardsDrawnInCurrentPile = totalCardsDrawn - cardsInPassedPiles;
+    const currentPileTotalCards = playerDeckPileSizes[epidemicsDrawn] + 1;
+    const cardsLeftInCurrentPile = currentPileTotalCards - cardsDrawnInCurrentPile;
+
+    if (cardsLeftInCurrentPile <= 0) {
+         return { minCards: 1, maxCards: 1, minTurns: 1, maxTurns: 1, message: null };
+    }
+
+    const cardsPerTurn = 2; // Base cards drawn per turn
+    
+    const minCards = 1;
+    const maxCards = cardsLeftInCurrentPile;
+    const minTurns = Math.ceil(minCards / cardsPerTurn);
+    const maxTurns = Math.ceil(maxCards / cardsPerTurn);
+    
+    return { minCards, maxCards, minTurns, maxTurns, message: null };
+
+  }, [gameState, showEpidemicHelper]);
+
   return (
     <div className="h-full bg-gray-800 bg-opacity-80 backdrop-blur-sm p-2 flex flex-col text-sm space-y-2 rounded-lg shadow-lg overflow-y-auto">
       <div className="bg-gray-900 p-3 rounded-lg">
@@ -775,6 +818,27 @@ const canRecruitArmy = inActionPhase &&
               )}
           </div>
         </div>
+      </div>
+      {showEpidemicHelper && epidemicForecast && (
+        <div className="bg-gray-900 p-3 rounded-lg">
+            <h3 className="font-orbitron text-yellow-300 mb-2">Epidemic Forecast</h3>
+            {epidemicForecast.message ? (
+                <p className="text-center text-gray-400">{epidemicForecast.message}</p>
+            ) : (
+                <div className="grid grid-cols-2 gap-x-4 text-center">
+                    <div>
+                        <p className="text-xs text-gray-400">Cards Until Next</p>
+                        <p className="font-orbitron text-2xl">{epidemicForecast.minCards} - {epidemicForecast.maxCards}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-400">Turns Until Next</p>
+                        <p className="font-orbitron text-2xl">{epidemicForecast.minTurns} - {epidemicForecast.maxTurns}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+      )}
+      <div className="bg-gray-900 p-3 rounded-lg">
       </div>
       <div className="bg-gray-900 p-3 rounded-lg">
         <h3 className="font-orbitron text-fuchsia-400 mb-2">{isFallOfRome ? 'Alliance Status' : 'Cure Status'}</h3>
@@ -1184,6 +1248,19 @@ const canRecruitArmy = inActionPhase &&
                   type="checkbox"
                   checked={isSoundEnabled}
                   onChange={(e) => onToggleSoundEffects(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:bg-green-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
+              </div>
+            </label>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-sm">Epidemic Helper</span>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={showEpidemicHelper}
+                  onChange={(e) => onToggleShowEpidemicHelper(e.target.checked)}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:bg-green-500"></div>
