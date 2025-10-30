@@ -800,6 +800,7 @@ export const useGameLogic = () => {
             remainingCubes,
             curedDiseases,
             eradicatedDiseases,
+            playerDeckPileSizes: [],
             playerDeck: [], playerDiscard: [], eventDeck: [], infectionDeck: [], infectionDiscard: [], oneQuietNightActive: false, goodSeasonsActive: false, pendingGovernmentMobilization: null, log: ["- Game lobby created. Waiting for players..."], lastEventMessage: null, playerToDiscardId: null, pendingEpidemicCard: null,
             phaseBeforeEvent: null, pendingPurifyWaterEvent: null, pendingRingRailroadsEvent: null, 
             hasUsedOperationsExpertFlight: false, hasUsedArchivistRetrieve: false, hasUsedEpidemiologistAbility: false, hasUsedFieldOperativeCollect: false, hasUsedTroubleshooterPreview: false, hasUsedFieldDirectorMove: false, hasUsedLocalLiaisonShare: false, hasUsedMercatorShare: false, hasUsedReginaFoederataFreeEnlist: false,
@@ -1086,6 +1087,7 @@ export const useGameLogic = () => {
         for (let i = 0; i < config.numEpidemics; i++) {
             const size = baseSize + (remainder-- > 0 ? 1 : 0);
             const pile = deckToDivide.splice(0, size);
+            newState.playerDeckPileSizes.push(size);
             pile.push(epidemicCards.shift()!);
             piles.push(shuffle(pile));
         }
