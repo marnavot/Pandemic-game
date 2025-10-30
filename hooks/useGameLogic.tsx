@@ -225,8 +225,6 @@ export const useGameLogic = () => {
                     gs.log.unshift(`- The fort in ${CITIES_DATA[city].name} has been sacked and removed!`);
                 }
             }
-    
-        if (gs.outbreakCounter >= 8) { gs.gamePhase = GamePhase.GameOver; gs.gameOverReason = 'The outbreak limit has been reached.'; return; }
         
         const isHighlyContagious = gs.activeVirulentStrainCards.includes(VirulentStrainEpidemicCardName.HighlyContagious) && gs.virulentStrainColor === color;
         
@@ -3237,7 +3235,17 @@ export const useGameLogic = () => {
         const isLastCard = infectionStepState.queue.length === 0;
 
         if (isLastCard) {
-            setGameState(gs => gs ? _startNextTurn(gs) : null);
+            setGameState(gs => {
+                if (!gs) return null;
+                if (gs.outbreakCounter >= 8) {
+                    const finalState = safeCloneGameState(gs);
+                    finalState.gamePhase = GamePhase.GameOver;
+                    finalState.gameOverReason = 'The outbreak limit has been reached.';
+                    finalState.log.unshift(`- GAME OVER: The outbreak limit has been reached.`);
+                    return finalState;
+                }
+                return _startNextTurn(gs);
+            });
             setInfectionStepState({ queue: [], revealedCard: null, outbreaksThisTurn: new Set(), invadedCity: null });
         } else {
             // There are more cards to process. Clear the revealed card, and the useEffect will pick up the next one.
@@ -3400,6 +3408,14 @@ export const useGameLogic = () => {
     const handleConfirmEpidemicInfect = useCallback(() => {
         setGameState(prevState => {
             if (!prevState || prevState.gamePhase !== GamePhase.EpidemicAnnounceInfect) return null;
+            if (prevState.outbreakCounter >= 8) {
+                const finalState = safeCloneGameState(prevState);
+                finalState.gamePhase = GamePhase.GameOver;
+                finalState.gameOverReason = 'The outbreak limit has been reached.';
+                finalState.log.unshift(`- GAME OVER: The outbreak limit has been reached.`);
+                finalState.epidemicCardToAnnounce = null; // Still hide the current modal
+                return finalState;
+            }
             const newState = safeCloneGameState(prevState);
             newState.epidemicCardToAnnounce = null;
             newState.gamePhase = GamePhase.EpidemicIntensify;
