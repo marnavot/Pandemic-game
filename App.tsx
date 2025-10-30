@@ -37,6 +37,7 @@ export const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
+    const [showEpidemicHelper, setShowEpidemicHelper] = useState(false);
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
         const saved = localStorage.getItem('soundEffectsEnabled');
@@ -1049,6 +1050,8 @@ export const App: React.FC = () => {
                     onInitiatePlayResilientPopulation={(ownerId, from) => setResilientPopulationModalState({ isOpen: true, ownerId, from })}
                     showCityNames={showCityNames}
                     onToggleShowCityNames={setShowCityNames}
+                    showEpidemicHelper={showEpidemicHelper}
+                    onToggleShowEpidemicHelper={setShowEpidemicHelper} 
                     isSoundEnabled={isSoundEnabled}
                     onToggleSoundEffects={handleToggleSoundEffects}
                     onViewAllHands={() => setAllPlayerHandsModalOpen(true)}
