@@ -635,35 +635,79 @@ const canRecruitArmy = inActionPhase &&
         return null;
     }
 
-    const { playerDeck, playerDeckPileSizes, infectionRateIndex, players, setupConfig } = gameState;
+    const { playerDeck, playerDeckPileSizes, infectionRateIndex } = gameState;
+    const { numEpidemics } = gameState.setupConfig;
 
     const epidemicsDrawn = infectionRateIndex;
-    const totalPiles = setupConfig.numEpidemics;
+    const totalPiles = numEpidemics;
 
     if (epidemicsDrawn >= totalPiles) {
+        if (playerDeck.length > 0) {
+            // All epidemics drawn, but cards remain.
+            const cardsLeft = playerDeck.length;
+            const turnsLeft = Math.ceil(cardsLeft / 2);
+            return { minCards: cardsLeft, maxCards: cardsLeft, minTurns: turnsLeft, maxTurns: turnsLeft, message: "All Epidemics drawn. Remaining cards are safe." };
+        }
         return { minCards: 'N/A', maxCards: 'N/A', minTurns: 'N/A', maxTurns: 'N/A', message: "All Epidemic cards have been drawn." };
     }
 
     const initialDeckSize = playerDeckPileSizes.reduce((sum, size) => sum + size, 0) + totalPiles;
-
-    let cardsInPassedPiles = 0;
-    for (let i = 0; i < epidemicsDrawn; i++) {
-        cardsInPassedPiles += playerDeckPileSizes[i] + 1;
-    }
-
     const totalCardsDrawn = initialDeckSize - playerDeck.length;
-    const cardsDrawnInCurrentPile = totalCardsDrawn - cardsInPassedPiles;
-    const currentPileTotalCards = playerDeckPileSizes[epidemicsDrawn] + 1;
-    const cardsLeftInCurrentPile = currentPileTotalCards - cardsDrawnInCurrentPile;
 
-    if (cardsLeftInCurrentPile <= 0) {
-         return { minCards: 1, maxCards: 1, minTurns: 1, maxTurns: 1, message: null };
+    // --- NEW LOGIC TO HANDLE POST-EPIDEMIC SAFE CARDS ---
+
+    // 1. Calculate how many cards were in all piles BEFORE the one that just had an epidemic.
+    let cardsInPiles_UpTo_Previous = 0;
+    if (epidemicsDrawn > 0) {
+        for (let i = 0; i < epidemicsDrawn - 1; i++) {
+            cardsInPiles_UpTo_Previous += playerDeckPileSizes[i] + 1;
+        }
     }
 
-    const cardsPerTurn = 2; // Base cards drawn per turn
+    // 2. Get the total size of the pile that just finished.
+    const totalSizeOfPreviousPile = epidemicsDrawn > 0 ? playerDeckPileSizes[epidemicsDrawn - 1] + 1 : 0;
     
-    const minCards = 1;
-    const maxCards = cardsLeftInCurrentPile;
+    // 3. Determine how many cards were drawn from that pile when the epidemic was found.
+    const cardsDrawnFromJustFinishedPile = totalCardsDrawn - cardsInPiles_UpTo_Previous;
+    
+    // 4. Calculate how many safe cards are left over from that finished pile.
+    const safeCardsFromPreviousPile = Math.max(0, totalSizeOfPreviousPile - cardsDrawnFromJustFinishedPile);
+
+    let minCards: number;
+    let maxCards: number;
+
+    if (safeCardsFromPreviousPile > 0) {
+        // --- State B: We just drew an epidemic and are now in the "safe zone" of that pile. ---
+        
+        // The minimum number of safe cards is what's left in that pile.
+        minCards = safeCardsFromPreviousPile;
+
+        // The maximum is the safe cards + all cards in the next pile.
+        const nextPileIndex = epidemicsDrawn;
+        const nextPileSize = (playerDeckPileSizes[nextPileIndex] || 0) + 1;
+        maxCards = safeCardsFromPreviousPile + nextPileSize;
+        
+    } else {
+        // --- State A: We are drawing from a fresh pile; the epidemic has not been found yet. ---
+
+        // Calculate cards left in the CURRENT pile (the old logic).
+        let cardsInPassedPiles = 0;
+        for (let i = 0; i < epidemicsDrawn; i++) {
+            cardsInPassedPiles += playerDeckPileSizes[i] + 1;
+        }
+        const cardsDrawnInCurrentPile = totalCardsDrawn - cardsInPassedPiles;
+        const currentPileTotalCards = playerDeckPileSizes[epidemicsDrawn] + 1;
+        const cardsLeftInCurrentPile = currentPileTotalCards - cardsDrawnInCurrentPile;
+
+        if (cardsLeftInCurrentPile <= 0) {
+             return { minCards: 1, maxCards: 1, minTurns: 1, maxTurns: 1, message: null };
+        }
+        
+        minCards = 1;
+        maxCards = cardsLeftInCurrentPile;
+    }
+    
+    const cardsPerTurn = 2;
     const minTurns = Math.ceil(minCards / cardsPerTurn);
     const maxTurns = Math.ceil(maxCards / cardsPerTurn);
     
