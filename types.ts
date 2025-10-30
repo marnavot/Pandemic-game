@@ -979,6 +979,7 @@ eradicatedDiseases: { [key in DiseaseColor]: boolean };
 
 playerDeck: PlayerCard[];
 playerDiscard: PlayerCard[];
+playerDeckPileSizes: number[]; 
 eventDeck: PlayerCard[];
 
 infectionDeck: InfectionCard[];
