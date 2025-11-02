@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { GameState, Player, DiseaseColor, CityName, PlayerCard, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, PlayerRole, CITIES_DATA, CONNECTIONS, GamePhase, EventCardName, PLAYER_ROLE_INFO, VIRULENT_STRAIN_EPIDEMIC_INFO, VirulentStrainEpidemicCardName, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, FALLOFROME_INITIAL_CUBE_COUNTS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, City, HistoricalDiseaseEffect, HISTORICAL_DISEASE_INFO } from '../types';
-import { PlayerCardDisplay, PlayableEvents, FieldOperativeActions, PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS } from '../hooks/ui';
+import { PlayerCardDisplay, PlayableEvents, FieldOperativeActions, PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS, getCardDisplayName } from '../hooks/ui';
 import { getCitiesWithinRange, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
@@ -1346,7 +1346,6 @@ const canRecruitArmy = inActionPhase &&
                 <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:bg-green-500"></div>
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
               </div>
-            </label>
             </label>
               <label className="flex items-center justify-between cursor-pointer">
                 <span className="text-sm">Infection Forecast</span>
