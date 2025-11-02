@@ -38,6 +38,7 @@ export const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [showCityNames, setShowCityNames] = useState(false);
     const [showEpidemicHelper, setShowEpidemicHelper] = useState(false);
+    const [showInfectionHelper, setShowInfectionHelper] = useState(false);
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
         const saved = localStorage.getItem('soundEffectsEnabled');
@@ -1051,7 +1052,9 @@ export const App: React.FC = () => {
                     showCityNames={showCityNames}
                     onToggleShowCityNames={setShowCityNames}
                     showEpidemicHelper={showEpidemicHelper}
-                    onToggleShowEpidemicHelper={setShowEpidemicHelper} 
+                    onToggleShowEpidemicHelper={setShowEpidemicHelper}
+                    showInfectionHelper={showInfectionHelper}
+                    onToggleShowInfectionHelper={setShowInfectionHelper} 
                     isSoundEnabled={isSoundEnabled}
                     onToggleSoundEffects={handleToggleSoundEffects}
                     onViewAllHands={() => setAllPlayerHandsModalOpen(true)}
