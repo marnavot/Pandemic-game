@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Modal from './Modal';
-import { GameState, Player, CityName, PlayerCard, DiseaseColor, CITIES_DATA, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, IBERIA_CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS, IBERIA_REGIONS, IBERIA_CONNECTIONS } from '../types';
-import { getCardDisplayName } from '../hooks/ui';
+import { GameState, Player, CityName, PlayerCard, InfectionCard, DiseaseColor, CITIES_DATA, PANDEMIC_CITIES_DATA, FALLOFROME_CITIES_DATA, IBERIA_CITIES_DATA, PANDEMIC_ROLES, FALLOFROME_DISEASE_COLORS, IBERIA_REGIONS, IBERIA_CONNECTIONS } from '../types';
+import { getCardDisplayName, PlayerCardDisplay, InfectionCardDisplay } from '../hooks/ui';
 import { getTerminology } from '../services/terminology';
 
 interface DevToolsProps {
@@ -10,6 +10,81 @@ interface DevToolsProps {
   gameState: GameState;
   onDevAction: (action: string, payload: any) => void;
   selectedCity: CityName | null;
+}
+
+interface DeckReorderModalProps<T> {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    deck: T[];
+    onConfirm: (rearrangedCards: T[]) => void;
+    renderCard: (card: T, index: number) => React.ReactNode;
+}
+
+function DeckReorderModal<T>({ isOpen, onClose, title, deck, onConfirm, renderCard }: DeckReorderModalProps<T>) {
+    const [cards, setCards] = useState<T[]>([]);
+    const dragItem = useRef<number | null>(null);
+    const dragOverItem = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setCards([...deck]);
+        }
+    }, [isOpen, deck]);
+
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        dragItem.current = index;
+        e.dataTransfer.effectAllowed = 'move';
+        e.currentTarget.style.opacity = '0.5';
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        if (dragItem.current === null || dragItem.current === index) return;
+        
+        dragOverItem.current = index;
+        const newCards = [...cards];
+        const draggedItemContent = newCards[dragItem.current];
+        newCards.splice(dragItem.current, 1);
+        newCards.splice(dragOverItem.current, 0, draggedItemContent);
+        
+        dragItem.current = dragOverItem.current;
+        dragOverItem.current = null;
+        
+        setCards(newCards);
+    };
+
+    const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        e.currentTarget.style.opacity = '1';
+        dragItem.current = null;
+        dragOverItem.current = null;
+    };
+    
+    return (
+        <Modal title={title} show={isOpen} onClose={onClose} maxWidth="max-w-4xl">
+            <p className="mb-4 text-sm text-gray-400">Drag and drop the cards to reorder them. The card at the top of the list will be drawn next.</p>
+            <div className="grid grid-cols-6 gap-3 mb-6 max-h-[60vh] overflow-y-auto pr-2 bg-black bg-opacity-25 p-3 rounded-lg">
+                {cards.map((card, index) => (
+                    <div
+                        key={index}
+                        className="h-40 cursor-grab active:cursor-grabbing transition-shadow rounded-lg"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragEnter={(e) => handleDragEnter(e, index)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => e.preventDefault()}
+                    >
+                        <div className="pointer-events-none h-full">
+                            {renderCard(card, index)}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="flex justify-end space-x-4">
+                <button onClick={onClose} className="px-6 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white font-bold">Cancel</button>
+                <button onClick={() => onConfirm(cards)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold">Save Order</button>
+            </div>
+        </Modal>
+    );
 }
 
 const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAction, selectedCity }) => {
@@ -21,6 +96,9 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
 
   const T = getTerminology(gameState);
   const excludedRailroadCities: Set<CityName> = new Set(['PalmaDeMallorca', 'AndorraLaVella', 'Gibraltar']);
+
+  const [isPlayerDeckModalOpen, setIsPlayerDeckModalOpen] = useState(false); 
+  const [isInfectionDeckModalOpen, setIsInfectionDeckModalOpen] = useState(false);
   
   const renderIberiaTools = () => (
     <div className="space-y-4">
@@ -306,8 +384,40 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
           </div>
         </div>
 
+        <div className="p-4 border-b border-gray-600">
+            <h3 className="font-orbitron text-lg text-yellow-300 mb-2">Deck Management</h3>
+            <div className="space-y-2">
+                {/* ADD THESE TWO BUTTONS */}
+                <button onClick={() => setIsPlayerDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Player Deck ({gameState.playerDeck.length})</button>
+                <button onClick={() => setIsInfectionDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Infection Deck ({gameState.infectionDeck.length})</button>
+            </div>
+        </div>
+
       </div>
     </Modal>
+    <DeckReorderModal
+            isOpen={isPlayerDeckModalOpen}
+            onClose={() => setIsPlayerDeckModalOpen(false)}
+            title="Reorder Player Deck"
+            deck={gameState.playerDeck}
+            onConfirm={(rearrangedCards) => {
+                onDevAction('reorderPlayerDeck', { rearrangedCards });
+                setIsPlayerDeckModalOpen(false);
+            }}
+            renderCard={(card, index) => <PlayerCardDisplay card={card as PlayerCard} isLarge={true} gameType={gameState.gameType} />}
+        />
+
+        <DeckReorderModal
+            isOpen={isInfectionDeckModalOpen}
+            onClose={() => setIsInfectionDeckModalOpen(false)}
+            title="Reorder Infection Deck"
+            deck={gameState.infectionDeck}
+            onConfirm={(rearrangedCards) => {
+                onDevAction('reorderInfectionDeck', { rearrangedCards });
+                setIsInfectionDeckModalOpen(false);
+            }}
+            renderCard={(card, index) => <InfectionCardDisplay card={card as InfectionCard} gameType={gameState.gameType} />}
+        />
   );
 };
 
