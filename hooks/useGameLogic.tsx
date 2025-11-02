@@ -6247,6 +6247,19 @@ export const handleDevAction = (gs: GameState, action: string, payload: any): Ga
             }
             break;
         }
+
+        case 'reorderPlayerDeck': {
+            const { rearrangedCards } = payload;
+            newState.playerDeck = rearrangedCards;
+            newState.log.unshift(`- DEV: Player Deck reordered.`);
+            break;
+        }
+        case 'reorderInfectionDeck': {
+            const { rearrangedCards } = payload;
+            newState.infectionDeck = rearrangedCards;
+            newState.log.unshift(`- DEV: Infection Deck reordered.`);
+            break;
+        }
         // Iberia Actions
         case 'setPurificationTokens': {
           if (newState.gameType !== 'iberia') return newState;
