@@ -121,7 +121,9 @@ const Dashboard: React.FC<{
   showCityNames: boolean;
   onToggleShowCityNames: (show: boolean) => void;
   showEpidemicHelper: boolean;
-  onToggleShowEpidemicHelper: (show: boolean) => void; 
+  onToggleShowEpidemicHelper: (show: boolean) => void;
+  showInfectionHelper: boolean;
+  onToggleShowInfectionHelper: (show: boolean) => void;
   isSoundEnabled: boolean;
   onToggleSoundEffects: (enabled: boolean) => void;
   onViewAllHands: () => void;
@@ -133,7 +135,7 @@ const Dashboard: React.FC<{
   onImposeQuarantine: () => void;
   onViewHistoricalDiseases: () => void;
   
-}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, showEpidemicHelper, onToggleShowEpidemicHelper,isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
+}> = ({ gameState, onToggleDevTools, localPlayerId, onNewGame, onAction, onUndoAction, onEndTurn, onInitiateShareKnowledge, onInitiateDispatchSummon, onInitiateTakeEventCard, onInitiateExpertFlight, onInitiateEpidemiologistTake, onInitiateReturnSamples, onInitiateCureDisease, onInitiateTreatDisease, onInitiateCollectSample, onInitiateFieldDirectorMove, onInitiateLocalLiaisonShare, onInitiateVirologistTreat, onInitiateEnlistBarbarians, onInitiateFreeEnlistBarbarians, onInitiateBattle, onInitiateMercatorShare, onInitiatePraefectusRecruit, onInitiateBuildFortWithLegions, onInitiateFabrumFlight, onInitiateVestalisDrawEvent, onInitiatePurifyWater, onInitiatePoliticianGiveCard, onInitiatePoliticianSwapCard, onInitiateRoyalAcademyScientistForecast, onPlayEventCard, onPlayContingencyCard, onViewPlayerDiscard, onViewInfectionDiscard, onViewEventInfo, selectedCity, dispatcherTargetId, onSetDispatcherTarget, viewedPlayerId, onSetViewedPlayerId, onInitiatePlayResilientPopulation, showCityNames, onToggleShowCityNames, showEpidemicHelper, onToggleShowEpidemicHelper, showInfectionHelper, onToggleShowInfectionHelper, isSoundEnabled, onToggleSoundEffects, onViewAllHands, selectedConnection, selectedRegion, onInitiateRailwaymanDoubleBuild, onSetCityNameFontSize, cityNameFontSize, onImposeQuarantine, onViewHistoricalDiseases }) => {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const T = getTerminology(gameState);
   const viewedPlayer = gameState.players.find(p => p.id === viewedPlayerId)!;
@@ -715,6 +717,13 @@ const canRecruitArmy = inActionPhase &&
 
   }, [gameState, showEpidemicHelper]);
 
+  const infectionForecast = useMemo(() => {
+    if (!showInfectionHelper || !gameState || !gameState.infectionDeckForecastPiles || gameState.infectionDeckForecastPiles.length === 0) {
+      return null;
+    }
+    return gameState.infectionDeckForecastPiles;
+  }, [gameState, showInfectionHelper]);
+
   return (
     <div className="h-full bg-gray-800 bg-opacity-80 backdrop-blur-sm p-2 flex flex-col text-sm space-y-2 rounded-lg shadow-lg overflow-y-auto">
       <div className="bg-gray-900 p-3 rounded-lg">
@@ -880,6 +889,33 @@ const canRecruitArmy = inActionPhase &&
                     </div>
                 </div>
             )}
+        </div>
+      )}
+      {infectionForecast && (
+        <div className="bg-gray-900 p-3 rounded-lg">
+          <h3 className="font-orbitron text-cyan-400 mb-2">Infection Forecast</h3>
+          <div className="space-y-3 max-h-48 overflow-y-auto pr-2 bg-black bg-opacity-25 rounded-lg p-2">
+            {infectionForecast.map((pile, index) => (
+              <div key={index} className="bg-gray-800 p-2 rounded">
+                <h4 className="font-bold text-sm text-yellow-300">
+                  Set {index + 1} ({pile.length} card{pile.length === 1 ? '' : 's'} remaining)
+                </h4>
+                {pile.length > 0 ? (
+                  <ul className="text-xs list-disc list-inside pl-2 text-gray-300 grid grid-cols-2 gap-x-2">
+                    {pile
+                      .map(card => getCardDisplayName(card))
+                      .sort()
+                      .map((name, cardIndex) => (
+                        <li key={cardIndex} className="truncate">{name}</li>
+                      ))
+                    }
+                  </ul>
+                ) : (
+                  <p className="text-xs text-gray-500 italic">All cards from this set have been drawn.</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
       <div className="bg-gray-900 p-3 rounded-lg">
@@ -1311,6 +1347,20 @@ const canRecruitArmy = inActionPhase &&
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
               </div>
             </label>
+            </label>
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-sm">Infection Forecast</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={showInfectionHelper}
+                    onChange={(e) => onToggleShowInfectionHelper(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:bg-green-500"></div>
+                  <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
+                </div>
+              </label>
           <button
             onClick={onToggleDevTools}
             className="w-full mt-2 p-2 bg-slate-600 hover:bg-slate-500 rounded text-white font-bold transition-colors"
