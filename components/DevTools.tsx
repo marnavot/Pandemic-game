@@ -271,153 +271,155 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose, gameState, onDevAc
   }, [gameState.gameType]);
 
   return (
-    <Modal title="Developer Options" show={isOpen} onClose={onClose} isSidePanel={true} zIndex="z-[70]">
-      <div className="space-y-6 text-sm">
-
-        {/* Cube Management */}
-        <div className="p-3 bg-gray-900 rounded-lg">
-          <h3 className="font-bold text-lg text-cyan-400 mb-2">Cube Management</h3>
-          {selectedCity ? (
-            <div className="space-y-2">
-              <p className="text-center font-semibold">{CITIES_DATA[selectedCity].name}</p>
-              {diseaseColorsForGame.map(color => (
-                <div key={color} className="flex items-center justify-between p-1 bg-gray-800 rounded">
-                  <span className="font-bold capitalize">{color}</span>
-                  <div className="flex items-center space-x-2">
-                    <button onClick={() => onDevAction('removeCube', { city: selectedCity, color })} className="w-8 h-8 rounded-full bg-red-800 hover:bg-red-700">-</button>
-                    <span className="w-6 text-center font-mono">{gameState.diseaseCubes[selectedCity]?.[color] || 0}</span>
-                    <button onClick={() => onDevAction('addCube', { city: selectedCity, color })} className="w-8 h-8 rounded-full bg-green-800 hover:bg-green-700">+</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-400 text-center">Select a city on the board to manage its cubes.</p>
-          )}
-        </div>
-
-        {/* Game-Specific Tools */}
-        {renderGameSpecificTools() && (
-            <div className="p-3 bg-gray-900 rounded-lg">
-                <h3 className="font-bold text-lg text-fuchsia-400 mb-2">
-                    {gameState.gameType === 'iberia' ? 'Iberia' : 'Fall of Rome'} Options
-                </h3>
-                {renderGameSpecificTools()}
-            </div>
-        )}
-
-        {/* Pawn Relocation */}
-        <div className="p-3 bg-gray-900 rounded-lg">
-          <h3 className="font-bold text-lg text-cyan-400 mb-2">Pawn Relocation</h3>
-          <div className="space-y-2">
-            <select value={pawnToMove} onChange={e => setPawnToMove(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
-              {gameState.players.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
-            </select>
-            <select value={pawnDestination} onChange={e => setPawnDestination(e.target.value as CityName)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
-              {citiesForCurrentGame.sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => <option key={city} value={city}>{CITIES_DATA[city].name}</option>)}
-            </select>
-            <button onClick={() => onDevAction('movePawn', { playerId: parseInt(pawnToMove), destination: pawnDestination })} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded">Move Pawn</button>
-          </div>
-        </div>
-
-        {/* Card Relocation */}
-        <div className="p-3 bg-gray-900 rounded-lg">
-            <h3 className="font-bold text-lg text-cyan-400 mb-2">Card Relocation</h3>
-            <div className="space-y-2">
-                <div>
-                    <label className="text-xs text-gray-400">Source Card:</label>
-                    <select value={cardToMove} onChange={e => setCardToMove(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-xs">
-                        <option value="" disabled>Select a card...</option>
-                        {allCityCardsInPlay.map(({ locationType, locationId, card }) => {
-                            const owner = locationType === 'player' ? gameState.players.find(p => p.id === locationId)?.name : 'Discard';
-                            const key = `${locationType}_${locationId}_${card.name}_${card.color}`;
-                            return <option key={key} value={key}>{getCardDisplayName(card)} (in {owner})</option>
-                        })}
-                    </select>
-                </div>
-                 <div>
-                    <label className="text-xs text-gray-400">Destination:</label>
-                    <select value={cardDestination} onChange={e => setCardDestination(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
-                        <option value="" disabled>Select a destination...</option>
-                         {allCardDestinations.map(({ locationType, locationId, name }) => (
-                            <option key={`${locationType}_${locationId}`} value={`${locationType}_${locationId}`}>{name}</option>
-                         ))}
-                    </select>
-                </div>
-                 <button 
-                    onClick={() => onDevAction('moveCard', { sourceKey: cardToMove, destinationKey: cardDestination })}
-                    disabled={!cardToMove || !cardDestination}
-                    className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded disabled:bg-gray-600"
-                >
-                    Move Card
-                </button>
-            </div>
-        </div>
-
-
-        {/* Disease Cure */}
-        <div className="p-3 bg-gray-900 rounded-lg">
-            <h3 className="font-bold text-lg text-cyan-400 mb-2">{T.cure} Status</h3>
-            <div className="space-y-2">
+    <>
+      <Modal title="Developer Options" show={isOpen} onClose={onClose} isSidePanel={true} zIndex="z-[70]">
+        <div className="space-y-6 text-sm">
+  
+          {/* Cube Management */}
+          <div className="p-3 bg-gray-900 rounded-lg">
+            <h3 className="font-bold text-lg text-cyan-400 mb-2">Cube Management</h3>
+            {selectedCity ? (
+              <div className="space-y-2">
+                <p className="text-center font-semibold">{CITIES_DATA[selectedCity].name}</p>
                 {diseaseColorsForGame.map(color => (
-                    <div key={color} className="flex items-center justify-between p-1 bg-gray-800 rounded">
-                        <span className="font-bold capitalize">{color}</span>
-                        <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 text-xs rounded ${gameState.curedDiseases[color] ? 'bg-green-500' : 'bg-red-500'}`}>
-                                {gameState.curedDiseases[color] ? T.cured : `Not ${T.cured}`}
-                            </span>
-                            <button onClick={() => onDevAction('toggleCure', { color })} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded">Toggle</button>
-                        </div>
+                  <div key={color} className="flex items-center justify-between p-1 bg-gray-800 rounded">
+                    <span className="font-bold capitalize">{color}</span>
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => onDevAction('removeCube', { city: selectedCity, color })} className="w-8 h-8 rounded-full bg-red-800 hover:bg-red-700">-</button>
+                      <span className="w-6 text-center font-mono">{gameState.diseaseCubes[selectedCity]?.[color] || 0}</span>
+                      <button onClick={() => onDevAction('addCube', { city: selectedCity, color })} className="w-8 h-8 rounded-full bg-green-800 hover:bg-green-700">+</button>
                     </div>
+                  </div>
                 ))}
-            </div>
-        </div>
-
-        {/* Action Points */}
-        <div className="p-3 bg-gray-900 rounded-lg">
-          <h3 className="font-bold text-lg text-cyan-400 mb-2">Action Points</h3>
-          <p className="text-center mb-2">Current Player: {gameState.players[gameState.currentPlayerIndex].name}</p>
-          <div className="flex items-center justify-center space-x-4">
-            <button onClick={() => onDevAction('removeAP', {})} className="w-12 h-12 rounded-full text-2xl bg-red-800 hover:bg-red-700">-</button>
-            <span className="text-4xl font-orbitron w-16 text-center">{gameState.actionsRemaining}</span>
-            <button onClick={() => onDevAction('addAP', {})} className="w-12 h-12 rounded-full text-2xl bg-green-800 hover:bg-green-700">+</button>
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center">Select a city on the board to manage its cubes.</p>
+            )}
           </div>
-        </div>
-
-        <div className="p-4 border-b border-gray-600">
-            <h3 className="font-orbitron text-lg text-yellow-300 mb-2">Deck Management</h3>
+  
+          {/* Game-Specific Tools */}
+          {renderGameSpecificTools() && (
+              <div className="p-3 bg-gray-900 rounded-lg">
+                  <h3 className="font-bold text-lg text-fuchsia-400 mb-2">
+                      {gameState.gameType === 'iberia' ? 'Iberia' : 'Fall of Rome'} Options
+                  </h3>
+                  {renderGameSpecificTools()}
+              </div>
+          )}
+  
+          {/* Pawn Relocation */}
+          <div className="p-3 bg-gray-900 rounded-lg">
+            <h3 className="font-bold text-lg text-cyan-400 mb-2">Pawn Relocation</h3>
             <div className="space-y-2">
-                {/* ADD THESE TWO BUTTONS */}
-                <button onClick={() => setIsPlayerDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Player Deck ({gameState.playerDeck.length})</button>
-                <button onClick={() => setIsInfectionDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Infection Deck ({gameState.infectionDeck.length})</button>
+              <select value={pawnToMove} onChange={e => setPawnToMove(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
+                {gameState.players.map(p => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
+              </select>
+              <select value={pawnDestination} onChange={e => setPawnDestination(e.target.value as CityName)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
+                {citiesForCurrentGame.sort((a,b) => CITIES_DATA[a].name.localeCompare(CITIES_DATA[b].name)).map(city => <option key={city} value={city}>{CITIES_DATA[city].name}</option>)}
+              </select>
+              <button onClick={() => onDevAction('movePawn', { playerId: parseInt(pawnToMove), destination: pawnDestination })} className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded">Move Pawn</button>
             </div>
+          </div>
+  
+          {/* Card Relocation */}
+          <div className="p-3 bg-gray-900 rounded-lg">
+              <h3 className="font-bold text-lg text-cyan-400 mb-2">Card Relocation</h3>
+              <div className="space-y-2">
+                  <div>
+                      <label className="text-xs text-gray-400">Source Card:</label>
+                      <select value={cardToMove} onChange={e => setCardToMove(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-xs">
+                          <option value="" disabled>Select a card...</option>
+                          {allCityCardsInPlay.map(({ locationType, locationId, card }) => {
+                              const owner = locationType === 'player' ? gameState.players.find(p => p.id === locationId)?.name : 'Discard';
+                              const key = `${locationType}_${locationId}_${card.name}_${card.color}`;
+                              return <option key={key} value={key}>{getCardDisplayName(card)} (in {owner})</option>
+                          })}
+                      </select>
+                  </div>
+                   <div>
+                      <label className="text-xs text-gray-400">Destination:</label>
+                      <select value={cardDestination} onChange={e => setCardDestination(e.target.value)} className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
+                          <option value="" disabled>Select a destination...</option>
+                           {allCardDestinations.map(({ locationType, locationId, name }) => (
+                              <option key={`${locationType}_${locationId}`} value={`${locationType}_${locationId}`}>{name}</option>
+                           ))}
+                      </select>
+                  </div>
+                   <button 
+                      onClick={() => onDevAction('moveCard', { sourceKey: cardToMove, destinationKey: cardDestination })}
+                      disabled={!cardToMove || !cardDestination}
+                      className="w-full p-2 bg-blue-600 hover:bg-blue-500 rounded disabled:bg-gray-600"
+                  >
+                      Move Card
+                  </button>
+              </div>
+          </div>
+  
+  
+          {/* Disease Cure */}
+          <div className="p-3 bg-gray-900 rounded-lg">
+              <h3 className="font-bold text-lg text-cyan-400 mb-2">{T.cure} Status</h3>
+              <div className="space-y-2">
+                  {diseaseColorsForGame.map(color => (
+                      <div key={color} className="flex items-center justify-between p-1 bg-gray-800 rounded">
+                          <span className="font-bold capitalize">{color}</span>
+                          <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs rounded ${gameState.curedDiseases[color] ? 'bg-green-500' : 'bg-red-500'}`}>
+                                  {gameState.curedDiseases[color] ? T.cured : `Not ${T.cured}`}
+                              </span>
+                              <button onClick={() => onDevAction('toggleCure', { color })} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded">Toggle</button>
+                          </div>
+                      </div>
+                  ))}
+              </div>
+          </div>
+  
+          {/* Action Points */}
+          <div className="p-3 bg-gray-900 rounded-lg">
+            <h3 className="font-bold text-lg text-cyan-400 mb-2">Action Points</h3>
+            <p className="text-center mb-2">Current Player: {gameState.players[gameState.currentPlayerIndex].name}</p>
+            <div className="flex items-center justify-center space-x-4">
+              <button onClick={() => onDevAction('removeAP', {})} className="w-12 h-12 rounded-full text-2xl bg-red-800 hover:bg-red-700">-</button>
+              <span className="text-4xl font-orbitron w-16 text-center">{gameState.actionsRemaining}</span>
+              <button onClick={() => onDevAction('addAP', {})} className="w-12 h-12 rounded-full text-2xl bg-green-800 hover:bg-green-700">+</button>
+            </div>
+          </div>
+  
+          <div className="p-4 border-b border-gray-600">
+              <h3 className="font-orbitron text-lg text-yellow-300 mb-2">Deck Management</h3>
+              <div className="space-y-2">
+                  {/* ADD THESE TWO BUTTONS */}
+                  <button onClick={() => setIsPlayerDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Player Deck ({gameState.playerDeck.length})</button>
+                  <button onClick={() => setIsInfectionDeckModalOpen(true)} className="w-full p-2 bg-cyan-700 hover:bg-cyan-600 rounded">Reorder Infection Deck ({gameState.infectionDeck.length})</button>
+              </div>
+          </div>
+  
         </div>
-
-      </div>
-    </Modal>
-    <DeckReorderModal
-            isOpen={isPlayerDeckModalOpen}
-            onClose={() => setIsPlayerDeckModalOpen(false)}
-            title="Reorder Player Deck"
-            deck={gameState.playerDeck}
-            onConfirm={(rearrangedCards) => {
-                onDevAction('reorderPlayerDeck', { rearrangedCards });
-                setIsPlayerDeckModalOpen(false);
-            }}
-            renderCard={(card, index) => <PlayerCardDisplay card={card as PlayerCard} isLarge={true} gameType={gameState.gameType} />}
-        />
-
-        <DeckReorderModal
-            isOpen={isInfectionDeckModalOpen}
-            onClose={() => setIsInfectionDeckModalOpen(false)}
-            title="Reorder Infection Deck"
-            deck={gameState.infectionDeck}
-            onConfirm={(rearrangedCards) => {
-                onDevAction('reorderInfectionDeck', { rearrangedCards });
-                setIsInfectionDeckModalOpen(false);
-            }}
-            renderCard={(card, index) => <InfectionCardDisplay card={card as InfectionCard} gameType={gameState.gameType} />}
-        />
+      </Modal>
+      <DeckReorderModal
+              isOpen={isPlayerDeckModalOpen}
+              onClose={() => setIsPlayerDeckModalOpen(false)}
+              title="Reorder Player Deck"
+              deck={gameState.playerDeck}
+              onConfirm={(rearrangedCards) => {
+                  onDevAction('reorderPlayerDeck', { rearrangedCards });
+                  setIsPlayerDeckModalOpen(false);
+              }}
+              renderCard={(card, index) => <PlayerCardDisplay card={card as PlayerCard} isLarge={true} gameType={gameState.gameType} />}
+          />
+  
+          <DeckReorderModal
+              isOpen={isInfectionDeckModalOpen}
+              onClose={() => setIsInfectionDeckModalOpen(false)}
+              title="Reorder Infection Deck"
+              deck={gameState.infectionDeck}
+              onConfirm={(rearrangedCards) => {
+                  onDevAction('reorderInfectionDeck', { rearrangedCards });
+                  setIsInfectionDeckModalOpen(false);
+              }}
+              renderCard={(card, index) => <InfectionCardDisplay card={card as InfectionCard} gameType={gameState.gameType} />}
+          />
+    </>
   );
 };
 
