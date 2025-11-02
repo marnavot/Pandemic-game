@@ -801,7 +801,7 @@ export const useGameLogic = () => {
             curedDiseases,
             eradicatedDiseases,
             playerDeckPileSizes: [],
-            playerDeck: [], playerDiscard: [], eventDeck: [], infectionDeck: [], infectionDiscard: [], oneQuietNightActive: false, goodSeasonsActive: false, pendingGovernmentMobilization: null, log: ["- Game lobby created. Waiting for players..."], lastEventMessage: null, playerToDiscardId: null, pendingEpidemicCard: null,
+            playerDeck: [], playerDiscard: [], eventDeck: [], infectionDeck: [], infectionDiscard: [], infectionDeckForecastPiles: [], oneQuietNightActive: false, goodSeasonsActive: false, pendingGovernmentMobilization: null, log: ["- Game lobby created. Waiting for players..."], lastEventMessage: null, playerToDiscardId: null, pendingEpidemicCard: null,
             phaseBeforeEvent: null, pendingPurifyWaterEvent: null, pendingRingRailroadsEvent: null, 
             hasUsedOperationsExpertFlight: false, hasUsedArchivistRetrieve: false, hasUsedEpidemiologistAbility: false, hasUsedFieldOperativeCollect: false, hasUsedTroubleshooterPreview: false, hasUsedFieldDirectorMove: false, hasUsedLocalLiaisonShare: false, hasUsedMercatorShare: false, hasUsedReginaFoederataFreeEnlist: false,
             unusedRoles: [], extraActionsForNextTurn: 0, mobileHospitalActiveThisTurn: false, cityForMobileHospital: null, postCureColor: null, specialOrdersControlledPawnId: null,
