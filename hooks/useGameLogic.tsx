@@ -3234,26 +3234,39 @@ export const useGameLogic = () => {
     const handleAcknowledgeInfectionStep = useCallback(() => {
         if (!gameState) return;
         
+        const cardJustShown = infectionStepState.revealedCard;
         const isLastCard = infectionStepState.queue.length === 0;
-
+    
         if (isLastCard) {
             setGameState(gs => {
                 if (!gs) return null;
-                if (gs.outbreakCounter >= 8) {
-                    const finalState = safeCloneGameState(gs);
+                const finalState = safeCloneGameState(gs);
+    
+                if (cardJustShown) {
+                   _updateInfectionForecast(finalState, cardJustShown);
+                }
+    
+                if (finalState.outbreakCounter >= 8) {
                     finalState.gamePhase = GamePhase.GameOver;
                     finalState.gameOverReason = 'The outbreak limit has been reached.';
                     finalState.log.unshift(`- GAME OVER: The outbreak limit has been reached.`);
                     return finalState;
                 }
-                return _startNextTurn(gs);
+                return _startNextTurn(finalState);
             });
             setInfectionStepState({ queue: [], revealedCard: null, outbreaksThisTurn: new Set(), invadedCity: null });
         } else {
-            // There are more cards to process. Clear the revealed card, and the useEffect will pick up the next one.
+            setGameState(gs => {
+                if (!gs) return null;
+                const newState = safeCloneGameState(gs);
+                if (cardJustShown) {
+                    _updateInfectionForecast(newState, cardJustShown);
+                }
+                return newState;
+            });
             setInfectionStepState(prev => ({ ...prev, revealedCard: null, invadedCity: null }));
         }
-    }, [gameState, infectionStepState.queue.length, _startNextTurn, setGameState, setInfectionStepState]);
+    }, [gameState, infectionStepState, _startNextTurn, setGameState, setInfectionStepState]);
 
     const handleEpidemicPhase = useCallback(() => {
         setGameState(prevState => {
@@ -3430,6 +3443,8 @@ export const useGameLogic = () => {
         setGameState(prevState => {
             if (!prevState) return null;
             const newState = safeCloneGameState(prevState);
+            const newForecastPile = shuffle([...newState.infectionDiscard]);
+            newState.infectionDeckForecastPiles.unshift(newForecastPile);
             newState.infectionDeck = [...shuffle(newState.infectionDiscard), ...newState.infectionDeck];
             newState.infectionDiscard = [];
             newState.log.unshift(`- Infection discard pile is shuffled and placed on top of the deck.`);
@@ -6063,6 +6078,24 @@ export const useGameLogic = () => {
             // The phaseBeforeEvent is already set from "When the Plans Were Good" and will be used by _playEventCardLogic
             return newState;
         });
+    };
+
+    const _updateInfectionForecast = (gs: GameState, drawnCard: InfectionCard) => {
+        if (gs.infectionDeckForecastPiles.length === 0) return;
+        if (drawnCard.type !== 'city') return;
+    
+        for (let i = 0; i < gs.infectionDeckForecastPiles.length; i++) {
+            const pile = gs.infectionDeckForecastPiles[i];
+            const cardIndex = pile.findIndex(c => c.type === 'city' && c.name === drawnCard.name && c.color === drawnCard.color);
+            if (cardIndex > -1) {
+                pile.splice(cardIndex, 1);
+                break; // Card found and removed, exit loop
+            }
+        }
+        // Clean up empty piles from the front
+        while (gs.infectionDeckForecastPiles.length > 0 && gs.infectionDeckForecastPiles[0].length === 0) {
+            gs.infectionDeckForecastPiles.shift();
+        }
     };
 
     return {
