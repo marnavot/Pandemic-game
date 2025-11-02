@@ -984,6 +984,7 @@ eventDeck: PlayerCard[];
 
 infectionDeck: InfectionCard[];
 infectionDiscard: InfectionCard[];
+infectionDeckForecastPiles: InfectionCard[][];
 
 oneQuietNightActive: boolean;
 goodSeasonsActive: boolean;
