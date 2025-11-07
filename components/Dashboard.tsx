@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { GameState, Player, DiseaseColor, CityName, PlayerCard, PANDEMIC_INFECTION_RATES, FALLOFROME_INVASION_RATES, FALLOFROME_RECRUITMENT_RATES, PlayerRole, CITIES_DATA, CONNECTIONS, GamePhase, EventCardName, PLAYER_ROLE_INFO, VIRULENT_STRAIN_EPIDEMIC_INFO, VirulentStrainEpidemicCardName, FALLOFROME_PORT_CITIES, IBERIA_PORT_CITIES, FALLOFROME_CITIES_DATA, FALLOFROME_ALLIANCE_CARD_REQUIREMENTS, FallOfRomeDiseaseColor, isFallOfRomeDiseaseColor, FALLOFROME_DISEASE_COLORS, FALLOFROME_INITIAL_CUBE_COUNTS, IBERIA_SEA_CONNECTIONS, IBERIA_REGIONS, IBERIA_CITY_TO_REGIONS_MAP, City, HistoricalDiseaseEffect, HISTORICAL_DISEASE_INFO } from '../types';
-import { PlayerCardDisplay, PlayableEvents, FieldOperativeActions, PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS, getCardDisplayName } from '../hooks/ui';
+import { PlayerCardDisplay, PlayableEvents, FieldOperativeActions, PLAYER_PAWN_COLORS, PLAYER_ROLE_COLORS, getCardDisplayName, DISEASE_TEXT_COLOR_MAP } from '../hooks/ui';
 import { getCitiesWithinRange, isReachableByTrain } from '../utils';
 import { playSound } from '../services/soundService';
 import { getTerminology } from '../services/terminology';
@@ -901,13 +901,28 @@ const canRecruitArmy = inActionPhase &&
                   Set {index + 1} ({pile.length} card{pile.length === 1 ? '' : 's'} remaining)
                 </h4>
                 {pile.length > 0 ? (
-                  <ul className="text-xs list-disc list-inside pl-2 text-gray-300 grid grid-cols-2 gap-x-2">
-                    {pile
-                      .map(card => getCardDisplayName(card))
-                      .sort()
-                      .map((name, cardIndex) => (
-                        <li key={cardIndex} className="truncate">{name}</li>
-                      ))
+                  <ul className="text-xs list-disc list-inside pl-2 grid grid-cols-2 gap-x-2">
+                    {[...pile] // Create a shallow copy to sort without mutating state
+                      .sort((a, b) => getCardDisplayName(a).localeCompare(getCardDisplayName(b)))
+                      .map((card, cardIndex) => {
+                        if (card.type !== 'city') return null;
+
+                        const displayName = getCardDisplayName(card);
+                        const textColorClass = DISEASE_TEXT_COLOR_MAP[card.color];
+                        
+                        // Check if the city has 3 or more cubes of the card's color
+                        const isDangerous = (gameState.diseaseCubes[card.name]?.[card.color] || 0) >= 3;
+                        
+                        const highlightClass = isDangerous 
+                          ? 'font-bold bg-red-900 bg-opacity-75 rounded px-1 animate-pulse' 
+                          : '';
+                        
+                        return (
+                          <li key={cardIndex} className={`truncate ${highlightClass}`}>
+                            <span className={textColorClass}>{displayName}</span>
+                          </li>
+                        );
+                      })
                     }
                   </ul>
                 ) : (
