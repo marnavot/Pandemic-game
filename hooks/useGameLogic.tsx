@@ -179,6 +179,10 @@ export const useGameLogic = () => {
             } else {
                 // This was a mid-turn placement after a move.
                 newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                // If the player has no actions left, advance to the next phase.
+                if (newState.gamePhase === GamePhase.PlayerAction && newState.actionsRemaining <= 0) {
+                    newState.gamePhase = GamePhase.PreDrawPlayerCards;
+                }
             }
             
             newState.phaseBeforeEvent = null;
