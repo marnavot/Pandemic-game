@@ -734,6 +734,7 @@ export const useGameLogic = () => {
     
         // 3. Medic auto-treat (triggers for any moved pawn, on any move type)
         _handleMedicAutoTreat(gs, pawnMoved);
+        _handleNursePostMove(gs, pawnMoved);
     };
 
     const handleStartGame = (config: GameSetupConfig, hostId: number | null): GameState => {
@@ -1329,7 +1330,6 @@ export const useGameLogic = () => {
                     }
 
                     _handlePostMoveEffects(newState, pawnToMove, 'Drive/Ferry');
-                    _handleNursePostMove(newState, pawnToMove);
                     if (newState.gameType === 'pandemic') {playSound('driveferry')};
                     if (newState.gameType === 'fallOfRome') {playSound('march')};
                     actionTaken = true;
@@ -1404,7 +1404,6 @@ export const useGameLogic = () => {
                     newState.log.unshift(`- ${player.name} ${logParts.join(' ')} from ${CITIES_DATA[startCity].name} to ${CITIES_DATA[destination].name}${takingStr.length > 0 ? `, taking ${takingStr}` : ''}${passengerLog}.`);
                 
                     _handlePostMoveEffects(newState, pawnToMove, 'Other');
-                    _handleNursePostMove(newState, pawnToMove);
                     playSound('sail')
                     actionTaken = true;
                     break;
@@ -1432,7 +1431,6 @@ export const useGameLogic = () => {
                 
                     newState.log.unshift(`- ${pawnToMove.name} moves by train to ${CITIES_DATA[destination].name}${passengerLog}.`);
                     _handlePostMoveEffects(newState, pawnToMove, 'Other');
-                    _handleNursePostMove(newState, pawnToMove);
                     playSound('train');
                     actionTaken = true;
                     break;
