@@ -32,6 +32,11 @@ const withTimeout = <T,>(promise: Promise<T>, ms: number, errorMessage: string):
 };
 
 export const App: React.FC = () => {
+    const [gameId, setGameId] = useState<string | null>(() => {
+        const path = window.location.pathname;
+        const match = path.match(/\/game\/([a-zA-Z0-9]+)/);
+        return match?.[1] || null;
+    });
     const [highlightedRegions, setHighlightedRegions] = useState<string[]>([]);
     const [localPlayerId, setLpId] = useState<number | null>(getLocalPlayerId());
     const [isLoading, setIsLoading] = useState(true);
@@ -252,30 +257,27 @@ export const App: React.FC = () => {
 
      // Effect for subscribing to multiplayer game updates
     useEffect(() => {
-        const path = window.location.pathname;
-        const match = path.match(/\/game\/([a-zA-Z0-9]+)/);
-        const gameId = match?.[1];
-
-        if (gameId && isFirebaseConfigured) {
+        // No need to parse the path here anymore, we use the `gameId` state.
+        if (gameId && isFirebaseInitialized) {
             setIsLoading(true);
             const unsubscribe = getGameStream(gameId, (newState) => {
                 setGameState(newState);
-                setIsLoading(false);
+                setIsLoading(false); // Loading is hidden only AFTER we receive data.
                 if (localPlayerId !== null && !newState.players.find(p => p.id === localPlayerId)?.isOnline) {
                     setPlayerOnlineStatus(gameId, localPlayerId, true);
                 }
             });
-
+    
             const handleBeforeUnload = () => { if (localPlayerId !== null) { setPlayerOnlineStatus(gameId, localPlayerId, false); } };
             window.addEventListener('beforeunload', handleBeforeUnload);
-
+    
             return () => {
                 handleBeforeUnload();
                 unsubscribe();
                 window.removeEventListener('beforeunload', handleBeforeUnload);
             };
         }
-    }, [localPlayerId, setGameState]);
+    }, [gameId, localPlayerId, setGameState]); // Dependency array updated to react to gameId
     
     // Effect to update Firebase when local state changes
     useEffect(() => {
@@ -400,21 +402,23 @@ export const App: React.FC = () => {
     // Game Setup/Lobby Handlers
     const handleStartGameClick = async (config: GameSetupConfig) => {
         if (config.gameMode === 'multiplayer') {
-            if (!isFirebaseConfigured) return setError("Firebase not configured.");
+            if (!isFirebaseInitialized) return setError("Firebase not configured.");
             setIsLoading(true);
             try {
                 const initialGameState = handleStartGame(config, 0);
-                const gameId = await createGame(initialGameState);
-                const newGsWithId = { ...initialGameState, gameId };
-                await updateGame(gameId, newGsWithId);
+                const newGameId = await createGame(initialGameState); // Renamed variable
+                const newGsWithId = { ...initialGameState, gameId: newGameId };
+                await updateGame(newGameId, newGsWithId);
                 setLpId(0);
                 setLocalPlayerId(0);
-                window.history.pushState(null, '', `/game/${gameId}`);
-                // The stream listener will now take over.
-            } catch (err) { setError(`Failed to create game: ${(err as Error).message}`); }
-            finally { setIsLoading(false); }
+                window.history.pushState(null, '', `/game/${newGameId}`);
+                setGameId(newGameId); // This new line triggers the stream listener
+            } catch (err) { 
+                setError(`Failed to create game: ${(err as Error).message}`);
+                setIsLoading(false); // Also stop loading on error
+            }
+            // The 'finally' block is removed.
         } else {
-            window.history.pushState(null, '', '/');
             setGameState(finalizeGameSetup(handleStartGame(config, null)));
         }
     };
