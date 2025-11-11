@@ -68,7 +68,6 @@ const initializeFirebase = () => {
 
 // Run the initialization function when the module is first loaded.
 initializeFirebase();
-};
 
 
 const gamesCollectionRef = () => {
@@ -226,6 +225,5 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId} in game ${gameId}. This might be expected on page unload.`);
     }
 };
-
 
 
