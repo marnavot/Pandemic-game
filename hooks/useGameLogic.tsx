@@ -4616,6 +4616,15 @@ export const useGameLogic = () => {
     // This effect manages phase transitions that don't require user input.
     useEffect(() => {
         if (!gameState) return;
+        if (gameState.gamePhase === GamePhase.PlayerAction && gameState.actionsRemaining <= 0) {
+            setGameState(gs => {
+                if (!gs || gs.gamePhase !== GamePhase.PlayerAction || gs.actionsRemaining > 0) return gs;
+                const newGs = safeCloneGameState(gs);
+                newGs.gamePhase = GamePhase.PreDrawPlayerCards;
+                return newGs;
+            });
+            return; // This is important to stop further processing in this effect.
+        }
 
         if (gameState.gamePhase === GamePhase.PreInfectionPhase) {
             handleStartInfectionPhase();
@@ -4709,7 +4718,7 @@ export const useGameLogic = () => {
             }, 500);
             return () => clearTimeout(timer);
         }
-    }, [gameState, infectionStepState, handleStartInfectionPhase, handleEpidemicPhase, logEvent, setModalContent]);
+    }, [gameState, infectionStepState, handleStartInfectionPhase, handleEpidemicPhase, logEvent, setModalContent, safeCloneGameState]);
 
     const handleResolveVaeVictis = useCallback((payload: {
         option: 'normal' | 'corrupt';
