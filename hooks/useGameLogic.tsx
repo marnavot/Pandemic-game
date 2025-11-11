@@ -3714,9 +3714,11 @@ export const useGameLogic = () => {
             player.location = destination;
             logEvent(`${player.name} was airlifted to ${CITIES_DATA[destination].name}.`);
             _handlePostMoveEffects(newState, player, 'Other');
-            _handleNursePostMove(newState, player);
-            newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-            newState.phaseBeforeEvent = null;
+            // Only reset the phase if a post-move effect didn't already change it.
+            if (newState.gamePhase === GamePhase.ResolvingAirlift) {
+                newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+                newState.phaseBeforeEvent = null;
+            }
             return newState;
         });
     };
@@ -5760,7 +5762,8 @@ export const useGameLogic = () => {
     
             const newState = safeCloneGameState(prevState);
             const playerOrder = newState.pendingGovernmentMobilization?.playersToMove || [];
-    
+
+            let wasAbilityTriggered = false;
             // Process moves in the original turn order
             for (const playerId of playerOrder) {
                 const move = plannedMoves[playerId];
@@ -5805,36 +5808,40 @@ export const useGameLogic = () => {
     
                     newState.log.unshift(logMessage);
                     _handlePostMoveEffects(newState, movingPlayer, 'Other');
-                    _handleNursePostMove(newState, movingPlayer);
+                    if (newState.gamePhase !== GamePhase.ResolvingGovernmentMobilization) {
+                        wasAbilityTriggered = true;
+                    }
                 }
             }
     
         // 4. Clean up and exit event
         newState.pendingGovernmentMobilization = null;
-        let nextPhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
-        newState.phaseBeforeEvent = null;
-        newState.log.unshift("- Government Mobilization is complete.");
-        
-        // If the event was triggered from a discard phase, check if the discard is still necessary.
-        if (nextPhase === GamePhase.Discarding && newState.playerToDiscardId !== null) {
-            const playerToDiscard = newState.players.find(p => p.id === newState.playerToDiscardId)!;
+        if (!wasAbilityTriggered) {
+            let nextPhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
+            newState.phaseBeforeEvent = null;
+            newState.log.unshift("- Government Mobilization is complete.");
             
-            // Check if the player has met their hand limit after all event actions.
-            if (playerToDiscard.hand.length <= getHandLimit(playerToDiscard)) {
-                // The discard is no longer needed.
-                newState.playerToDiscardId = null;
+            // If the event was triggered from a discard phase, check if the discard is still necessary.
+            if (nextPhase === GamePhase.Discarding && newState.playerToDiscardId !== null) {
+                const playerToDiscard = newState.players.find(p => p.id === newState.playerToDiscardId)!;
                 
-                // Determine the phase that should follow the discard phase.
-                if (discardTriggerRef.current === 'draw') {
-                    nextPhase = GamePhase.PreInfectionPhase;
-                } else { // 'action' or null
-                    nextPhase = newState.actionsRemaining > 0 ? GamePhase.PlayerAction : GamePhase.PreDrawPlayerCards;
+                // Check if the player has met their hand limit after all event actions.
+                if (playerToDiscard.hand.length <= getHandLimit(playerToDiscard)) {
+                    // The discard is no longer needed.
+                    newState.playerToDiscardId = null;
+                    
+                    // Determine the phase that should follow the discard phase.
+                    if (discardTriggerRef.current === 'draw') {
+                        nextPhase = GamePhase.PreInfectionPhase;
+                    } else { // 'action' or null
+                        nextPhase = newState.actionsRemaining > 0 ? GamePhase.PlayerAction : GamePhase.PreDrawPlayerCards;
+                    }
+                    discardTriggerRef.current = null; // Consume the trigger
                 }
-                discardTriggerRef.current = null; // Consume the trigger
             }
+            
+            newState.gamePhase = nextPhase;
         }
-        
-        newState.gamePhase = nextPhase;
     
             return newState;
         });
@@ -5977,20 +5984,17 @@ export const useGameLogic = () => {
                 playSound('sail');
             }
     
-            // After all moves are done, check our flag.
-            if (wasNurseMoved) {
-                // If the Nurse moved, transition to her special phase.
-                const nurse = newState.players.find(p => p.role === PlayerRole.Nurse)!;
-                _handleNursePostMove(newState, nurse); // This sets gamePhase to NursePlacingPreventionToken.
-            } else {
-                // If Nurse was not moved, simply return to the previous game state.
+            // After all moves are done, check if a post-move effect (like the Nurse's) has changed the phase.
+            if (newState.gamePhase === GamePhase.ResolvingShipsArrive) {
+                // If the phase is unchanged, we can conclude the event.
                 newState.gamePhase = newState.phaseBeforeEvent || GamePhase.PlayerAction;
                 newState.phaseBeforeEvent = null;
             }
-            
-            return newState;
-        });
-    };
+            // If the phase WAS changed (e.g., to NursePlacingPreventionToken), we do nothing and let it proceed.
+                        
+                        return newState;
+                    });
+                };
 
     const handleResolveTelegraphMessage = useCallback((payload: { fromPlayerId: number, toPlayerId: number, cardsToGive: (PlayerCard & { type: 'city' })[] }) => {
         setGameState(prevState => {
