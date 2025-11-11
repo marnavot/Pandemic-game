@@ -11,7 +11,7 @@ import LobbyScreen from './components/LobbyScreen';
 import { generateGameOverReport } from './services/geminiService';
 import { useGameLogic } from './hooks/useGameLogic.tsx';
 import { GameModals } from './components/GameModals';
-import { createGame, getGameStream, updateGame, getGame, isFirebaseConfigured, joinGame, setPlayerOnlineStatus, updatePlayerName, isFirebaseInitialized } from './services/firebase';
+import { createGame, getGameStream, updateGame, getGame, joinGame, setPlayerOnlineStatus, updatePlayerName, isFirebaseInitialized } from './services/firebase';
 import { getCityDataForGame } from './utils';
 import DevTools from './components/DevTools';
 import { handleDevAction } from './hooks/useGameLogic.tsx';
@@ -220,7 +220,7 @@ export const App: React.FC = () => {
         if (match && match[1]) {
             const gameId = match[1];
             setIsLoading(true);
-            if (!isFirebaseConfigured) {
+            if (!isFirebaseInitialized) {
                 setError("Multiplayer is not configured. Redirecting to home.");
                 setTimeout(() => window.location.pathname = '/', 4000);
                 return;
