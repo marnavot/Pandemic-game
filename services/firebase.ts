@@ -37,29 +37,37 @@ let app: firebase.FirebaseApp | null = null;
 let db: Firestore | null = null;
 export let isFirebaseInitialized = false;
 
-// Function to initialize Firebase on demand, preventing crashes on startup.
+// Function to initialize Firebase safely
 const initializeFirebase = () => {
-    if (isFirebaseInitialized) {
-        return; // Already initialized, do nothing.
-    }
-    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-        try {
-            // Check if an app is already initialized to prevent errors in hot-reloading environments.
-            if (!firebase.getApps().length) {
-                app = firebase.initializeApp(firebaseConfig);
-            } else {
-                app = firebase.getApp(); // Get the default app if it already exists.
-            }
+    // Prevent re-initialization if the module is loaded more than once
+    if (isFirebaseInitialized || (firebase.getApps().length > 0)) {
+        if (!isFirebaseInitialized) {
+            // It was already initialized by another import, just get the instances
+            app = firebase.getApp();
             db = getFirestore(app);
             isFirebaseInitialized = true;
-            console.log("Firebase connected successfully on-demand.");
+        }
+        return;
+    }
+
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            isFirebaseInitialized = true;
+            console.log("Firebase connected successfully.");
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            isFirebaseInitialized = false; // Ensure this is false on failure.
+            isFirebaseInitialized = false; // Explicitly set to false on error
         }
     } else {
-        console.warn("Firebase config is missing or incomplete in services/firebase.ts. Multiplayer features will be disabled.");
+        console.warn("Firebase config is missing. Multiplayer features will be disabled.");
+        isFirebaseInitialized = false;
     }
+};
+
+// Run the initialization function when the module is first loaded.
+initializeFirebase();
 };
 
 
@@ -218,5 +226,6 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId} in game ${gameId}. This might be expected on page unload.`);
     }
 };
+
 
 
