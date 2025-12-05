@@ -1,5 +1,10 @@
 // Modular imports for Firebase v9+
-import * as firebase from "firebase/app";
+import { 
+    initializeApp, 
+    getApps, 
+    getApp, 
+    type FirebaseApp 
+} from "firebase/app";
 import { 
     getFirestore, 
     collection, 
@@ -17,9 +22,7 @@ import { GameState } from '../types';
 import { deepClone } from '../utils';
 
 // ====================================================================================
-// IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
-// You can get this from the Firebase Console:
-// Project Settings > General > Your apps > Web app > SDK setup and configuration
+// YOUR FIREBASE CONFIGURATION
 // ====================================================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB3-1Tzh_NPLrQZB5lSYdZNZfL8QOMrfNo",
@@ -33,17 +36,17 @@ const firebaseConfig = {
 export const isFirebaseConfigured = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId);
 // ====================================================================================
 
-let app: firebase.FirebaseApp | null = null;
+let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 export let isFirebaseInitialized = false;
 
 // Function to initialize Firebase safely
 const initializeFirebase = () => {
     // Prevent re-initialization if the module is loaded more than once
-    if (isFirebaseInitialized || (firebase.getApps().length > 0)) {
+    if (isFirebaseInitialized || (getApps().length > 0)) {
         if (!isFirebaseInitialized) {
             // It was already initialized by another import, just get the instances
-            app = firebase.getApp();
+            app = getApp();
             db = getFirestore(app);
             isFirebaseInitialized = true;
         }
@@ -52,13 +55,13 @@ const initializeFirebase = () => {
 
     if (firebaseConfig.apiKey && firebaseConfig.projectId) {
         try {
-            app = firebase.initializeApp(firebaseConfig);
+            app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             isFirebaseInitialized = true;
             console.log("Firebase connected successfully.");
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            isFirebaseInitialized = false; // Explicitly set to false on error
+            isFirebaseInitialized = false;
         }
     } else {
         console.warn("Firebase config is missing. Multiplayer features will be disabled.");
@@ -69,7 +72,6 @@ const initializeFirebase = () => {
 // Run the initialization function when the module is first loaded.
 initializeFirebase();
 
-
 const gamesCollectionRef = () => {
     initializeFirebase(); // Ensure initialization before use
     if (!db) throw new Error("Firebase not initialized.");
@@ -78,8 +80,6 @@ const gamesCollectionRef = () => {
 
 /**
  * Creates a new game document in Firestore.
- * @param initialGameState The initial state of the game to be saved.
- * @returns The unique ID of the newly created game.
  */
 export const createGame = async (initialGameState: GameState): Promise<string> => {
     initializeFirebase();
@@ -98,8 +98,6 @@ export const createGame = async (initialGameState: GameState): Promise<string> =
 
 /**
  * Updates an existing game document in Firestore.
- * @param gameId The ID of the game to update.
- * @param gameState The new state to save.
  */
 export const updateGame = async (gameId: string, gameState: GameState): Promise<void> => {
     initializeFirebase();
@@ -110,11 +108,8 @@ export const updateGame = async (gameId: string, gameState: GameState): Promise<
     await setDoc(gameDocRef, restOfState, { merge: true });
 };
 
-
 /**
  * Gets a single snapshot of a game
- * @param gameId The ID of the game to fetch.
- * @returns The GameState or null if not found.
  */
 export const getGame = async (gameId: string): Promise<GameState | null> => {
     initializeFirebase();
@@ -129,12 +124,8 @@ export const getGame = async (gameId: string): Promise<GameState | null> => {
     }
 };
 
-
 /**
  * Listens for real-time updates to a game document.
- * @param gameId The ID of the game to listen to.
- * @param onUpdate A callback function that will be invoked with the new game state whenever it changes.
- * @returns An unsubscribe function to stop listening for updates.
  */
 export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) => void): Unsubscribe => {
     initializeFirebase();
@@ -146,12 +137,10 @@ export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) =
     const unsubscribe = onSnapshot(gameDocRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data() as DocumentData;
-            // The action history is not saved, so we initialize it here for the client
             const gameState: GameState = { ...data as GameState, actionHistory: [] };
             onUpdate(gameState);
         } else {
             console.error("Game document disappeared or does not exist.");
-            // Handle this case appropriately, e.g., by navigating the user away
         }
     }, (error) => {
         console.error("Error in game stream listener: ", error);
@@ -161,8 +150,6 @@ export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) =
 
 /**
  * Allows a new player to join a game lobby if there is space.
- * @param gameId The ID of the game to join.
- * @returns The player ID assigned to the new player, or null if the lobby is full.
  */
 export const joinGame = async (gameId: string): Promise<number | null> => {
     initializeFirebase();
@@ -191,12 +178,6 @@ export const joinGame = async (gameId: string): Promise<number | null> => {
     }
 };
 
-/**
- * Updates a player's name in the lobby.
- * @param gameId The ID of the game.
- * @param playerId The ID of the player to update.
- * @param name The new name for the player.
- */
 export const updatePlayerName = async (gameId: string, playerId: number, name: string): Promise<void> => {
     initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
@@ -206,12 +187,6 @@ export const updatePlayerName = async (gameId: string, playerId: number, name: s
     });
 };
 
-/**
- * Sets a player's online status.
- * @param gameId The ID of the game.
- * @param playerId The ID of the player.
- * @param isOnline The online status.
- */
 export const setPlayerOnlineStatus = async (gameId: string, playerId: number, isOnline: boolean): Promise<void> => {
     initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
@@ -221,9 +196,6 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
             [`players.${playerId}.isOnline`]: isOnline,
         });
     } catch (error) {
-        // This can fail if the document doesn't exist yet, which is fine on cleanup.
-        console.log(`Could not set online status for player ${playerId} in game ${gameId}. This might be expected on page unload.`);
+        console.log(`Could not set online status for player ${playerId}.`);
     }
 };
-
-
