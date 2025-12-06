@@ -127,23 +127,28 @@ export const getGame = async (gameId: string): Promise<GameState | null> => {
 /**
  * Listens for real-time updates to a game document.
  */
-export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) => void): Unsubscribe => {
+// Change this line to accept an onError callback
+export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) => void, onError: (error: Error) => void): Unsubscribe => {
     initializeFirebase();
     if (!isFirebaseInitialized || !db) {
-        console.error("Firebase not initialized, cannot create game stream.");
-        return () => {}; // Return a no-op unsubscribe function
+        console.error("Firebase not initialized");
+        return () => {}; 
     }
     const gameDocRef = doc(db, 'games', gameId);
+    
+    // Pass the onError callback to onSnapshot
     const unsubscribe = onSnapshot(gameDocRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data() as DocumentData;
             const gameState: GameState = { ...data as GameState, actionHistory: [] };
             onUpdate(gameState);
         } else {
-            console.error("Game document disappeared or does not exist.");
+            console.error("Game document disappeared.");
         }
     }, (error) => {
         console.error("Error in game stream listener: ", error);
+        // CALL THE ERROR CALLBACK HERE
+        if (onError) onError(error); 
     });
     return unsubscribe;
 };
@@ -199,3 +204,4 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId}.`);
     }
 };
+
