@@ -1,15 +1,15 @@
+
 // Modular imports for Firebase v9+
 import { 
     initializeApp, 
     getApps, 
     getApp, 
-    deleteApp,
     type FirebaseApp 
 } from "firebase/app";
 import { 
     getFirestore, 
     initializeFirestore, 
-    memoryLocalCache,
+    memoryLocalCache, // <--- Key import for fixing the hang
     collection, 
     addDoc, 
     doc, 
@@ -45,46 +45,40 @@ export let isFirebaseInitialized = false;
 
 // Function to initialize Firebase safely
 const initializeFirebase = () => {
+    // We use a specific name to ensure we are controlling this specific instance
+    // and not inheriting a default one with bad settings from a previous hot-reload.
+    const appName = "pandemic-game-client";
+
     try {
-        // 1. Aggressively clean up existing apps to prevent "Duplicate App" errors 
-        // or stale configurations during hot-reloads.
-        // We use a specific name to isolate our app instance.
-        const appName = "pandemic-game-instance";
         const existingApp = getApps().find(a => a.name === appName);
         
         if (existingApp) {
             app = existingApp;
-            // If the app exists, we try to get the existing Firestore instance.
-            // We cannot re-initialize it with different settings if it already exists.
+            // If the app exists, we assume DB is already set up attached to it.
+            // We cannot re-call initializeFirestore on an existing app.
             db = getFirestore(app);
             isFirebaseInitialized = true;
-            console.log("Reusing existing Firebase instance.");
         } else {
-            // 2. Create a new App instance
+            // 1. Initialize a named app instance
             app = initializeApp(firebaseConfig, appName);
             
-            // 3. Initialize Firestore with MEMORY CACHE.
-            // This is critical to prevent "TYPE=terminate" errors caused by 
-            // IndexedDB conflicts or restricted environments.
+            // 2. FORCE Memory Cache and Long Polling.
+            // This is the "Nuclear Option" for connectivity issues.
+            // It disables IndexedDB (preventing the 'terminate' error) and WebSockets.
             db = initializeFirestore(app, {
                 localCache: memoryLocalCache(),
-                experimentalForceLongPolling: true, // Keep this for stability
+                experimentalForceLongPolling: true,
             });
             isFirebaseInitialized = true;
-            console.log("Firebase initialized with Memory Cache & Long Polling.");
+            console.log("Firebase initialized: Memory Cache + Long Polling active.");
         }
     } catch (e) {
         console.error("Firebase initialization failed:", e);
-        // Fallback: Try to get the default app if our named instance failed
+        // Last resort fallback
         try {
-            if (!getApps().length) {
-                app = initializeApp(firebaseConfig);
-            } else {
-                app = getApp();
-            }
+            app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
             db = getFirestore(app);
             isFirebaseInitialized = true;
-            console.log("Fallback to default Firebase instance.");
         } catch (e2) {
             console.error("Fatal Firebase Error:", e2);
             isFirebaseInitialized = false;
