@@ -6,8 +6,8 @@ import {
     type FirebaseApp 
 } from "firebase/app";
 import { 
-    getFirestore,
-    initializeFirestore,
+    getFirestore, 
+    initializeFirestore, 
     collection, 
     addDoc, 
     doc, 
@@ -43,43 +43,63 @@ export let isFirebaseInitialized = false;
 
 // Function to initialize Firebase safely
 const initializeFirebase = () => {
-    // Prevent re-initialization if the module is loaded more than once
-    if (isFirebaseInitialized || (getApps().length > 0)) {
-        if (!isFirebaseInitialized) {
-            // It was already initialized by another import, just get the instances
-            app = getApp();
-            db = initializeFirestore(app, {
-                experimentalForceLongPolling: true,
-            });
-            isFirebaseInitialized = true;
-        }
-        return;
-    }
-
-    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    // 1. Check if an App already exists (from a previous hot-reload or import)
+    if (getApps().length > 0) {
+        app = getApp();
+        
+        // Try to reuse the existing Firestore instance
         try {
-            app = initializeApp(firebaseConfig);
-            db = initializeFirestore(app, {
-                experimentalForceLongPolling: true,
-            });
+            db = getFirestore(app);
             isFirebaseInitialized = true;
-            console.log("Firebase connected successfully.");
+            return;
         } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            isFirebaseInitialized = false;
+            // If getFirestore fails, it might not be initialized yet, so we proceed to initialize it below
+            console.log("Existing app found, but Firestore not initialized yet.");
         }
     } else {
-        console.warn("Firebase config is missing. Multiplayer features will be disabled.");
-        isFirebaseInitialized = false;
+        // 2. No App exists, initialize a new one
+        if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+            try {
+                app = initializeApp(firebaseConfig);
+            } catch (e) {
+                console.error("Error initializing Firebase App:", e);
+                isFirebaseInitialized = false;
+                return;
+            }
+        } else {
+            console.warn("Firebase config missing.");
+            return;
+        }
+    }
+
+    // 3. Initialize Firestore with Long Polling
+    // This is the critical step to prevent the "terminate" / hang issue
+    if (app && !db) {
+        try {
+            db = initializeFirestore(app, {
+                experimentalForceLongPolling: true,
+            });
+            isFirebaseInitialized = true;
+            console.log("Firebase initialized with Long Polling.");
+        } catch (e) {
+            // Fallback: If initializeFirestore fails (e.g., already initialized elsewhere), grab the default instance
+            console.warn("Could not force long polling, falling back to default:", e);
+            try {
+                db = getFirestore(app);
+                isFirebaseInitialized = true;
+            } catch (e2) {
+                console.error("Fatal: Could not get Firestore instance:", e2);
+            }
+        }
     }
 };
 
-// Run the initialization function when the module is first loaded.
+// Run the initialization function immediately
 initializeFirebase();
 
 const gamesCollectionRef = () => {
-    initializeFirebase(); // Ensure initialization before use
-    if (!db) throw new Error("Firebase not initialized.");
+    if (!db) initializeFirebase(); 
+    if (!db) throw new Error("Firebase failed to initialize.");
     return collection(db, 'games');
 };
 
@@ -87,17 +107,17 @@ const gamesCollectionRef = () => {
  * Creates a new game document in Firestore.
  */
 export const createGame = async (initialGameState: GameState): Promise<string> => {
-    initializeFirebase();
-    if (!isFirebaseInitialized) throw new Error("Firebase is not configured. Cannot create multiplayer game.");
+    if (!isFirebaseInitialized) initializeFirebase();
+    if (!isFirebaseInitialized) throw new Error("Firebase is not configured.");
+    
     try {
-        // Sanitize the data before sending it to Firebase
         const { actionHistory, ...stateToSave } = deepClone(initialGameState);
         const docRef = await addDoc(gamesCollectionRef(), stateToSave);
         console.log("Game created with ID: ", docRef.id);
         return docRef.id;
     } catch (e) {
         console.error("Error adding document: ", e);
-        throw new Error("Could not create game in Firebase.");
+        throw new Error("Could not create game in Firebase. Check console for details.");
     }
 };
 
@@ -105,10 +125,8 @@ export const createGame = async (initialGameState: GameState): Promise<string> =
  * Updates an existing game document in Firestore.
  */
 export const updateGame = async (gameId: string, gameState: GameState): Promise<void> => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
-    // Sanitize the data before sending it to Firebase
     const { actionHistory, ...restOfState } = deepClone(gameState);
     await setDoc(gameDocRef, restOfState, { merge: true });
 };
@@ -117,7 +135,6 @@ export const updateGame = async (gameId: string, gameState: GameState): Promise<
  * Gets a single snapshot of a game
  */
 export const getGame = async (gameId: string): Promise<GameState | null> => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) return null;
     const gameDocRef = doc(db, 'games', gameId);
     const docSnap = await getDoc(gameDocRef);
@@ -132,16 +149,13 @@ export const getGame = async (gameId: string): Promise<GameState | null> => {
 /**
  * Listens for real-time updates to a game document.
  */
-// Change this line to accept an onError callback
 export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) => void, onError: (error: Error) => void): Unsubscribe => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) {
-        console.error("Firebase not initialized");
+        if (onError) onError(new Error("Firebase not initialized"));
         return () => {}; 
     }
     const gameDocRef = doc(db, 'games', gameId);
     
-    // Pass the onError callback to onSnapshot
     const unsubscribe = onSnapshot(gameDocRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data() as DocumentData;
@@ -152,7 +166,6 @@ export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) =
         }
     }, (error) => {
         console.error("Error in game stream listener: ", error);
-        // CALL THE ERROR CALLBACK HERE
         if (onError) onError(error); 
     });
     return unsubscribe;
@@ -162,7 +175,6 @@ export const getGameStream = (gameId: string, onUpdate: (gameState: GameState) =
  * Allows a new player to join a game lobby if there is space.
  */
 export const joinGame = async (gameId: string): Promise<number | null> => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) throw new Error("Firebase not configured.");
     const gameDocRef = doc(db, 'games', gameId);
     
@@ -189,7 +201,6 @@ export const joinGame = async (gameId: string): Promise<number | null> => {
 };
 
 export const updatePlayerName = async (gameId: string, playerId: number, name: string): Promise<void> => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
     await updateDoc(gameDocRef, {
@@ -198,7 +209,6 @@ export const updatePlayerName = async (gameId: string, playerId: number, name: s
 };
 
 export const setPlayerOnlineStatus = async (gameId: string, playerId: number, isOnline: boolean): Promise<void> => {
-    initializeFirebase();
     if (!isFirebaseInitialized || !db) return;
     const gameDocRef = doc(db, 'games', gameId);
     try {
@@ -209,6 +219,3 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId}.`);
     }
 };
-
-
-
