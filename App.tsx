@@ -257,16 +257,25 @@ export const App: React.FC = () => {
 
      // Effect for subscribing to multiplayer game updates
     useEffect(() => {
-        // No need to parse the path here anymore, we use the `gameId` state.
         if (gameId && isFirebaseInitialized) {
             setIsLoading(true);
-            const unsubscribe = getGameStream(gameId, (newState) => {
-                setGameState(newState);
-                setIsLoading(false); // Loading is hidden only AFTER we receive data.
-                if (localPlayerId !== null && !newState.players.find(p => p.id === localPlayerId)?.isOnline) {
-                    setPlayerOnlineStatus(gameId, localPlayerId, true);
+            
+            // UPDATE THIS CALL:
+            const unsubscribe = getGameStream(gameId, 
+                (newState) => {
+                    setGameState(newState);
+                    setIsLoading(false); // Success! Stop loading.
+                    if (localPlayerId !== null && !newState.players.find(p => p.id === localPlayerId)?.isOnline) {
+                        setPlayerOnlineStatus(gameId, localPlayerId, true);
+                    }
+                },
+                // ADD THIS ERROR HANDLER:
+                (error) => {
+                    console.error("Stream error:", error);
+                    setError(`Connection lost: ${error.message}`);
+                    setIsLoading(false); // Failure! Stop loading so we see the error.
                 }
-            });
+            );
     
             const handleBeforeUnload = () => { if (localPlayerId !== null) { setPlayerOnlineStatus(gameId, localPlayerId, false); } };
             window.addEventListener('beforeunload', handleBeforeUnload);
@@ -277,7 +286,7 @@ export const App: React.FC = () => {
                 window.removeEventListener('beforeunload', handleBeforeUnload);
             };
         }
-    }, [gameId, localPlayerId, setGameState]); // Dependency array updated to react to gameId
+    }, [gameId, localPlayerId, setGameState]);
     
     // Effect to update Firebase when local state changes
     useEffect(() => {
