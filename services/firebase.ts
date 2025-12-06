@@ -6,7 +6,8 @@ import {
     type FirebaseApp 
 } from "firebase/app";
 import { 
-    getFirestore, 
+    getFirestore,
+    initializeFirestore,
     collection, 
     addDoc, 
     doc, 
@@ -47,7 +48,9 @@ const initializeFirebase = () => {
         if (!isFirebaseInitialized) {
             // It was already initialized by another import, just get the instances
             app = getApp();
-            db = getFirestore(app);
+            db = initializeFirestore(app, {
+                experimentalForceLongPolling: true,
+            });
             isFirebaseInitialized = true;
         }
         return;
@@ -204,4 +207,5 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId}.`);
     }
 };
+
 
