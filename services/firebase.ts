@@ -3,11 +3,13 @@ import {
     initializeApp, 
     getApps, 
     getApp, 
+    deleteApp,
     type FirebaseApp 
 } from "firebase/app";
 import { 
     getFirestore, 
     initializeFirestore, 
+    memoryLocalCache,
     collection, 
     addDoc, 
     doc, 
@@ -43,53 +45,49 @@ export let isFirebaseInitialized = false;
 
 // Function to initialize Firebase safely
 const initializeFirebase = () => {
-    // 1. Check if an App already exists (from a previous hot-reload or import)
-    if (getApps().length > 0) {
-        app = getApp();
+    try {
+        // 1. Aggressively clean up existing apps to prevent "Duplicate App" errors 
+        // or stale configurations during hot-reloads.
+        // We use a specific name to isolate our app instance.
+        const appName = "pandemic-game-instance";
+        const existingApp = getApps().find(a => a.name === appName);
         
-        // Try to reuse the existing Firestore instance
-        try {
+        if (existingApp) {
+            app = existingApp;
+            // If the app exists, we try to get the existing Firestore instance.
+            // We cannot re-initialize it with different settings if it already exists.
             db = getFirestore(app);
             isFirebaseInitialized = true;
-            return;
-        } catch (e) {
-            // If getFirestore fails, it might not be initialized yet, so we proceed to initialize it below
-            console.log("Existing app found, but Firestore not initialized yet.");
-        }
-    } else {
-        // 2. No App exists, initialize a new one
-        if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-            try {
-                app = initializeApp(firebaseConfig);
-            } catch (e) {
-                console.error("Error initializing Firebase App:", e);
-                isFirebaseInitialized = false;
-                return;
-            }
+            console.log("Reusing existing Firebase instance.");
         } else {
-            console.warn("Firebase config missing.");
-            return;
-        }
-    }
-
-    // 3. Initialize Firestore with Long Polling
-    // This is the critical step to prevent the "terminate" / hang issue
-    if (app && !db) {
-        try {
+            // 2. Create a new App instance
+            app = initializeApp(firebaseConfig, appName);
+            
+            // 3. Initialize Firestore with MEMORY CACHE.
+            // This is critical to prevent "TYPE=terminate" errors caused by 
+            // IndexedDB conflicts or restricted environments.
             db = initializeFirestore(app, {
-                experimentalForceLongPolling: true,
+                localCache: memoryLocalCache(),
+                experimentalForceLongPolling: true, // Keep this for stability
             });
             isFirebaseInitialized = true;
-            console.log("Firebase initialized with Long Polling.");
-        } catch (e) {
-            // Fallback: If initializeFirestore fails (e.g., already initialized elsewhere), grab the default instance
-            console.warn("Could not force long polling, falling back to default:", e);
-            try {
-                db = getFirestore(app);
-                isFirebaseInitialized = true;
-            } catch (e2) {
-                console.error("Fatal: Could not get Firestore instance:", e2);
+            console.log("Firebase initialized with Memory Cache & Long Polling.");
+        }
+    } catch (e) {
+        console.error("Firebase initialization failed:", e);
+        // Fallback: Try to get the default app if our named instance failed
+        try {
+            if (!getApps().length) {
+                app = initializeApp(firebaseConfig);
+            } else {
+                app = getApp();
             }
+            db = getFirestore(app);
+            isFirebaseInitialized = true;
+            console.log("Fallback to default Firebase instance.");
+        } catch (e2) {
+            console.error("Fatal Firebase Error:", e2);
+            isFirebaseInitialized = false;
         }
     }
 };
@@ -117,7 +115,7 @@ export const createGame = async (initialGameState: GameState): Promise<string> =
         return docRef.id;
     } catch (e) {
         console.error("Error adding document: ", e);
-        throw new Error("Could not create game in Firebase. Check console for details.");
+        throw new Error(`Could not create game in Firebase: ${(e as Error).message}`);
     }
 };
 
