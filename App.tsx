@@ -415,7 +415,11 @@ export const App: React.FC = () => {
             setIsLoading(true);
             try {
                 const initialGameState = handleStartGame(config, 0);
-                const newGameId = await createGame(initialGameState); // Renamed variable
+                const newGameId = await withTimeout(
+                    createGame(initialGameState), 
+                    15000, 
+                    "Network timeout: Could not create game in Firestore. Please check your internet connection and Firebase Console rules."
+                );
                 const newGsWithId = { ...initialGameState, gameId: newGameId };
                 await updateGame(newGameId, newGsWithId);
                 setLpId(0);
