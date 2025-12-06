@@ -59,7 +59,9 @@ const initializeFirebase = () => {
     if (firebaseConfig.apiKey && firebaseConfig.projectId) {
         try {
             app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
+            db = initializeFirestore(app, {
+                experimentalForceLongPolling: true,
+            });
             isFirebaseInitialized = true;
             console.log("Firebase connected successfully.");
         } catch (e) {
@@ -207,5 +209,6 @@ export const setPlayerOnlineStatus = async (gameId: string, playerId: number, is
         console.log(`Could not set online status for player ${playerId}.`);
     }
 };
+
 
 
