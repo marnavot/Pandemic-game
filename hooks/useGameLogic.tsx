@@ -3460,11 +3460,26 @@ export const useGameLogic = () => {
         setGameState(prevState => {
             if (!prevState || prevState.gamePhase !== GamePhase.PostEpidemicEventWindow) return prevState;
             const newState = safeCloneGameState(prevState);
-            newState.gamePhase = GamePhase.PreInfectionPhase;
-            logEvent("Continuing to Infection Phase.");
+            
+            // Check hand limit after Epidemic resolution
+            const player = newState.players[newState.currentPlayerIndex];
+            const limit = getHandLimit(player);
+            
+            if (player.hand.length > limit) {
+                 newState.playerToDiscardId = player.id;
+                 newState.gamePhase = GamePhase.Discarding;
+                 // We set this ref to 'draw' so that the discard handler knows to 
+                 // proceed to PreInfectionPhase (not PlayerAction) after discarding.
+                 discardTriggerRef.current = 'draw'; 
+                 newState.log.unshift(`- ${player.name} is over the hand limit after the Epidemic and must discard.`);
+            } else {
+                 newState.gamePhase = GamePhase.PreInfectionPhase;
+                 logEvent("Continuing to Infection Phase.");
+            }
+            
             return newState;
         });
-    }, [setGameState, logEvent]);
+    }, [setGameState, logEvent, getHandLimit]);
 
     const handlePlayEventCard = useCallback((cardName: EventCardName, ownerId: number) => {
         setGameState(prevState => {
